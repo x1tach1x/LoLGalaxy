@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeagueSim: counter-draft a random enemy team</title>
+<meta name="description" content="Pick a champion for every lane to beat a random enemy draft. LeagueSim scores lane tiers, matchups and team comps to decide who wins.">
+<meta property="og:title" content="LeagueSim">
+<meta property="og:description" content="Counter-draft a random enemy team, lane by lane. A new daily draft every day.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F1D2C;      /* page */
+  --deck:#16283B;     /* panels */
+  --deck2:#1C3249;    /* raised */
+  --rule:#2A4560;     /* borders */
+  --text:#E9EEF3;
+  --mute:#97A9BC;
+  --blue:#4EA1DF;     /* your side */
+  --red:#E35B4F;      /* enemy side */
+  --gold:#E7B53C;     /* victory */
+  --even:#A8B3BF;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ink);color:var(--text);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:14px 16px 40px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.mark{font:700 40px/0.95 var(--cond);letter-spacing:-0.5px;margin:0}
+.mark span{color:var(--mute);font-weight:500}
+.tag{margin:4px 0 0;color:var(--mute);font-size:15px;max-width:46ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:999px;padding:3px;background:var(--deck)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font:600 16px var(--cond);color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--deck2);color:var(--text)}
+.stats{display:flex;gap:14px;font-size:14px;color:var(--mute)}
+.stats b{display:block;font:600 20px/1 var(--cond);color:var(--text)}
+
+/* ads */
+.ad{margin:14px auto;text-align:center;min-height:0}
+.ad[hidden]{display:none}
+.ad small{display:block;color:var(--mute);font-size:11px;margin-bottom:4px}
+
+/* draft layout */
+.draft{max-width:760px}
+.sides{display:grid;grid-template-columns:1fr 64px 1fr;font:600 17px var(--cond);margin-bottom:6px}
+.sides .you{color:var(--blue)} .sides .them{color:var(--red);text-align:right}
+.row{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:0;margin-bottom:8px}
+.lane{text-align:center;font:600 15px/1.1 var(--cond);color:var(--mute)}
+.lane .chip{display:block;margin:4px auto 0;width:max-content}
+.lane .short{display:none}
+.slot .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot{display:flex;align-items:center;gap:10px;min-height:66px;padding:8px 10px;border:1px solid var(--rule);background:var(--deck);border-radius:10px;text-align:left;width:100%;min-width:0}
+.slot.mine{border-left:4px solid var(--blue)}
+.slot.enemy{border-right:4px solid var(--red);flex-direction:row-reverse;text-align:right}
+.slot.active{background:var(--deck2);box-shadow:0 0 0 2px var(--blue) inset}
+.slot .nm{font:600 20px/1.05 var(--cond);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.slot .sub{display:block;font:400 13px/1.2 var(--body);color:var(--mute)}
+.slot.empty .nm{color:var(--mute);font-weight:500}
+.plus{width:48px;height:48px;border-radius:8px;border:1px dashed var(--rule);display:grid;place-items:center;color:var(--mute);font-size:24px;flex:none}
+.pt{--s:48px;position:relative;width:var(--s);height:var(--s);border-radius:8px;overflow:hidden;flex:none;background:var(--deck2);display:grid;place-items:center}
+.pt b{font:700 calc(var(--s)*.36) var(--cond);color:var(--mute)}
+.pt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.reveal .enemy .pt{animation:flip .5s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i)*110ms)}
+@keyframes flip{from{transform:rotateY(90deg);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.reveal .enemy .pt{animation:none}}
+
+.status{color:var(--mute);margin:12px 0 0;font-size:15px}
+.slot.rolled{border-left-color:rgba(78,161,223,.45)}
+.slot.rolled:hover{background:var(--deck2)}
+.slot.locked{background:linear-gradient(90deg,rgba(78,161,223,.14),var(--deck) 70%)}
+.slot.locked .sub{color:var(--blue)}
+.lockpill{margin-left:auto;font:700 15px/1 var(--cond);color:var(--gold);border:1px solid rgba(231,181,60,.55);border-radius:999px;padding:6px 11px;flex:none}
+/* reroll reel */
+.pt{isolation:isolate;contain:paint;-webkit-mask-image:-webkit-radial-gradient(white,black)}
+.pt .reel{position:absolute;left:0;top:0;width:100%;display:flex;flex-direction:column;z-index:2;will-change:transform;backface-visibility:hidden}
+.pt .reel .cell{position:relative;flex:none;width:var(--s);height:var(--s);display:grid;place-items:center;background:var(--deck2)}
+.pt .reel .cell b{font:700 calc(var(--s)*.36) var(--cond);color:var(--mute)}
+.pt .reel .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pt.spinning > b,.pt.spinning > img{visibility:hidden}
+.slot.rolled.spin{cursor:wait}
+.slot.rolled.spin .nm{color:var(--mute)}
+.slot.rolled.spin .lockpill{opacity:.3}
+.pt.settle{animation:settle .32s cubic-bezier(.3,1.6,.5,1)}
+@keyframes settle{from{transform:scale(1.14);box-shadow:0 0 0 2px var(--gold)}to{transform:none;box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.pt.settle{animation:none}}
+.btn{border:0;border-radius:10px;padding:12px 22px;font:700 20px/1 var(--cond);background:var(--gold);color:#1a1405}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:none;border:1px solid var(--rule);color:var(--text)}
+.hint{color:var(--mute);font-size:14px}
+
+/* results */
+.results{margin-top:22px}
+.verdict{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 26px;padding:18px 0 14px;border-top:1px solid var(--rule)}
+.verdict h2{font:700 72px/0.85 var(--cond);margin:0;letter-spacing:-1px}
+.verdict.win h2{color:var(--gold)} .verdict.loss h2{color:var(--red)}
+.kpis{display:flex;gap:22px;flex-wrap:wrap}
+.kpi{font-size:14px;color:var(--mute)}
+.kpi b{display:block;font:600 28px/1 var(--cond);color:var(--text)}
+.lede{max-width:70ch;color:var(--text);margin:6px 0 0}
+.chip{font:600 13px/1 var(--body);padding:4px 8px;border-radius:999px;background:var(--deck2);color:var(--even)}
+.chip.w{background:rgba(78,161,223,.16);color:var(--blue)}
+.chip.l{background:rgba(227,91,79,.16);color:var(--red)}
+.panels{display:grid;gap:16px;margin-top:8px}
+@media (min-width:860px){.panels{grid-template-columns:1fr 1fr}}
+.panel{background:var(--deck);border:1px solid var(--rule);border-radius:12px;padding:14px 16px}
+.panel h3{font:600 22px/1.1 var(--cond);margin:0 0 10px}
+.panel.wide{grid-column:1/-1}
+.lr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--rule)}
+.lr:first-of-type{border-top:0;padding-top:0}
+.lr .mu{font:600 18px/1.2 var(--cond)}
+.lr .mu em{font-style:normal;color:var(--mute);font-weight:500}
+.src{font-size:13px;color:var(--mute);margin:10px 0 0}
+.lr .duo{grid-column:1/-1;margin:2px 0 0;font-size:14px;color:var(--text)}
+.lr ul{grid-column:1/-1;margin:2px 0 0;padding-left:18px;color:var(--mute);font-size:14px}
+.comp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.comp h4{margin:0 0 6px;font:600 18px var(--cond)}
+.comp .you h4{color:var(--blue)} .comp .them h4{color:var(--red)}
+.meter{font-size:14px;color:var(--mute);margin:6px 0}
+.bar{height:8px;border-radius:4px;background:var(--deck2);overflow:hidden;display:flex;margin-top:3px}
+.bar i{display:block;height:100%}
+.bar .ad-part{background:#D9925A}.bar .ap-part{background:#8E7CE0}
+.bar .fill{background:var(--even)}
+.warn{font-size:14px;margin:6px 0 0;padding-left:18px;color:var(--mute)}
+.warn li.bad{color:#F0A49C}.warn li.good{color:#9CCBF0}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:7px 0;border-top:1px solid var(--rule);font-size:15px}
+.tl li:first-child{border-top:0}
+.tl time{font:600 16px var(--cond);color:var(--mute)}
+.tl .y{color:var(--blue)}.tl .e{color:var(--red)}
+.gold svg{width:100%;height:150px;display:block}
+.gold p{margin:6px 0 0;font-size:13px;color:var(--mute)}
+.sug{display:grid;gap:8px}
+.sug div{font-size:15px;display:grid;grid-template-columns:76px 1fr;gap:8px;align-items:baseline}
+.sug b{font:600 17px var(--cond);color:var(--mute)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--rule);color:var(--mute);font-size:13px;max-width:80ch}
+footer p{margin:6px 0}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--deck2);border:1px solid var(--rule);padding:10px 16px;border-radius:10px;font-size:15px;max-width:min(92vw,520px);z-index:9}
+.toast textarea{width:100%;margin-top:8px;background:var(--ink);color:var(--text);border:1px solid var(--rule);border-radius:6px;padding:6px;font-size:13px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:520px){
+  .mark{font-size:34px}
+  .sides{grid-template-columns:1fr 1fr}
+  .sides span:empty{display:none}
+  .row{grid-template-columns:1fr 1fr;gap:4px 6px;margin-bottom:10px}
+  .row .lane{grid-column:1/-1;grid-row:1;display:flex;align-items:center;justify-content:center;gap:8px}
+  .row .lane .chip{display:inline-block;margin:0}
+  .lane .short{display:none!important}
+  .lane .full{position:static!important;width:auto!important;height:auto!important;clip:auto!important}
+  .slot{padding:6px 7px;gap:7px;min-height:56px}
+  .slot > span:not(.pt):not(.lockpill){flex:1;min-width:0}
+  .pt{--s:38px}.plus{width:38px;height:38px}
+  .slot .nm{font-size:17px}
+  .slot .sub{font-size:12px}
+  .lockpill{display:none}
+  .lane{font-size:14px}
+  .lane .full{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .lane .short{display:inline}
+  .lane .chip{font-size:11px;padding:3px 6px}
+  .verdict h2{font-size:58px}
+  .comp{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 class="mark">LeagueSim</h1>
+      <p class="tag">The enemy team is locked in. Each of your lanes rolls a random champion: lock one in and the rest reroll, until your whole team is set.</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Game mode">
+        <button type="button" data-mode="daily">Daily</button>
+        <button type="button" data-mode="unlimited">Unlimited</button>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </header>
+
+  <div class="ad" id="ad-top" hidden></div>
+
+  <main>
+    <section class="draft" id="draft"></section>
+    <section class="results" id="results"></section>
+    <div class="sr" id="live" aria-live="polite"></div>
+  </main>
+
+  <div class="ad" id="ad-bottom" hidden></div>
+
+  <footer>
+    <p>LeagueSim was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
+    <p>Lane matchups use real ranked win rates from LoLalytics (patch 26.22, Emerald+ solo queue) where there are enough games. Lane tiers follow public patch 26.22 tier lists; "niche" champions are playable in a lane but weren't ranked there. Team comps, duo fit and the play-by-play are a simplified model, so treat results as for fun, not as coaching.</p>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   SETTINGS - edit these
+   ============================================================ */
+const CONFIG = {
+  // Google AdSense. Leave blank until your site is approved; ad boxes stay hidden while blank.
+  adsenseClient: "",            // e.g. "ca-pub-1234567890123456"
+  adSlots: { top: "", results: "", bottom: "" },   // ad unit slot IDs from AdSense
+  siteUrl: "lolgalaxy.com/leagueSim",
+  launchDate: "2026-11-11",     // Daily #1
+  fallbackDdragonVersion: "16.22.1"
+};
+
+/* ============================================================
+   DATA
+   name | class | damage (P physical, M magic, X mixed) | engage | cc | frontline | poke | peel | scaling (e early, m mid, l late)
+   classes: jug juggernaut, div diver, skr skirmisher, ass assassin, bmg battlemage, bur burst mage,
+            con control mage, art artillery mage, mrk marksman, enc enchanter, cat catcher,
+            van vanguard tank, war warden, spc specialist
+   ============================================================ */
+const RAW = `
+Aatrox|jug|P|2|2|2|1|0|m
+Ahri|bur|M|2|2|0|1|0|m
+Akali|ass|M|1|0|0|0|0|m
+Akshan|ass|P|0|0|0|1|0|m
+Alistar|van|M|3|3|3|0|3|e
+Ambessa|div|P|2|1|2|0|0|m
+Amumu|van|M|3|3|3|0|1|m
+Anivia|con|M|0|3|0|2|1|l
+Annie|bur|M|2|3|0|0|1|m
+Aphelios|mrk|P|0|1|0|1|0|l
+Ashe|mrk|P|2|3|0|2|1|m
+Aurelion Sol|bmg|M|0|2|0|2|0|l
+Aurora|bur|M|1|2|0|1|1|m
+Azir|con|M|1|2|0|2|2|l
+Bard|cat|M|2|3|0|1|2|m
+Bel'Veth|skr|P|1|1|1|0|0|l
+Blitzcrank|cat|M|2|3|1|0|1|e
+Brand|bmg|M|0|1|0|3|0|m
+Braum|war|M|1|3|3|0|3|e
+Briar|div|P|2|1|1|0|0|e
+Caitlyn|mrk|P|0|1|0|3|1|e
+Camille|div|P|2|2|1|0|0|m
+Cassiopeia|bmg|M|0|2|0|1|1|l
+Cho'Gath|jug|M|1|3|3|0|1|l
+Corki|mrk|X|0|0|0|3|0|m
+Darius|jug|P|1|2|2|0|0|e
+Diana|div|M|3|2|1|0|0|m
+Dr. Mundo|jug|P|1|1|3|1|0|l
+Draven|mrk|P|1|1|0|1|0|e
+Ekko|ass|M|1|2|0|0|0|m
+Elise|ass|M|2|2|0|0|0|e
+Evelynn|ass|M|1|1|0|0|0|m
+Ezreal|mrk|P|0|0|0|3|0|m
+Fiddlesticks|spc|M|3|3|0|0|0|m
+Fiora|skr|P|0|1|0|0|0|l
+Fizz|ass|M|1|1|0|0|0|m
+Galio|war|M|3|3|2|0|2|m
+Gangplank|spc|P|0|1|0|3|0|l
+Garen|jug|P|1|1|2|0|0|m
+Gnar|spc|P|2|2|2|1|1|m
+Gragas|van|M|3|3|2|1|2|m
+Graves|skr|P|0|1|1|0|0|m
+Gwen|skr|M|1|0|1|0|0|l
+Hecarim|div|P|3|2|2|0|0|m
+Heimerdinger|spc|M|0|1|0|2|1|m
+Hwei|art|M|0|2|0|3|1|m
+Illaoi|jug|P|0|1|2|0|0|m
+Irelia|div|P|2|2|1|0|0|m
+Ivern|enc|M|1|2|0|0|3|m
+Janna|enc|M|0|3|0|0|3|m
+Jarvan IV|div|P|3|3|2|0|1|e
+Jax|skr|P|1|1|1|0|0|l
+Jayce|art|P|0|1|0|3|0|e
+Jhin|mrk|P|0|2|0|2|0|m
+Jinx|mrk|P|0|1|0|1|0|l
+Kai'Sa|mrk|X|1|0|0|0|0|l
+Kalista|mrk|P|1|2|0|0|1|e
+Karma|enc|M|0|2|0|2|2|e
+Karthus|bmg|M|0|1|0|2|0|l
+Kassadin|ass|M|1|1|0|0|0|l
+Katarina|ass|M|1|0|0|0|0|m
+Kayle|spc|M|0|1|0|0|2|l
+Kayn|skr|P|1|1|1|0|0|m
+Kennen|bmg|M|3|3|0|1|0|m
+Kha'Zix|ass|P|0|1|0|0|0|m
+Kindred|mrk|P|0|1|0|1|1|l
+Kled|div|P|3|2|1|0|0|e
+Kog'Maw|mrk|X|0|1|0|1|0|l
+K'Sante|van|P|2|3|3|0|2|m
+LeBlanc|ass|M|1|2|0|1|0|m
+Lee Sin|div|P|2|2|1|0|1|e
+Leona|van|M|3|3|3|0|1|e
+Lillia|spc|M|1|2|0|1|0|m
+Lissandra|con|M|3|3|1|0|2|m
+Locke|ass|P|1|1|0|0|0|m
+Lucian|mrk|P|0|0|0|1|0|e
+Lulu|enc|M|0|2|0|1|3|m
+Lux|art|M|0|2|0|3|2|m
+Malphite|van|M|3|3|3|1|1|m
+Malzahar|con|M|1|3|0|1|1|m
+Maokai|van|M|3|3|3|0|2|m
+Master Yi|skr|P|0|0|0|0|0|l
+Mel|art|M|0|2|0|2|2|m
+Milio|enc|M|0|1|0|0|3|m
+Miss Fortune|mrk|P|1|1|0|2|0|m
+Mordekaiser|jug|M|1|1|2|0|0|m
+Morgana|cat|M|1|3|0|1|3|m
+Naafiri|ass|P|1|0|0|1|0|e
+Nami|enc|M|1|3|0|1|3|m
+Nasus|jug|P|0|1|2|0|0|l
+Nautilus|van|M|3|3|3|0|2|e
+Neeko|bur|M|3|3|0|1|1|m
+Nidalee|ass|M|0|0|0|3|0|e
+Nilah|skr|P|2|1|0|0|0|l
+Nocturne|ass|P|2|1|1|0|0|m
+Nunu & Willump|van|M|3|3|2|0|1|e
+Olaf|div|P|1|1|2|0|0|e
+Orianna|con|M|2|3|0|1|2|l
+Ornn|van|M|3|3|3|0|2|l
+Pantheon|div|P|2|2|1|1|1|e
+Poppy|war|P|2|3|2|0|3|m
+Pyke|cat|P|3|3|0|0|0|e
+Qiyana|ass|P|2|2|0|0|0|m
+Quinn|mrk|P|0|1|0|1|0|e
+Rakan|cat|M|3|3|1|0|2|m
+Rammus|van|M|3|3|3|0|1|m
+Rek'Sai|div|P|2|2|1|0|0|e
+Rell|van|M|3|3|3|0|2|m
+Renata Glasc|enc|M|0|2|0|1|3|m
+Renekton|div|P|2|2|2|0|0|e
+Rengar|ass|P|1|1|0|0|0|m
+Riven|skr|P|2|2|1|0|0|m
+Rumble|bmg|M|2|2|1|1|0|m
+Ryze|bmg|M|1|1|0|1|0|l
+Samira|mrk|P|2|1|0|0|0|m
+Sejuani|van|M|3|3|3|0|1|m
+Senna|enc|P|0|2|0|3|2|l
+Seraphine|enc|M|1|3|0|2|2|m
+Sett|jug|P|2|2|2|0|1|m
+Shaco|ass|P|0|1|0|0|0|e
+Shen|war|P|3|2|3|0|3|m
+Shyvana|jug|X|2|1|2|0|0|l
+Singed|spc|M|1|2|2|0|1|m
+Sion|van|P|3|3|3|0|1|l
+Sivir|mrk|P|0|0|0|1|1|l
+Skarner|van|P|3|3|3|0|2|m
+Smolder|mrk|P|0|0|0|2|0|l
+Sona|enc|M|1|2|0|2|3|l
+Soraka|enc|M|0|2|0|2|3|m
+Swain|bmg|M|1|2|2|1|1|m
+Sylas|bmg|M|2|2|1|0|0|m
+Syndra|bur|M|1|2|0|2|1|m
+Tahm Kench|war|M|1|2|3|0|3|m
+Taliyah|con|M|1|2|0|2|1|m
+Talon|ass|P|1|0|0|0|0|e
+Taric|war|M|1|3|2|0|3|m
+Teemo|spc|M|0|1|0|2|0|m
+Thresh|cat|M|3|3|1|0|3|m
+Tristana|mrk|P|1|1|0|0|0|l
+Trundle|jug|P|1|1|2|0|0|m
+Tryndamere|skr|P|0|1|0|0|0|l
+Twisted Fate|bur|M|2|2|0|1|0|m
+Twitch|mrk|P|0|1|0|1|0|l
+Udyr|jug|X|2|2|2|0|0|m
+Urgot|jug|P|1|2|2|0|0|m
+Varus|mrk|P|1|2|0|3|0|m
+Vayne|mrk|P|0|1|0|0|0|l
+Veigar|bur|M|1|3|0|1|1|l
+Vel'Koz|art|M|0|2|0|3|1|m
+Vex|bur|M|2|2|0|1|1|m
+Vi|div|P|3|3|1|0|0|e
+Viego|skr|P|1|1|1|0|0|m
+Viktor|con|M|0|2|0|2|1|l
+Vladimir|bmg|M|1|0|0|0|0|l
+Volibear|jug|X|2|2|2|0|0|e
+Warwick|div|P|2|2|2|0|0|e
+Wukong|div|P|3|2|2|0|0|m
+Xayah|mrk|P|0|2|0|1|0|m
+Xerath|art|M|0|2|0|3|0|m
+Xin Zhao|div|P|2|2|1|0|0|e
+Yasuo|skr|P|1|2|0|0|0|l
+Yone|skr|X|2|2|0|0|0|l
+Yorick|spc|P|0|1|1|0|0|l
+Yunara|mrk|P|0|0|0|1|0|l
+Yuumi|enc|M|0|1|0|1|3|l
+Zaahen|jug|P|2|2|2|0|0|m
+Zac|van|M|3|3|3|0|1|m
+Zed|ass|P|1|0|0|1|0|m
+Zeri|mrk|P|0|0|0|0|0|l
+Ziggs|art|M|0|1|0|3|0|m
+Zilean|enc|M|0|2|0|1|3|m
+Zoe|bur|M|0|2|0|3|0|m
+Zyra|art|M|1|3|0|3|1|m
+`;
+// Newest champions: class/damage are estimates and get replaced by Riot's own tags when Data Dragon loads.
+const ESTIMATED = new Set(["Locke","Zaahen"]);
+
+// Lane tiers (patch 26.22). "U" = niche: played in that lane but not ranked there.
+const TIERS = {
+  top: {
+    "S+":"Darius,Sett",
+    "S":"Aatrox,Garen,Malphite,Mordekaiser,Renekton,Shen,Teemo,Yone",
+    "A":"Camille,Dr. Mundo,Fiora,Gangplank,Illaoi,Irelia,Jax,Jayce,Nasus,Ornn,Pantheon,Singed,Sion,Volibear,Yasuo,Yorick,Zaahen",
+    "B":"Akali,Ambessa,Cho'Gath,Gnar,Gragas,Gwen,Heimerdinger,K'Sante,Kayle,Kennen,Kled,Olaf,Quinn,Riven,Tryndamere,Urgot",
+    "C":"Tahm Kench",
+    "U":"Rumble,Vayne,Trundle,Wukong,Poppy,Vladimir"
+  },
+  jungle: {
+    "S+":"Kayn,Lee Sin,Master Yi,Viego,Warwick",
+    "S":"Briar,Cho'Gath,Ekko,Graves,Hecarim,Jarvan IV,Kha'Zix,Lillia,Naafiri,Shaco,Shyvana,Sylas,Talon,Vi,Wukong",
+    "A":"Amumu,Bel'Veth,Darius,Diana,Elise,Evelynn,Fiddlesticks,Kindred,Nidalee,Nocturne,Nunu & Willump,Qiyana,Rammus,Rengar,Sejuani,Taliyah,Udyr,Xin Zhao,Zac,Zyra",
+    "B":"Aatrox,Ivern,Jax,Jayce,Karthus,Malphite,Maokai,Rek'Sai,Teemo,Trundle,Volibear,Zed",
+    "U":"Gragas,Skarner,Poppy,Gwen,Brand"
+  },
+  mid: {
+    "S+":"Ahri",
+    "S":"Akali,Ekko,Fizz,Katarina,Lissandra,Locke,Lux,Malzahar,Sylas,Syndra,Veigar,Viktor,Vladimir,Yasuo,Yone,Zed",
+    "A":"Akshan,Anivia,Annie,Aurora,Diana,Galio,Hwei,Irelia,Kassadin,LeBlanc,Orianna,Taliyah,Twisted Fate,Vex,Xerath,Zoe",
+    "B":"Aurelion Sol,Azir,Brand,Cassiopeia,Malphite,Mel,Naafiri,Qiyana,Ryze,Sion,Swain,Talon,Vel'Koz",
+    "U":"Neeko,Ziggs,Corki"
+  },
+  adc: {
+    "S+":"Jhin",
+    "S":"Jinx,Kai'Sa,Xayah",
+    "A":"Aurelion Sol,Caitlyn,Miss Fortune,Smolder,Tristana,Yasuo,Yunara",
+    "B":"Aphelios,Ashe,Ezreal,Kog'Maw,Lucian,Samira,Sivir,Swain,Twitch,Varus,Vayne,Vel'Koz,Zeri",
+    "D":"Hwei",
+    "U":"Draven,Kalista,Nilah,Ziggs,Corki"
+  },
+  support: {
+    "S+":"Leona,Thresh",
+    "S":"Alistar,Blitzcrank,Janna,Lulu,Lux,Nami,Nautilus,Pyke,Rakan,Rell,Senna,Seraphine",
+    "A":"Braum,Karma,Milio,Morgana,Poppy,Sona,Soraka,Vel'Koz,Xerath,Yuumi,Zilean,Zyra",
+    "B":"Bard,Brand,Galio,Maokai,Neeko,Pantheon,Renata Glasc,Shaco,Swain,Tahm Kench,Taric",
+    "U":"Ashe,Hwei"
+  }
+};
+const TIER_SCORE = {"S+":10,"S":8.5,"A":7,"B":5.5,"U":4.5,"C":4,"D":2.5,"off":2};
+const TIER_LABEL = {"S+":"S+","S":"S","A":"A","B":"B","C":"C","D":"D","U":"niche","off":"off-role"};
+const ENEMY_WEIGHT = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
+
+const ROLES = [
+  {key:"top", label:"Top"},
+  {key:"jungle", label:"Jungle"},
+  {key:"mid", label:"Mid"},
+  {key:"adc", label:"Bot"},
+  {key:"support", label:"Support"}
+];
+const SHORT = {top:"Top", jungle:"Jg", mid:"Mid", adc:"Bot", support:"Sup"};
+const LANE_WORD ={top:"top lane", jungle:"the jungle", mid:"mid lane", adc:"bot lane", support:"bot lane"};
+
+const CLASS_NAME = {jug:"Juggernaut",div:"Diver",skr:"Skirmisher",ass:"Assassin",bmg:"Battlemage",bur:"Burst mage",
+  con:"Control mage",art:"Artillery mage",mrk:"Marksman",enc:"Enchanter",cat:"Catcher",van:"Vanguard tank",war:"Warden",spc:"Specialist"};
+
+// How much class A tends to beat class B head to head (net = A over B minus B over A).
+const CLASS_EDGE = {
+  ass:{art:2,mrk:1.5,enc:1.5,bur:0.7,bmg:0.5},
+  div:{mrk:1.5,art:1.5,bur:0.7,enc:1},
+  jug:{van:1,war:0.5,skr:0.3},
+  skr:{van:1.5,jug:0.8,war:1,ass:0.5},
+  van:{ass:1.2,div:0.4,enc:1,mrk:0.6},
+  war:{ass:1.5,div:1,cat:1},
+  con:{ass:1.3,div:1,skr:0.5},
+  bmg:{jug:0.6,div:0.5,van:0.5},
+  bur:{art:0.6,enc:0.5},
+  art:{jug:1.5,van:1,war:0.6,con:0.4},
+  mrk:{jug:1.2,van:0.5,war:0.3},
+  enc:{art:0.4},
+  cat:{enc:1.2,mrk:0.8,art:0.6},
+  spc:{jug:0.8,skr:0.3}
+};
+const CLASS_WHY = {
+  ass:"can burst squishy targets before they react", div:"jumps onto backliners who can't escape",
+  jug:"out-sustains and out-trades in extended fights", skr:"shreds tanky targets in long duels",
+  van:"is too durable for burst to kill", war:"shuts down divers and assassins",
+  con:"locks down champions who need to get close", bmg:"wins drawn-out close-range trades",
+  bur:"punishes champions with no escapes", art:"pokes immobile melee champions from range",
+  mrk:"kites melee champions", enc:"keeps up through poke", cat:"picks off champions without escapes",
+  spc:"has an awkward kit for this opponent to deal with"
+};
+const PAIR_WHY = {
+  "van>enc":"can dive onto enchanters who can't stop the engage", "van>mrk":"can lock down immobile marksmen",
+  "war>cat":"protects allies from hooks and picks", "skr>ass":"outlasts assassins in a long duel",
+  "con>skr":"keeps melee duelists from ever reaching them", "art>con":"outranges and wears them down",
+  "enc>art":"heals and shields through the poke", "bur>enc":"bursts down squishy enchanters",
+  "cat>mrk":"catches immobile marksmen", "cat>art":"catches immobile mages", "cat>enc":"lands picks on squishy enchanters",
+  "mrk>van":"keeps hitting the tank from safety", "art>van":"pokes the tank down before it can engage",
+  "art>war":"pokes from outside its range", "bmg>van":"deals sustained damage that tanks can't ignore"
+};
+
+// Well-known counters [winner, loser, role]
+const COUNTERS = [
+  ["Malphite","Yasuo","top"],["Malphite","Tryndamere","top"],["Malphite","Yone","top"],["Malphite","Riven","top"],
+  ["Teemo","Darius","top"],["Vayne","Cho'Gath","top"],["Vayne","Sion","top"],["Fiora","Ornn","top"],
+  ["Renekton","Vayne","top"],["Renekton","Kayle","top"],["Darius","Nasus","top"],["Quinn","Nasus","top"],
+  ["Quinn","Darius","top"],["Pantheon","Kayle","top"],["Poppy","Camille","top"],["Poppy","Irelia","top"],
+  ["Rammus","Master Yi","jungle"],["Jax","Master Yi","jungle"],["Lee Sin","Karthus","jungle"],
+  ["Pantheon","Kassadin","mid"],["Talon","Kassadin","mid"],["Zed","Kassadin","mid"],["Malzahar","Yasuo","mid"],
+  ["Malzahar","Katarina","mid"],["Lissandra","Akali","mid"],["Lissandra","Katarina","mid"],["Lissandra","Fizz","mid"],
+  ["Fizz","Syndra","mid"],["Fizz","Xerath","mid"],["Fizz","Vel'Koz","mid"],["Fizz","Lux","mid"],["Kassadin","Syndra","mid"],
+  ["Galio","LeBlanc","mid"],["Galio","Katarina","mid"],["Zed","Xerath","mid"],["Zed","Vel'Koz","mid"],["Zed","Lux","mid"],
+  ["Caitlyn","Kog'Maw","adc"],["Caitlyn","Vayne","adc"],["Draven","Vayne","adc"],["Lucian","Jinx","adc"],
+  ["Morgana","Blitzcrank","support"],["Morgana","Thresh","support"],["Morgana","Pyke","support"],
+  ["Morgana","Nautilus","support"],["Morgana","Leona","support"],["Blitzcrank","Soraka","support"],["Blitzcrank","Sona","support"]
+];
+
+// Team synergies [champions A, partners B, description, value]
+const SYNERGIES = [
+  [["Yasuo","Yone"],["Malphite","Gragas","Alistar","Rakan","Wukong","Rell","Nautilus","Ornn","Jarvan IV","Vi","Janna","Lee Sin","Zac","Poppy"],"{b}'s knock-ups set up {a}'s ultimate",1.0],
+  [["Orianna"],["Jarvan IV","Malphite","Wukong","Rell","Hecarim","Zac","Rakan","Vi","Nocturne","Sejuani","Amumu"],"{b} delivers Orianna's ball into fights",0.9],
+  [["Miss Fortune"],["Amumu","Leona","Sejuani","Jarvan IV","Rell","Orianna","Malphite","Galio"],"{b} holds enemies still for Miss Fortune's ultimate",0.8],
+];
+
+/* ---------- Bot lane duo ----------
+   The marksman and support are scored together as one 2v2 lane:
+   how well each pair fits, how the two pairs' lane styles interact,
+   and the cross matchups (your support vs their marksman, theirs vs yours). */
+const ADC_TYPE = {
+  allin:   ["Draven","Lucian","Samira","Kalista","Nilah","Tristana","Swain","Yasuo"],
+  hyper:   ["Jinx","Kog'Maw","Twitch","Aphelios","Vayne","Zeri","Kai'Sa","Smolder","Yunara","Sivir"],
+  poke:    ["Ezreal","Varus","Caitlyn","Corki","Ziggs","Hwei","Vel'Koz","Aurelion Sol"],
+  utility: ["Ashe","Jhin","Miss Fortune","Xayah"]
+};
+const SUP_TYPE = {
+  engage:    ["Leona","Nautilus","Alistar","Rell","Thresh","Rakan","Pyke","Blitzcrank","Maokai","Bard","Neeko","Pantheon"],
+  enchanter: ["Janna","Lulu","Nami","Milio","Soraka","Sona","Yuumi","Renata Glasc","Karma","Seraphine","Zilean"],
+  poke:      ["Lux","Xerath","Vel'Koz","Brand","Zyra","Swain","Hwei","Senna","Morgana","Shaco","Ashe"],
+  warden:    ["Braum","Tahm Kench","Taric","Poppy","Galio","Shen"]
+};
+const ADC_WORD = {allin:"all-in marksman", hyper:"late-game hypercarry", poke:"poke marksman", utility:"utility marksman"};
+const SUP_WORD = {engage:"engage support", enchanter:"enchanter", poke:"poke support", warden:"protective tank support"};
+// How well each marksman type pairs with each support type
+const DUO_FIT = {
+  allin:   {engage:1.0,  enchanter:0.4, poke:-0.3, warden:0.3},
+  hyper:   {engage:0.2,  enchanter:1.0, poke:-0.4, warden:0.6},
+  poke:    {engage:-0.1, enchanter:0.4, poke:0.8,  warden:0.1},
+  utility: {engage:0.6,  enchanter:0.3, poke:0.4,  warden:0.2}
+};
+const DUO_FIT_WHY = {
+  "allin+engage":"{s} starts the fights that {a} wants to all-in",
+  "hyper+enchanter":"{s} keeps {a} alive while they scale",
+  "hyper+warden":"{s} body-blocks and peels so {a} can keep shooting",
+  "poke+poke":"two poke champions whittle the enemy down from range",
+  "utility+engage":"{a}'s crowd control chains off {s}'s engage",
+  "allin+poke":"{s} can't start the all-ins {a} is built for",
+  "hyper+poke":"{a} needs protection that {s} doesn't give",
+  "poke+engage":"{s} wants to dive while {a} wants to stay back and poke"
+};
+// Well-known bot pairings, on top of the type fit
+const DUO_PAIRS = [
+  ["Xayah","Rakan","Xayah and Rakan's kits are built to play together",0.8],
+  ["Lucian","Nami","Nami's empowered attacks fuel Lucian's double shots",0.6],
+  ["Lucian","Braum","Braum's passive procs fast off Lucian's attacks",0.6],
+  ["Lucian","Milio","Milio's range and buffs suit Lucian's short trades",0.5],
+  ["Twitch","Yuumi","Twitch and Yuumi can sneak up for surprise fights",0.5],
+  ["Kog'Maw","Lulu","Lulu turns Kog'Maw into an unkillable turret",0.6],
+  ["Caitlyn","Lux","Lux's root lines up Caitlyn's traps",0.5],
+  ["Caitlyn","Morgana","Morgana's root lines up Caitlyn's traps",0.5],
+  ["Caitlyn","Zyra","Zyra's root lines up Caitlyn's traps",0.5],
+  ["Samira","Nautilus","Nautilus's knock-ups fill Samira's style meter",0.6],
+  ["Samira","Rell","Rell gathers enemies into Samira's ultimate",0.6],
+  ["Draven","Thresh","Thresh's hook sets up Draven's axes",0.5],
+  ["Miss Fortune","Leona","Leona's ultimate holds enemies in Miss Fortune's ultimate",0.6],
+  ["Ezreal","Karma","Karma's speed and shields suit Ezreal's poke",0.4],
+  ["Yasuo","Alistar","Alistar's knock-up sets up Yasuo's ultimate",0.6],
+  ["Yasuo","Rakan","Rakan's knock-up sets up Yasuo's ultimate",0.6],
+  ["Yasuo","Nautilus","Nautilus's knock-up sets up Yasuo's ultimate",0.6],
+  ["Yasuo","Rell","Rell's knock-up sets up Yasuo's ultimate",0.6]
+];
+// Laning between two duos: which style bullies which
+const DUO_STYLE_BEATS = {
+  "allin>scale":[0.5,"an all-in duo punishes a scaling duo before it comes online"],
+  "allin>poke":[0.4,"poke champions can't escape a committed all-in"],
+  "poke>scale":[0.4,"poke chips the scaling duo out of lane"]
+};
+const SPLITTERS = new Set(["Fiora","Jax","Tryndamere","Camille","Yorick","Nasus","Gwen","Trundle","Kayle","Riven"]);
+const STYLE_BEATS = {Engage:"Poke", Poke:"Protect", Protect:"Engage", Pick:"Split", Split:"Engage"};
+const STYLE_WHY = {
+  Engage:"hard engage closes the gap before poke can wear them down",
+  Poke:"poke chips the backline down before the protect comp can fight",
+  Protect:"peel and disengage stop the dive cold",
+  Pick:"catches the side-laner alone",
+  Split:"side-lane pressure pulls the teamfight comp apart"
+};
+
+/* ============================================================
+   BUILD TABLES
+   ============================================================ */
+const CHAMPS = {};
+RAW.trim().split("\n").forEach(line => {
+  const [name, cls, dmg, eng, cc, front, poke, peel, scale] = line.split("|");
+  CHAMPS[name] = {name, cls, dmg, eng:+eng, cc:+cc, front:+front, poke:+poke, peel:+peel, scale};
+});
+const ROLE_TIER = {}; const POOL = {};
+for (const role in TIERS) {
+  ROLE_TIER[role] = {}; POOL[role] = [];
+  for (const tier in TIERS[role]) {
+    TIERS[role][tier].split(",").forEach(n => { ROLE_TIER[role][n] = tier; POOL[role].push(n); });
+  }
+}
+const SPECIAL_IDS = {"Wukong":"MonkeyKing","Nunu & Willump":"Nunu","Renata Glasc":"Renata","LeBlanc":"Leblanc",
+  "Kai'Sa":"Kaisa","Cho'Gath":"Chogath","Kha'Zix":"Khazix","Vel'Koz":"Velkoz","Bel'Veth":"Belveth","K'Sante":"KSante"};
+const DD = {version:null, ids:{}};
+function ddId(name){ return DD.ids[name] || SPECIAL_IDS[name] || name.replace(/[^A-Za-z0-9]/g,""); }
+function imgUrl(name){ return `https://ddragon.leagueoflegends.com/cdn/${DD.version||CONFIG.fallbackDdragonVersion}/img/champion/${ddId(name)}.png`; }
+
+async function loadDdragon(){
+  const get = (u) => Promise.race([fetch(u).then(r => { if(!r.ok) throw 0; return r.json(); }),
+                                   new Promise((_,rej) => setTimeout(() => rej(0), 5000))]);
+  try {
+    const versions = await get("https://ddragon.leagueoflegends.com/api/versions.json");
+    DD.version = versions[0];
+    const data = await get(`https://ddragon.leagueoflegends.com/cdn/${DD.version}/data/en_US/champion.json`);
+    const tagClass = {Assassin:"ass",Mage:"bur",Fighter:"div",Tank:"van",Marksman:"mrk",Support:"enc"};
+    Object.values(data.data).forEach(c => {
+      DD.ids[c.name] = c.id;
+      const cls = tagClass[c.tags[0]] || "spc";
+      const dmg = c.info.magic > c.info.attack + 2 ? "M" : (c.info.attack > c.info.magic + 2 ? "P" : "X");
+      if (!CHAMPS[c.name]) {
+        const tank = c.tags.includes("Tank");
+        CHAMPS[c.name] = {name:c.name, cls, dmg, eng:tank?2:1, cc:1, front:tank?2:(c.tags.includes("Fighter")?1:0), poke:0, peel:c.tags.includes("Support")?2:0, scale:"m"};
+      } else if (ESTIMATED.has(c.name)) {
+        CHAMPS[c.name].cls = cls; CHAMPS[c.name].dmg = dmg;
+      }
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hashStr(s){ let h = 2166136261; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h>>>0; }
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; }; }
+function todayStr(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function dailyNumber(){ const a = new Date(CONFIG.launchDate+"T00:00:00"); const b = new Date(todayStr()+"T00:00:00"); return Math.max(1, Math.round((b-a)/864e5)+1); }
+function initials(n){ const w = n.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean); return (w.length>1 ? w[0][0]+w[1][0] : n.slice(0,2)).toUpperCase(); }
+function portrait(name, size){
+  return `<span class="pt" style="--s:${size}px"><b>${esc(initials(name))}</b><img src="${esc(imgUrl(name))}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+const store = {
+  get(k, d){ try { const v = localStorage.getItem("leaguesim:"+k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem("leaguesim:"+k, JSON.stringify(v)); } catch(e){} }
+};
+const fmtTime = m => { const mm = Math.floor(m), ss = Math.round((m-mm)*60); return `${mm}:${String(Math.min(ss,59)).padStart(2,"0")}`; };
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function tierOf(name, role){ return ROLE_TIER[role][name] || "off"; }
+function scaleNum(c){ return c.scale === "e" ? 1 : c.scale === "l" ? -1 : 0; }
+
+// Positive = p favored over e in this lane
+// Lane matchup win rates: LoLalytics, patch 26.22 (some rows 26.21), Emerald+ ranked solo queue.
+// Each entry: champA.champB.edge.games  (indexes and games in base 36; edge = champA's win-rate lead in hundredths of a point)
+const MATCHUP_SOURCE = "LoLalytics, patch 26.22, Emerald+";
+const MATCHUP_NAMES = ["Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Ambessa", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "Aurelion Sol", "Aurora", "Azir", "Bard", "Bel'Veth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn", "Camille", "Cassiopeia", "Cho'Gath", "Corki", "Darius", "Diana", "Dr. Mundo", "Draven", "Ekko", "Elise", "Evelynn", "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Gwen", "Hecarim", "Heimerdinger", "Hwei", "Illaoi", "Irelia", "Ivern", "Janna", "Jarvan IV", "Jax", "Jayce", "Jhin", "Jinx", "K'Sante", "Kai'Sa", "Kalista", "Karma", "Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Kha'Zix", "Kindred", "Kled", "Kog'Maw", "LeBlanc", "Lee Sin", "Leona", "Lillia", "Lissandra", "Locke", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai", "Master Yi", "Mel", "Milio", "Miss Fortune", "Mordekaiser", "Morgana", "Naafiri", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee", "Nilah", "Nocturne", "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn", "Rakan", "Rammus", "Rek'Sai", "Rell", "Renata Glasc", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Smolder", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "Twitch", "Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Vex", "Vi", "Viego", "Viktor", "Vladimir", "Volibear", "Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "Yasuo", "Yone", "Yorick", "Yunara", "Yuumi", "Zaahen", "Zac", "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra"];
+const MATCHUP_DATA = {
+  top: "c.p.638.b4 p.2v.-593.cl p.4c.-327.mx p.2q.-187.1q8 p.3s.-284.1r3 p.r.-178.1q1 p.1s.-200.tw p.1q.-156.15q p.11.-190.25k p.1b.-133.1gf p.49.-122.dg p.26.-147.1zz p.40.-43.zx p.14.-35.wi p.42.-33.u0 p.y.-21.1v6 p.2r.-14.1i8 p.4l.-10.1dz p.1f.-30.2ct p.4a.27.1tw p.3a.-25.3pl p.1g.36.1u2 p.31.48.2jq l.p.-140.1vi 2.p.-106.18v 0.p.-114.30j p.1v.134.r6 n.p.-139.13i p.3e.173.tb p.33.173.z5 p.3c.159.1lx p.2h.181.1ct p.2d.90.2j7 p.4i.206.zr p.2s.230.am p.3v.257.p4 p.18.257.g7 p.3o.270.ti p.34.278.nn p.16.283.ui p.2o.301.12n p.3f.322.1kq p.12.279.3lc p.1a.283.15k 5.p.-357.1l4 p.4h.381.2m6 p.13.424.1ev p.3w.430.143 p.1j.472.1pv p.4g.755.199 3a.4c.-342.d7 3a.3e.-321.om 2s.3a.280.an 33.3a.249.un 1v.3a.227.pw 2r.3a.219.1dg 14.3a.184.qo 26.3a.191.1qk 1q.3a.143.yx r.3a.188.14i 3a.3s.-161.16w 2q.3a.107.1jf 3a.49.-96.cg 3a.3w.-85.w2 1s.3a.82.it 18.3a.51.dn l.3a.30.1f0 31.3a.57.2mt 2d.3a.29.278 0.3a.-45.2hb 11.3a.-9.1lz 1a.3a.60.14t 12.3a.29.2eb 3a.42.49.jm 3a.4l.78.190 3a.40.88.tu 3a.3v.105.mb 3a.3c.142.1hv 1f.3a.-63.1r5 13.3a.-147.1f2 3a.4a.149.1w5 2h.3a.-156.15d 2.3a.-176.11b 3a.3o.179.qf y.3a.-175.1ke 16.3a.-193.ra 5.3a.-223.1bt 3a.3f.240.1a8 1g.3a.-270.197 1j.3a.-240.1d9 2v.3a.-281.77 n.3a.-289.15u c.3a.-295.7a 2o.3a.-309.zl 3a.4i.316.wg 34.3a.-353.i1 3a.4h.336.2eo 1b.3a.-498.1qj 3a.4g.641.zr 0.3e.-523.sk 0.26.-430.2kz 0.33.-348.w9 0.1q.-337.so 0.1s.-269.m9 0.y.-209.20b 0.1b.-234.223 0.3s.-177.1fj 0.18.-196.h2 0.4l.-195.1ga 0.2r.-153.1k6 0.l.-126.1ou 0.14.-92.xb 0.2v.-64.9t 0.2q.7.1ad 0.3w.-47.12c 0.1a.-84.11e 0.3c.-4.196 0.4c.-20.fk 0.16.-19.sy 0.31.46.315 0.42.13.f1 0.12.10.1xx 0.13.17.1h7 0.3f.24.1fy 0.1v.27.ow 0.1g.76.32x 0.40.38.wj 0.2d.10.25b 0.4h.89.3ez 0.11.79.2bi 0.4g.65.15c 0.1f.119.23t 0.2o.77.ys 0.4i.106.106 0.4a.111.1es 0.2s.116.ah 0.3v.131.jd 0.n.171.we 0.5.191.1v3 0.2.231.196 0.2h.266.19p 0.1j.277.1tb 0.3o.283.lh 0.49.315.cs 0.34.319.su 0.r.378.1bv 12.2v.-588.b4 12.1q.-455.1mj l.12.352.2c8 12.40.-266.to y.12.257.1f5 11.12.235.1kp 12.3w.-211.173 12.49.-131.d3 12.2d.-155.2dh 12.13.-55.1cs n.12.10.11b 12.1s.3.ig 12.3v.7.oi 12.26.-68.1v2 12.3c.20.1lx 12.42.29.l1 12.4a.31.1g9 12.3s.16.1be 12.4l.86.197 12.34.88.i9 12.3e.126.y5 12.1b.185.1ao 12.1v.144.ku 12.3o.147.q0 12.3f.188.160 12.31.193.20n 12.2s.205.bp 2.12.-215.16o 12.2r.221.15a 12.1g.260.19y 12.2o.243.10n 12.18.262.dq 12.4c.271.9m 12.14.301.q1 5.12.-348.1f4 12.2q.244.1ej 12.4h.302.26m 12.16.360.uu 12.4i.361.s4 12.1a.353.wa r.12.-416.16f 12.33.480.13j 12.4g.487.10c 12.2h.507.1z5 12.1j.510.1vj 12.1f.571.3r9 26.3f.-583.161 26.3e.-514.en 26.2q.-429.1h1 26.3o.-416.io 26.2h.-359.152 n.26.331.ys r.26.318.1j0 1a.26.338.sq 26.3c.-232.15p 26.2d.-246.2gg 16.26.185.pq 26.2o.-176.l8 26.49.-133.dt 1s.26.48.ja 26.2s.-13.5k l.26.-82.16m 26.4l.13.q1 11.26.-17.1v8 26.34.61.gr 1v.26.-61.d1 2.26.-63.xv 1f.26.-232.1gc 26.31.144.1pm y.26.-359.1kx 26.4a.329.r4 1j.26.-338.qx 14.26.-364.j9 26.2r.372.13r 26.4c.406.6u 1q.26.-413.mo 5.26.-417.16f 26.3s.332.29d 26.4h.400.2o2 13.26.-499.1km 26.33.543.oz 26.40.573.ke 1g.26.-605.49x 1b.26.-657.1dw 26.4i.625.m1 26.3v.702.ja 26.4g.781.10n 26.2v.817.8d 26.3w.947.19a 26.42.1432.i7 2d.2s.-351.b3 2d.3e.-349.me 18.2d.326.ct y.2d.259.1bi 2d.2o.-241.1os 16.2d.196.pk 2.2d.146.xo 2d.4l.-134.12m 2d.40.-115.so 2d.4h.-132.1zp 2d.2r.-95.10u 2d.3w.-76.r9 11.2d.77.1i3 2d.2q.14.1h7 2d.42.-35.hc 14.2d.16.lr 1g.2d.-143.11v 2d.4c.41.86 2d.3c.48.1hh 1q.2d.-59.p0 2d.4a.65.1iy 2d.4i.85.zs n.2d.-87.w6 2d.33.113.l6 2d.3f.118.13z 13.2d.-120.zc 5.2d.-136.14y 1f.2d.-109.1la l.2d.-95.1dh 1v.2d.-166.ka 2d.3s.79.yd 2d.2v.180.5o 2d.2h.182.127 2d.4g.264.r1 1b.2d.-153.zp 2d.31.356.286 1j.2d.-365.1cw 2d.3o.384.pw 1s.2d.-483.gz 2d.34.502.hr r.2d.-472.ye 2d.49.527.9o 2d.3v.614.jo 1a.2d.-682.16w 2s.31.881.an 1a.31.721.18t 2q.31.605.1k9 31.3s.-691.19h r.31.528.1c3 31.3e.-489.kg 13.31.411.1jf 31.42.-406.p4 1v.31.382.ka 1q.31.356.p9 2v.31.350.b5 y.31.295.1dr 31.3c.-304.18k 31.40.-282.oh 2h.31.246.10o 31.3w.-200.q9 l.31.149.21o 1s.31.191.jk n.31.152.qa 2o.31.149.ud 31.3o.-115.kd 1g.31.75.1m7 31.34.-107.mb 2r.31.101.192 14.31.89.qg 31.3f.-19.wq 31.4l.26.18v 1b.31.-84.1hd 16.31.-67.pe 1f.31.-65.1vq 31.4a.153.1dp 31.3v.168.ig 31.4i.199.zp 31.4h.246.3ge 2.31.-234.1ah 31.49.248.bi 31.4c.332.a4 1j.31.-364.1e4 31.33.395.193 5.31.-430.3eq 31.4g.565.1sw 2v.3c.444.4y 3c.3e.-415.i7 3c.42.-404.ae 2s.3c.319.74 3c.4l.-292.ry 18.3c.287.8y 11.3c.259.130 1q.3c.250.so 1v.3c.190.fh 1a.3c.240.mb 3c.3w.-149.ke 13.3c.118.uu 3c.3f.-94.u9 16.3c.57.oz y.3c.-21.u1 33.3c.26.j7 2o.3c.4.nj 3c.3v.3.f2 3c.3s.48.nt r.3c.-9.sy 2r.3c.-51.oo 3c.4g.52.ko 3c.40.176.fk 1g.3c.-300.th n.3c.-197.nj 2q.3c.-287.14q 3c.4h.278.1f2 5.3c.-234.w6 l.3c.-202.zo 3c.3o.251.f3 2.3c.-264.qz 3c.4a.278.tx 2h.3c.-280.rx 1f.3c.-398.16h 1b.3c.-399.ql 3c.4c.432.6b 1s.3c.-461.c9 3c.4i.498.lg 34.3c.-551.el 1j.3c.-558.u2 3c.49.608.9q 14.3c.-627.hr 2q.3s.456.10b 3f.3s.394.17v 2r.3s.294.wz 1b.3s.333.t9 2v.3s.235.7q 3s.49.-227.ls 2o.3s.222.z9 r.3s.260.p6 3s.40.-105.gt 1j.3s.104.ne 14.3s.27.hf 1v.3s.2.ac 33.3s.-11.fy 2.3s.-26.x5 11.3s.-25.111 1s.3s.-49.l0 3s.4h.24.15z 3s.4g.96.ru y.3s.-65.sv 1f.3s.-183.vh 3s.4i.161.of 13.3s.-179.u2 1g.3s.-170.16t 2h.3s.-228.s3 3s.4c.241.5i n.3s.-250.p9 3e.3s.-262.gc 18.3s.-275.as 3o.3s.-284.cr l.3s.-412.tq 16.3s.-383.cz 1q.3s.-397.j3 3s.3w.416.nr 3s.4l.493.ry 34.3s.-565.hy 3s.3v.632.dt 5.3s.-646.wa 3s.4a.664.pd 1a.3s.-534.ib 2s.3s.-837.5a 3s.42.1119.h4 l.4h.214.1lp r.4h.-109.19t y.4h.425.1q2 11.4h.460.24f 1a.4h.-29.v3 1b.4h.393.1rd 1f.4h.352.2zi 1g.4h.-86.2k5 2h.4h.-46.17u 2q.4h.50.1r0 2r.4h.383.1k3 3e.4h.448.rc 3f.4h.-181.1nd 4a.4h.-10.17c 4g.4h.-296.1ot 4h.4i.617.13w 4h.4l.-295.195 2.4h.197.1wr 5.4h.49.1r4 n.4h.-78.zs 13.4h.-111.1bm 14.4h.-75.t8 16.4h.105.q5 18.4h.224.dq 1j.4h.-243.1is 1q.4h.3.xx 1s.4h.252.k9 1v.4h.-55.j4 2o.4h.193.wl 2v.4h.591.8g 33.4h.242.sa 3w.4h.329.10q 40.4h.245.ph 3o.4h.-339.lb 34.4h.-453.q6 42.4h.-213.bu 3v.4h.-133.k7 4c.4h.243.c5 2s.4h.225.b7 49.4h.88.gr l.2v.-828.5n l.4c.-457.73 l.40.-318.iv l.3e.-312.kk l.33.-270.m5 l.1a.-247.po l.2r.-267.w6 l.1v.-241.g3 l.18.-240.78 l.4l.-159.xj l.1q.-149.jk l.16.-122.k4 l.11.-72.1bb l.2s.-74.ci 2.l.68.t6 l.4a.-48.rv l.n.-36.kr l.2h.-32.qf l.2q.104.17x l.1f.36.1pl l.y.92.1hh l.49.5.93 l.1b.109.we l.34.48.dt l.14.84.il l.4i.93.ga l.13.105.xp l.42.108.76 l.1s.120.bs l.3f.128.r7 l.r.201.m9 l.3v.200.bv l.3w.223.mc l.3o.266.cy l.1g.359.1h4 l.2o.338.v2 5.l.-438.1dg l.4g.544.l1 l.1j.558.y3 r.1b.-681.ku r.16.-599.um r.33.-510.97 r.1a.-597.j1 r.y.-381.p4 r.3w.-367.ca r.3e.-329.cl r.2o.-324.ep r.3v.-272.f8 r.13.-265.j4 r.2s.-245.53 r.4l.-188.gz r.1v.-180.8d r.1j.-99.he r.3o.-73.av r.42.-53.a2 5.r.39.lb r.1q.-33.ey r.34.-6.8u r.4i.5.d8 r.2h.23.nw r.18.63.7z r.14.74.ft r.4g.86.dz r.1s.123.ek r.2q.167.x8 r.40.169.ck r.11.135.zd r.49.232.6c r.2r.303.q8 r.4a.313.ja r.1g.546.11t r.3f.455.qb n.r.-512.l0 2.r.-608.mj r.1f.591.102 y.18.-780.b1 y.4c.-446.dq y.2v.-401.59 y.40.-367.nt y.1q.-222.pp y.3o.-172.g3 y.1s.-163.ig y.3w.-134.su y.11.-20.193 y.4a.-69.y1 y.2h.-41.q5 y.3e.-32.j4 y.4l.-22.ze y.1a.-11.lz y.42.47.9x y.1f.75.1n7 y.2s.93.85 y.13.103.vc 2.y.-110.wm y.1g.168.187 y.33.142.o5 y.3v.145.g8 y.2r.170.uf y.49.206.ax y.2q.217.15j y.3f.251.x7 y.16.268.m9 n.y.-289.p8 y.2o.312.sd 5.y.-326.14n y.4g.334.st y.34.338.f9 y.1b.424.163 y.14.406.k9 y.1j.485.139 y.1v.524.he y.4i.599.mm 11.3f.-521.1o7 11.1q.-479.xv 11.16.-275.ts 11.2q.-246.14h 11.2v.-177.9x 11.1b.-111.1ws 11.14.-142.qu 11.2o.-120.16d 11.3o.-120.jc 11.40.-102.my 11.3w.-71.136 11.3v.-25.g4 n.11.23.tu 11.1v.15.o5 11.4l.32.109 11.1j.45.18n 11.1s.102.iu 11.49.135.j5 11.33.136.ts 11.4i.201.yp 11.4a.228.xr 11.2h.251.v7 11.2r.317.11m 11.1f.296.1mu 11.3e.332.nb 11.1g.350.1zj 11.13.345.164 11.4c.359.a4 11.2s.374.8a 11.31.428.1hv 5.11.-441.1aw 11.42.507.9y 11.18.515.av 11.34.546.ly 11.1a.486.o2 11.4g.588.xh 2.11.-688.11k 1a.1s.-778.8d 1a.1q.-575.j7 1a.4g.-392.ek 16.1a.343.en 1a.42.-314.8b 1a.3e.-272.a8 1a.4i.-227.he 18.1a.182.7d n.1a.182.ey 1a.3w.-172.ez 1a.2r.-163.i2 1a.49.-97.48 1a.1v.-96.ab 1a.3f.-10.jy 13.1a.-59.i5 1a.3v.59.a0 1a.40.120.f7 1a.2q.77.oe 1a.34.137.8c 14.1a.-145.bq 1a.4l.151.jg 1a.1g.64.kw 5.1a.-282.o1 1a.4a.294.rn 1a.3o.315.ar 1a.1f.350.w0 1a.1b.513.iy 1a.1j.498.rj 1a.33.524.er 2.1a.-538.eo 1a.2h.596.pm 1a.4c.731.47 1b.2s.-1058.5a 1b.3o.-576.8f 1b.1f.-522.1et 1b.3v.-525.b5 1b.4c.-524.5e 1b.4l.-433.mm 1b.4a.-354.mj 1b.2h.-332.d4 1b.1v.-180.7z 1b.3w.-173.dr 1b.33.-130.cj 1b.40.-104.9e 16.1b.54.8x 1b.4g.-34.jc 18.1b.14.8f 1b.3f.18.el 1b.2o.32.c3 1b.2q.13.q9 1b.1s.131.bt 1b.3e.141.bf 1b.1j.175.ih 1b.2r.224.ib 2.1b.-226.pd 1b.1q.266.hi 14.1b.-271.aw n.1b.-297.cz 5.1b.-421.oa 1b.1g.523.2gw 13.1b.-479.tn 1b.4i.551.l7 1b.2v.620.4m 1b.49.662.89 1b.34.678.c8 1b.42.690.61 1f.2s.-858.ae 1f.3e.-657.gl 1f.2v.-562.5x 1f.40.-499.gk n.1f.459.j9 1f.1v.-428.g9 1f.49.-427.fs 1f.1s.-383.kt 18.1f.318.83 1f.2q.-238.zb 1f.4c.-223.6x 1f.1q.-212.mq 1f.3f.-199.nc 2.1f.143.yh 1f.2o.-141.18d 1f.1g.-22.1nf 1f.2r.-101.xr 13.1f.92.pb 5.1f.53.wu 1f.4l.-37.10b 1f.33.-34.i9 1f.2h.-27.lf 1f.3w.46.xv 14.1f.-56.12n 1f.1j.126.xm 16.1f.-171.jy 1f.34.201.ei 1f.42.204.62 1f.4i.205.oj 1f.3o.220.a6 1f.4g.280.t5 1f.3v.575.k5 1f.4a.762.1af 1g.4c.-776.it 1g.2s.-624.bg 1g.3o.-568.fs 1g.2r.-559.1fl 1g.3f.-548.1dd n.1g.505.qd 1g.4i.-481.16u 1g.1v.-441.hh 1g.4l.-418.uk 1g.40.-416.n2 1g.2q.-339.1cb 1g.2h.-344.xq 1g.2o.-334.1a7 1g.1q.-319.le 14.1g.279.102 1g.3e.-248.ep 1g.33.-232.m5 1g.3w.-225.xp 1g.2v.-175.bl 1g.49.-100.dc 1g.4g.-68.17y 5.1g.65.1mb 2.1g.19.17h 13.1g.11.1jn 1g.1s.7.ok 18.1g.-8.al 1g.34.32.rr 1g.3v.43.bh 16.1g.-99.i2 1g.1j.170.1zf 1g.4a.328.pg 1g.42.329.cp 2q.3e.-534.gv 2o.2q.221.q7 1q.2q.206.wc 16.2q.202.174 5.2q.83.yk 2q.3v.-79.lh 2q.4g.-78.jo 1v.2q.73.dx 2q.3f.11.v3 2q.4l.38.v5 2h.2q.-58.tj 2q.4a.79.wp 1s.2q.-104.ci 2q.3w.110.jc 2q.33.112.gn 2q.2s.162.8z 2q.2r.166.rh 2q.4c.180.5o 2.2q.-236.r6 2q.2v.242.66 2q.42.262.ep 2q.40.297.jc 2q.49.329.8r 2q.4i.341.mv 2q.34.343.k1 n.2q.-409.qh 1j.2q.-410.vr 13.2q.-427.10q 14.2q.-497.jl 2q.3o.535.gq 18.2q.-571.85",
+  adc: "1i.44.-982.er 19.1i.659.fo 1i.3l.-354.i5 1i.3y.-280.403 1i.2l.-68.lx b.1i.47.fj 1i.4o.-46.314 1i.3g.-10.2xm s.1i.-1.2il 1i.1w.5.1pa 1i.4g.30.151 1i.3u.-4.432 1h.1i.-41.cmd 1i.4p.89.o8 1i.4d.64.5bj 1i.41.94.20g 1i.3i.86.5g5 9.1i.-113.5b3 a.1i.-237.4bl 1i.2c.7.5lc o.1i.-222.22p 1i.23.247.5eg 1i.42.257.28z 1i.1k.254.gw9 1i.4j.157.9ua 1i.1l.315.2p2 k.1i.-272.mxi w.1i.-388.8uw 1i.36.432.28a b.1h.444.qq 1h.4g.-367.20r 1h.44.-325.uu 1h.1w.-277.288 1h.4o.-269.4ds 1h.3l.-267.w2 1h.2l.-238.xc 19.1h.168.td 1h.1k.-141.y81 1h.3y.-120.4vu 1h.4d.-112.7eu 1h.3g.-103.4lm o.1h.101.402 1h.3u.-71.7ly 1h.36.-14.398 1h.1l.-12.4ev s.1h.0.3xe 1h.4p.14.1i5 1h.3i.-39.7b2 1h.4j.70.c7h 1h.41.43.3tk a.1h.-80.78h 1h.2c.54.9j4 1h.23.117.9bz 1h.42.149.34j 9.1h.-150.7ry k.1h.-293.1031 w.1h.-418.j85 1k.3l.-578.1jk 1k.4d.-459.jet 1k.2l.-456.1no 1k.1w.-451.39d b.1k.339.xv 9.1k.319.9mg 1k.4o.-311.78d 1k.3i.-170.8dh o.1k.209.66q 1k.3g.-204.6uj 1k.4g.-193.2su s.1k.183.556 1k.4j.-75.kwb 19.1k.163.ys 1k.44.-141.11k 1k.36.-140.5il 1k.1l.-124.6s6 1k.41.-86.52n 1k.2c.-77.brk a.1k.92.8zz 1k.42.23.5wa 1k.3y.31.7ah 1k.3u.34.9ny 1k.23.62.eog k.1k.-126.s6v 1k.4p.134.1t3 w.1k.-460.t45 4d.4p.-758.4o 1w.4d.318.76 2c.4d.245.qm 4d.4o.-67.ha 41.4d.44.ct s.4d.-18.ds 3u.4d.-201.30x 4d.4j.-25.142 1l.4d.-128.h6 9.4d.-141.2zd 3i.4d.-116.2iy 4d.4g.165.6s a.4d.-149.lv k.4d.-172.8u4 3g.4d.-195.ga 36.4d.-232.es 23.4d.-270.20r 3y.4d.-305.eu o.4d.-413.di w.4d.-481.5nc 42.4d.-497.bs b.k.361.qm k.2c.-112.dke k.3i.-123.5kv k.3u.-133.ain k.4g.-542.2zd k.4j.118.c6i 9.k.59.ajy a.k.182.94m k.w.67.msk k.1w.-119.364 k.23.-27.cp6 k.36.-111.4zr k.3g.-337.7g4 k.3l.-532.14m k.3y.-200.7eq k.41.-167.5w2 k.42.102.4q3 k.44.-825.104 k.4o.-104.54r k.19.-488.1co k.s.-58.6f1 k.1l.-29.5rl k.2l.-495.169 k.4p.-545.2wm k.o.-69.25z 2c.4g.-440.6j 1w.2c.253.7r 2c.4o.-144.ee 2c.3u.-28.2z8 o.2c.48.c2 2c.3g.-31.dn 2c.3y.-26.ia 2c.41.29.av a.2c.-68.nb 2c.36.109.br 2c.42.118.bd 23.2c.-172.1uy 9.2c.-222.36g 2c.4j.208.yp s.2c.-326.fc w.2c.-275.5y9 2c.3i.218.3hw 1l.2c.-631.ev 3i.44.-780.90 b.3i.515.93 3g.3i.377.1p4 3i.3y.-331.2gj 3i.4o.-274.1le 19.3i.117.c6 9.3i.-89.2i3 3i.41.-57.1f7 3i.4g.-44.yy 3i.3l.-5.d7 2l.3i.-5.gk 1w.3i.-8.uw 3i.4p.18.jy 3i.3u.4.31f 3i.4j.154.36v a.3i.-273.23h s.3i.-149.1kl 3i.42.181.1m8 1l.3i.-195.1o3 36.3i.-217.1lf 23.3i.-175.31y w.3i.-425.4fo o.3i.-423.ma o.3u.487.1t8 19.3u.439.92 2l.3u.289.eb 1w.3u.163.us s.3u.157.1bg 9.3u.82.1uw 3l.3u.91.bk 3g.3u.87.1iu 23.3u.130.31i 3u.4o.-69.1rd 3u.44.-35.9r 3u.3y.-26.20s 3u.4g.3.ne 36.3u.-69.17r 3u.4p.79.fj 3u.4j.180.4kj 3u.41.141.13p b.3u.-178.9s a.3u.-331.280 1l.3u.-238.1ml w.3u.-281.55k 3u.42.392.18k 4j.4o.-773.cj 36.4j.618.4w 1w.4j.509.4f 9.4j.211.5by o.4j.278.8h 3g.4j.275.9w a.4j.224.xq 3y.4j.251.b1 41.4j.236.7m 23.4j.61.2om 1l.4j.19.an s.4j.-122.6u w.4j.-264.8n3 42.4j.-341.6m w.4g.-787.1hn b.w.764.h4 w.44.-625.mj w.3l.-590.n3 w.4o.-582.2u6 w.2l.-562.mn w.3g.-541.3un w.42.-525.2b9 w.1w.-469.1cl w.19.-442.lf w.1l.-420.3al 9.w.401.5f1 w.36.-405.2d4 w.3y.-398.2ya w.23.-322.74x s.w.344.307 w.4p.-300.11n o.w.246.2ub a.w.183.4nm w.41.-198.2g6 23.44.-890.64 1w.23.592.is 23.2l.-555.85 23.4g.-508.gj o.23.374.11h b.23.367.65 s.23.296.u9 23.42.-163.ow 23.41.-109.sd 9.23.70.2z2 1l.23.90.15u 23.4o.-82.11m a.23.175.1ay 23.36.-34.t5 23.4p.89.ah 23.3g.122.x4 23.3y.136.15s 23.3l.148.6p 19.23.-179.6i a.o.-478.7y a.4p.-296.46 a.3y.-260.fr a.41.-189.as a.4o.-101.de a.s.-73.at a.4g.-23.5y a.3g.25.fj a.1l.46.kn a.1w.77.6y 9.a.-170.2bx a.42.224.8z a.36.232.ak 9.19.-1157.8y 9.3l.-1085.ct 9.2l.-946.bj 9.4g.-508.mx 9.4p.-446.h7 9.44.-286.90 9.1w.-247.x8 9.4o.-115.1xm 9.36.-103.15e 9.s.-48.1ek 9.3g.-20.1fd 9.3y.-15.1n9 9.1l.5.1l3 9.o.9.1e4 9.41.9.1bj 9.b.210.8y 9.42.476.10b",
+  support: "25.4q.-559.xb 25.3r.-552.ad g.25.538.3b1 1d.25.325.2bh 25.44.-278.1js 25.4k.-274.20q 25.2g.-322.3hi 25.3j.-236.y6 25.3k.-207.1kw 25.2b.-186.2ay 25.2z.-265.1zt 25.2s.-163.do 1m.25.162.3ff 25.4e.-157.1sn 25.2t.-276.2as 1z.25.216.2pd 25.4s.-92.170 25.28.-75.kj 25.2i.-112.46m e.25.10.1dz 4.25.27.1nr i.25.-5.14f 25.3t.-95.57l 25.2w.-14.293 25.30.20.nj 25.39.49.3ad 25.3b.73.fa 19.25.-76.9v 25.3o.88.q1 25.2r.91.18b 24.25.-56.4rx 25.38.16.2ad 25.2j.138.u1 h.25.-139.14x 25.2e.147.1up a.25.-170.e6 10.25.-222.bk 25.3l.366.13w 1z.4q.-261.151 1z.2e.-259.2ul 19.1z.121.9t 1z.38.-136.2lp 10.1z.81.dm 4.1z.-8.4z6 1z.3j.-32.135 1d.1z.54.42x 1z.3t.23.73f 1z.2g.37.3yh 1z.2z.4.3qu 1z.2b.32.2sb 1z.3k.56.1vc 1z.30.63.10u 1z.39.82.2nr 1z.2w.103.3m0 i.1z.-112.35y 1z.3r.122.pt e.1z.-138.1l8 1z.2s.139.176 1z.44.168.1dg 1z.2j.168.sz 1z.4s.174.13k 1z.3l.178.1ez 1m.1z.-217.2ul 1z.3o.255.12i 1z.2t.262.30r 1z.24.316.5y6 g.1z.-314.46o h.1z.-371.uz 1z.4e.387.103 1z.2i.394.697 1z.28.424.wv 1z.4k.424.2r7 1z.3b.531.ht 1z.2r.589.1gz a.1z.-1162.bn 3r.3t.239.10g 2w.3t.108.779 3t.44.-126.2ie 30.3t.104.1rj 4.3t.78.6cd i.3t.103.56k 2s.3t.39.16i 3k.3t.24.35o 38.3t.39.4h7 39.3t.14.542 2g.3t.-77.6zu 2e.3t.-26.423 28.3t.-32.1g1 2b.3t.-45.4ki 3t.4q.54.1wh 3t.4s.58.1wj 2t.3t.-66.50f g.3t.-75.74j 1d.3t.-86.6ka 2z.3t.-7.6st 24.3t.-126.aa4 2j.3t.-109.1jl 19.3t.-126.fe 3l.3t.-128.2gf 3b.3t.-149.tt 1m.3t.-158.5yh h.3t.-177.1sx 3t.4e.180.225 3j.3t.-185.1ry 10.3t.-256.jw e.3t.-257.36c 3o.3t.-293.1sx 2i.3t.-309.9np 3t.4k.389.3zw 2r.3t.-498.2cw a.3t.-918.js 4.1d.-277.2wb 4.3j.-295.uj 4.38.-263.1w3 4.4q.-268.vw 4.44.-155.zc 4.39.-137.1y5 4.2s.-98.1ct 4.24.-29.4fv 4.3k.-73.1ai 4.2w.16.3pt 4.30.-39.yl 4.i.-11.2je 4.3r.-3.k1 4.3l.13.18v 4.2g.74.2qa 4.2z.114.4i9 4.h.49.q6 4.2b.61.1yo 4.10.73.ep 4.3o.126.x7 4.e.135.1kb 4.4s.135.sf 4.g.200.3jb 4.1m.193.2dj 4.28.218.ve 4.19.238.7m 4.2e.248.1if 4.2t.309.2he 4.4e.329.ro 4.2i.405.6jd 4.3b.362.e1 4.2j.397.ra 4.2r.499.1g2 4.4k.531.29f 4.a.615.7i g.i.-392.2kt g.2z.-216.2sg g.3r.-258.hk g.2w.-184.35g g.4q.-133.11g g.28.-54.s2 g.30.-47.su g.19.7.8z g.2g.75.3i8 g.3k.55.1ws g.1d.132.3gz g.2s.82.kg g.2e.89.2f4 g.39.111.2yt g.10.117.bw g.24.203.65k g.2i.174.4mc e.g.-181.1ql g.38.228.2gs g.3b.217.ez g.2b.235.2qn g.2t.227.2bo g.3j.241.138 g.3l.249.114 g.3o.263.uz g.44.276.1jq g.2j.294.o1 g.1m.319.35v g.4s.320.tw g.4k.479.2fg g.2r.562.1dn g.4e.564.1fy a.g.-608.bw g.h.616.uo 1d.24.75.646 1d.2g.9.5ih 1d.2i.66.489 1d.2t.245.2ax 1d.2w.149.2bc 1d.2z.192.2g0 1d.38.-103.2qr 1d.39.-9.2ww i.1d.16.1wr 1d.1m.147.3ku 1d.2b.69.34g 1d.2e.432.1kp 1d.2s.66.km 1d.3j.-143.1rd 1d.3k.3.2dz 1d.44.197.1c9 1d.4e.468.vx 1d.4k.137.2gy 1d.4q.73.1km 1d.4s.204.131 e.1d.-310.2f0 h.1d.-516.sf 10.1d.-347.aw 1d.28.-82.pv 1d.2j.137.oj 1d.2r.645.18v 1d.30.155.15h 1d.3b.572.h0 1d.3l.602.10v 1d.3o.261.tt 1d.3r.478.l8 a.1d.-868.an 19.1d.-90.89 24.3j.-380.2c1 24.44.-249.20x 24.38.-184.4z9 24.39.-210.5fk i.24.209.30c 24.2w.-68.5dv 24.28.-177.14m 24.2g.-110.93t 24.4q.-159.21i 24.2z.-134.5k5 24.3k.-114.3fi e.24.107.2tr 24.3o.-50.19f 24.2t.14.3va 24.2b.-12.60f 24.2j.-10.1b8 10.24.-21.hd 24.2i.103.7ku 24.2e.70.1zm 24.4k.93.58f h.24.-103.18u 24.3r.104.nw 24.4s.107.1p5 24.2s.108.qm 19.24.-151.e6 24.30.170.1ud 1m.24.-173.68s 24.4e.232.1gs 24.2r.393.1w9 24.3l.439.1rh 24.3b.483.no a.24.-751.g4 2g.2w.-112.3o1 2g.4q.-234.1ol 19.2g.232.a1 28.2g.216.y9 2g.3j.-161.26t 2g.2z.-39.32j 2g.38.-138.3ib i.2g.55.2bn 2g.2i.-21.5mc 2g.3k.25.37i 2b.2g.-59.4sd 2g.3r.66.l7 2g.39.81.4nm 2g.4k.90.381 10.2g.-96.df 2g.4s.147.1i5 2g.2s.168.ja 2g.30.203.1ac 2g.3o.211.wo 2g.2t.281.2n1 1m.2g.-268.55f e.2g.-271.253 h.2g.-283.154 2g.44.285.1vx 2g.2j.312.xc 2e.2g.-345.1ox 2g.3b.450.i4 2g.2r.496.1fn a.2g.-512.f8 2g.3l.525.1d8 2g.4e.649.169 2i.2z.-669.5yx 2i.3r.-695.h8 i.2i.595.2uw 2i.2w.-379.4eb 2i.4q.-359.q7 10.2i.308.9k 2i.3j.-294.sn 2i.2s.-237.kn 2i.39.-226.1yc 2i.2j.-193.ia 2i.3l.-163.z0 2i.38.-135.3za 2i.2r.-152.11x 2i.30.-152.ou 2i.44.-140.10k 19.2i.128.7u 2i.3k.-124.1ab 2e.2i.102.1n2 2i.3o.-82.sz 2b.2i.51.1op 28.2i.16.ku h.2i.-49.pj e.2i.-94.1ds 2i.4s.132.kq 1m.2i.-231.2ip 2i.2t.234.3y4 2i.3b.374.bw 2i.4k.431.1yk a.2i.-541.7w 2i.4e.596.101 2t.2z.-455.2mg 28.2t.468.u2 2t.3b.-466.eo i.2t.363.1nq 2s.2t.322.ts 2t.3j.-301.s4 2t.4q.-272.s0 2t.2w.-285.3eu 2t.3k.-230.1od 2b.2t.134.1qd 2j.2t.118.lh 2t.4s.-102.p7 2t.30.-63.np e.2t.49.1f0 2r.2t.8.1f3 2t.39.11.22f 2t.38.-12.1qg 2e.2t.-38.18c 2t.4e.78.134 2t.4k.155.1yd 2t.3r.160.cw 2t.3o.183.o2 h.2t.-248.r2 1m.2t.-249.2ee 2t.44.253.yd 10.2t.-281.9e 2t.3l.323.wb 19.2t.-682.63 a.2t.-752.8i 2w.4q.-391.1c5 2w.38.-336.2f9 2s.2w.295.1fj 2w.2z.-111.21a 2w.39.-194.2kv 2w.3j.-179.zi 2b.2w.162.2ph 10.2w.133.dt 2e.2w.76.1k5 2w.30.-57.15u 19.2w.44.9c 2w.3l.-27.13t 2w.4s.-10.zh 2w.3k.22.1up 2j.2w.-50.ty 2w.3r.57.kv e.2w.-98.22m i.2w.-126.2qu h.2w.-147.so 2w.44.246.19k 28.2w.-254.s0 1m.2w.-262.39x 2w.3b.330.ib 2r.2w.-355.1fi 2w.4e.430.yf 2w.4k.524.29f 2w.3o.544.xl a.2w.-1246.8z 28.2z.273.ro 2z.3r.-247.n2 2z.3k.-152.1pl 2s.2z.127.1ed 2z.38.-155.26d 2j.2z.61.lu 2b.2z.46.2et 2z.4s.-40.106 2z.4q.-28.121 i.2z.19.2mc 2z.3j.-17.x7 19.2z.-7.8z 2z.30.12.13s 2z.39.15.29x e.2z.-133.1o2 2z.3l.174.108 2z.44.210.135 10.2z.-239.dh 2z.4e.247.t6 1m.2z.-318.32l h.2z.-318.q0 2e.2z.-392.1nd 2z.3o.397.18m 2z.3b.448.hq 2z.4k.554.2mb 2r.2z.-572.19x a.2z.-1195.8e 19.38.182.7d 38.4s.-175.xp 38.4q.-159.yp 2j.38.30.my 38.3j.-1.165 38.44.54.131 38.3k.70.1ob 38.39.89.2mu 2r.38.-108.yw e.38.-136.1fy 38.4e.181.wa 38.4k.187.1z3 38.3r.245.en 2b.38.-249.2a6 2e.38.-258.18j 2s.38.-267.dk 30.38.-304.qs 1m.38.-320.2tf i.38.-332.1kz 28.38.-376.kd 38.3l.386.z5 h.38.-454.po 38.3o.505.oy 10.38.-662.7x 38.3b.900.bi a.38.-1036.aw",
+  jungle: "1r.2s.-528.6h 0.1r.384.bc p.1r.349.kw 1r.4c.-331.2v3 1r.2y.-303.fu 1c.1r.293.dx f.1r.283.13i 1r.2n.-273.sx 1r.29.-368.2lz 1r.28.-175.bv 1r.3z.-153.ro 1r.4s.-151.o0 t.1r.131.229 x.1r.97.vl 1r.3d.-95.1vt j.1r.175.3x3 1r.3q.-74.234 1r.2k.-68.qg 1r.1u.-38.11w 16.1r.38.c7 1r.47.-85.3je 1r.20.-58.1tt 1e.1r.82.32l 15.1r.29.2uv 1r.4b.-152.1de 1r.26.34.bz 1r.2x.39.ja 6.1r.-40.vi q.1r.-42.1fe 1r.4m.61.12g 1r.3p.76.u8 17.1r.-287.1z8 u.1r.-94.12f 14.1r.-101.c3 1r.2m.103.1q9 1r.46.61.1rv 1r.1y.80.4d5 1r.32.125.1nq 1r.1t.140.2gc 1r.3v.131.ca 1r.3b.133.1vk 1f.1r.-150.b3 1r.4f.157.12n 1r.3m.167.26a n.1r.-180.27c v.1r.-196.1nz 1r.4a.249.g6 1r.37.266.11k 1r.2f.272.1om 1n.1r.-306.in 1r.3h.341.d8 1g.1r.-533.w5 1r.4n.536.16b 1r.3s.899.84 16.1y.681.is 1y.2y.-521.1ai 1y.3h.-510.ou u.1y.508.26u 1y.4a.-507.l0 1y.4s.-424.1fn n.1y.419.3h5 1y.20.-393.3ds 1y.4m.-398.1sy 1y.3p.-387.2xz 1y.3d.-385.215 j.1y.437.594 1y.2f.-377.4bs 1y.3z.-365.zu 1y.4c.-348.596 f.1y.334.1f9 1y.4f.-329.2xk 1y.28.-296.ku p.1y.291.ny 1y.3b.-290.32l t.1y.283.2xp 1y.2k.-277.2rw 0.1y.274.l7 1y.37.-271.1ag 1y.26.-267.k1 x.1y.249.12o v.1y.212.23x 1y.2n.-210.185 1y.3q.-203.39k 1e.1y.184.7g4 1y.3m.-197.5cn 1y.46.-161.5bq 1y.2m.-190.30z q.1y.187.27k 1y.29.-195.48d 1y.2x.-154.tm 14.1y.153.sm 1y.4b.-214.20y 1u.1y.127.1u7 15.1y.118.7l9 1t.1y.101.4ld 1c.1y.115.ha 1n.1y.101.vm 1f.1y.65.if 17.1y.81.3g7 1y.47.1.66u 1y.4n.0.2de 1y.32.35.2d1 1y.2u.124.6ru 6.1y.-132.107 1y.2s.150.hq h.1y.-186.4s 1g.1y.-238.2tl 1y.3s.244.bm 1y.3v.293.j7 29.4m.-606.6l u.29.594.9o 29.4c.-464.m6 6.29.416.75 t.29.350.dc 29.4s.-308.4t 1u.29.285.6u 29.3p.-265.6t 29.37.-259.79 29.3b.-255.dj x.29.235.5t 29.2x.-235.df 29.4b.-354.17h 17.29.-62.i3 29.3z.-188.5l v.29.152.d1 f.29.148.8z n.29.129.gc 29.4n.-64.9v 1t.29.-4.1sc 29.2k.-45.72 29.47.-70.s0 29.3d.-30.bh 1f.29.30.6a 29.3q.-24.g0 29.46.2.1q9 29.2f.77.cq 1e.29.-144.2bg 1g.29.-136.a8 j.29.-98.351 29.2u.220.kp 29.2m.349.e4 20.29.-186.1ax 15.29.-296.2vk 29.2n.424.6v 29.3m.433.fu 29.4f.448.8v q.29.-586.9a 29.32.920.dz 2y.47.900.5a 2x.47.826.6x x.47.772.7j p.47.539.4t 37.47.505.84 47.4m.-447.8b f.47.371.bd 1u.47.368.a5 2f.47.347.f4 6.47.337.77 3p.47.315.b0 2k.47.295.8e j.47.326.40d u.47.230.ad v.47.225.fp 3d.47.224.dm 47.4s.-222.73 47.4c.-174.q2 1t.47.186.20b 46.47.88.25n 47.4f.-125.az 47.4b.-170.1er 3q.47.82.ko 3b.47.75.fs 17.47.-30.mc 15.47.-23.3qb 3z.47.-9.6g 20.47.3.21v 1e.47.-80.35u 32.47.-40.f2 n.47.-128.i6 t.47.-169.ie 2m.47.-201.gs 2n.47.-213.7r 1f.47.-227.4a 2u.47.-244.pl q.47.-250.dg 3m.47.-321.pj 1n.47.-348.4w 1g.47.-405.ch 47.4n.781.bx 20.4b.457.x6 3h.4b.399.5b n.4b.321.xi 16.4b.315.5i 4b.4m.-172.fl p.4b.147.8l 2x.4b.107.cb u.4b.83.fl 14.4b.74.4p 2k.4b.60.au 4a.4b.52.7i 3d.4b.31.rg 26.4b.29.57 1c.4b.25.51 3z.4b.1.c0 t.4b.0.pi 3p.4b.-11.cs 1f.4b.-42.6s 17.4b.-45.sp f.4b.-49.h2 6.4b.-68.d8 3q.4b.-69.td 15.4b.14.11t 2f.4b.-86.nz 28.4b.-131.49 4b.4c.135.128 37.4b.-158.d0 3b.4b.-163.q1 q.4b.-179.ji 4b.4n.199.fc 1e.4b.-145.180 4b.4f.222.i2 v.4b.-231.o0 3m.4b.-256.z4 1u.4b.-285.f7 2y.4b.-303.6v 1n.4b.-316.79 4b.4s.347.8q 46.4b.-249.rb j.4b.-148.1qf 2n.4b.-459.b6 1g.4b.-459.c2 2m.4b.-475.qd 1t.4b.-496.xu 2u.4b.-580.16t 3v.4b.-582.6j 0.4b.-643.56 x.4b.-672.at 32.4b.-774.sb j.2y.-280.la j.3s.-217.cr j.16.-214.j5 j.1c.-155.hv 0.j.146.g0 j.u.-132.1lr j.4c.-125.355 j.1n.-88.m4 j.3p.-87.v5 j.4s.-39.wj j.4m.-38.18e f.j.35.1dq j.2x.-30.14r j.26.2.f4 j.n.3.2oh j.3z.6.10z j.3h.11.g0 j.2k.29.10t j.p.44.o6 j.t.62.2ak j.20.163.2em j.x.89.yp j.1f.95.rf j.4a.101.np j.14.127.de j.37.151.zt j.v.152.1ec j.15.49.372 j.3q.172.2gb j.3d.198.250 j.2m.213.28k j.3b.223.29y j.3v.226.ea j.q.242.1jv j.1t.167.32d 6.j.-269.zc j.1u.274.16m j.28.278.7k j.17.586.2g8 j.46.261.243 j.1g.336.ny j.2f.339.14e j.1e.220.3sp j.4f.357.1fs j.3m.368.2jt j.2s.405.55 j.4n.473.16e j.32.554.1yr j.2u.636.32f j.2n.655.10c 15.2s.-770.4t 15.4s.-562.u9 15.2y.-523.ii v.15.518.1hj 15.1c.-487.bl 15.2k.-452.1dl 15.3z.-403.pg p.15.366.kk 15.3p.-365.1fj 15.2x.-358.m1 15.16.-338.co 15.4m.-337.yf x.15.331.os 15.2n.-287.t2 15.3d.-269.1gi 15.3v.-266.c3 15.4c.-239.2u0 15.2f.-238.20n 15.37.-227.wb 6.15.191.ot q.15.142.1gw 15.3q.-136.2a2 15.20.-193.21b u.15.135.13o 15.32.-134.1pr t.15.91.1rd 15.1u.-90.1fp f.15.84.15y 15.3s.-78.85 15.26.-76.ef 15.17.-20.2g5 15.1e.3.3z9 15.1t.-14.347 15.3h.-18.de n.15.-12.239 14.15.-31.bg 0.15.-34.e4 15.4f.128.18w 15.3m.147.2o9 15.3b.159.1q2 15.28.211.ae 15.2u.240.3eb 15.1g.257.1kj 15.1n.289.ka 15.2m.292.1s4 15.46.287.1yb 15.1f.343.d6 15.4n.387.1ap 15.4a.442.ce 17.3d.-630.5y 17.3m.-598.aj t.17.537.5y 17.20.-354.1pk 17.4c.-441.80 17.1e.-52.206 17.46.-45.1au 17.32.-53.6b n.17.-2.7l 17.2k.63.4b 17.1t.182.18m q.17.-183.4f u.17.-204.4x 17.3q.337.78 17.2f.408.63 17.2m.538.5y 17.3b.545.63 v.17.-769.4x 17.2u.787.a3 16.1e.630.c7 1e.3h.-533.ea 1e.2s.-401.7l 1e.4c.-375.3cx 1e.4s.-360.u9 n.1e.301.22e 1e.1n.-299.ki 1e.3q.-291.21m 1e.2k.-273.10j 1e.28.-271.bj q.1e.236.19i 1e.4f.-206.1j9 1e.3p.-189.168 1e.3z.-186.nu 1e.4m.-171.zw 1e.1f.-150.b1 1e.37.-144.ts t.1e.134.1q3 1e.3m.-129.2tj x.1e.121.q8 1e.3d.-118.1gl 1e.20.-64.25b 1e.1u.-117.12z v.1e.113.1gb u.1e.112.14x f.1e.109.zy 1e.2y.-90.j2 1e.1t.-64.2j6 1e.2n.-45.wy 1e.46.-54.2if 1e.4n.-22.14b 1e.2x.30.gl 1c.1e.-58.f2 1e.2f.70.1x6 0.1e.-82.bx 1e.3b.116.1lb 1e.3s.133.8g 14.1e.-142.ay p.1e.-147.g4 1e.1g.156.1ei 1e.4a.183.do 6.1e.-194.r8 1e.32.225.1it 1e.2m.240.1su 1e.3v.318.bk 1e.26.365.bb 1e.2u.385.3cm 1t.28.-952.5a 1t.2f.-743.1b5 1t.2y.-548.9r 1t.3z.-516.cz 1t.3h.-509.61 1t.2x.-483.9z 0.1t.421.5e 1t.4s.-373.cl 1t.26.-367.65 q.1t.360.sz 1t.37.-347.gm 1t.4c.-326.1ar 1t.1u.-325.ma n.1t.299.12w 1t.3b.-279.wb f.1t.220.lx u.1t.180.on 1t.20.-100.1iv 1t.3q.-166.1bx 1n.1t.138.b6 1t.2n.-136.fj 1t.2k.-125.m8 1t.32.-121.1a6 1t.3p.-119.m3 16.1t.116.5w 1t.2m.-102.y9 v.1t.101.121 x.1t.91.dl 1t.4m.-85.g1 1t.3d.-77.ob 1c.1t.76.7z 1t.3v.0.54 1t.3m.15.17o 1t.4f.45.o0 t.1t.-77.zb 1t.2u.175.1sh 6.1t.-201.cl 1t.4a.202.6h p.1t.-207.7i 14.1t.-370.5h 1t.46.297.1js 1t.4n.581.pe 1g.1t.-724.q0 1t.3s.1048.4h 1f.1t.-1107.55 20.28.-306.9q 1c.20.260.8m 20.4s.-219.k0 1u.20.158.qn u.20.101.qu 20.32.-85.w4 p.20.82.dq 20.2n.-47.kb 20.3z.-15.ll 0.20.-24.6p f.20.-30.s1 16.20.-86.8d 20.2k.93.k3 20.3p.111.rx t.20.-116.15d x.20.-119.hq 20.3q.125.16g v.20.-143.vq 20.4n.185.ks 20.3d.218.1bc 20.46.224.1cc 20.3b.245.18n 14.20.-246.75 20.4f.254.sb q.20.-258.vo 20.3m.273.1nw 20.4c.286.28g 20.2x.321.h8 20.3s.324.5f n.20.-339.1ol 1g.20.-340.nh 6.20.-348.kx 20.2u.364.1qf 20.4m.374.wv 20.2f.403.158 20.3h.449.d6 20.2y.472.eg 1n.20.-486.bk 20.2m.629.14o 20.4a.668.97 20.37.737.ty 20.3v.891.79 1f.20.-922.76 20.26.1320.82 0.46.815.7o 2x.46.527.c8 46.4s.-508.ii 3d.46.437.13k 46.4c.-432.29o 14.46.430.7t 37.46.402.kd 2s.46.389.4b p.46.375.b5 3v.46.374.98 1u.46.372.nb 46.4m.-357.oc f.46.317.ni 46.4a.-310.9g 3p.46.303.vo 3z.46.292.f2 t.46.262.1ad 2k.46.255.o8 3q.46.192.1hh 2y.46.186.c2 n.46.151.1bs 2m.46.144.17e 46.4f.-125.10i 2n.46.120.ji 1c.46.98.8m u.46.95.qj 1n.46.77.9q 3b.46.55.12g q.46.47.xo 16.46.14.7g 28.46.-1.7n 3m.46.-50.1xa 1f.46.-50.8h v.46.-72.zi 3h.46.-135.9c 6.46.-150.im 2u.46.-208.2bu 26.46.-227.7h x.46.-261.ge 2f.46.-274.1d0 32.46.-299.zr 1g.46.-308.sw 46.4n.320.s6 3s.46.-356.53",
+  mid: "1.19.-103.2j9 1.44.-159.zr 1.c.-129.28w 1.2j.-117.91 1.49.-98.2ws 1.4n.-91.5ty 1.1p.-30.48n 1.3p.-68.283 1.4r.-64.25d 1.3.-49.1ow 1.8.-27.1r6 1.b.-19.17j 1.2a.-14.1v6 1.3q.-6.12u 1.1x.3.464 1.4e.11.2gf 1.25.23.34j 1.45.27.1yx 1.q.32.26z 1.t.34.3ml 1.z.184.32m 1.7.50.1gt 1.3l.68.j8 1.1o.76.204 1.21.96.3r0 1.2f.88.nt 1.3n.119.7jv 1.3x.134.3b9 1.48.154.5f5 1.3m.176.6r5 1.3f.150.e8 1.2u.178.1jr 1.4g.162.58s 1.43.77.3k1 1.22.213.3c4 1.35.294.19b 1.m.302.11x 1.27.296.31y 1.4h.327.4o3 1.1b.343.1mf 1.d.364.18a 1.4p.376.ey 1.h.379.dl 1.2p.384.42u 1.2.502.5tp 1.10.482.2y7 1.o.726.9j 1.26.958.9o 2.45.-729.1nn 2.2j.-641.4d 2.3x.-629.29b 2.3q.-592.t4 2.43.-502.270 2.3p.-582.10g 2.21.-422.3e8 2.27.-464.1vy 2.4r.-412.158 2.10.-334.360 2.19.-294.17j 2.h.-295.8g 2.2u.-282.12d 2.49.-297.1is 2.3l.-262.cl 2.1o.-253.10y 2.25.-242.1br 2.c.-236.122 2.3.-213.x6 2.44.-212.eb 2.3f.-176.ah 2.8.-168.t5 2.t.-159.1ri 2.b.-153.qm 2.3n.-70.44v 2.q.-65.19g 2.4n.-62.3zp 2.4g.-56.4mj 2.1x.21.2pu 2.1p.12.2l4 2.z.13.1po 2.4e.101.166 2.35.115.u0 2.7.119.sk 2.2p.137.258 2.d.145.n1 2.m.160.iy 2.48.230.2z7 2.3m.162.3ha 2.4p.189.74 2.2a.207.kn 2.4h.230.3gt 2.2f.252.cq 2.1b.357.15o 2.26.388.6t 2.o.468.66 2.22.493.3bb t.z.686.7p z.21.-511.2do z.43.-109.1z9 q.z.347.6t z.1p.-73.14o z.4g.-120.2a5 z.1o.-134.4v z.10.9.1ao z.3m.-74.1h2 z.49.13.145 z.2u.27.4e z.4n.34.2mq z.4h.52.9p z.3x.66.7a z.2p.150.12q z.45.166.48 z.1x.108.1h5 z.22.253.1dy z.4e.329.7c z.19.293.k9 z.27.338.14k z.3n.491.3oq z.48.345.1bh z.25.435.6i 1o.1p.471.ry 1p.26.-376.58 1p.49.-333.1in 1p.45.-366.s1 10.1p.354.1mo 1p.2f.-145.7r 8.1p.136.kk t.1p.98.14h c.1p.80.gs m.1p.45.9g 1p.44.-45.72 q.1p.34.yc 1p.3f.-33.5d 1p.3q.12.cq 3.1p.-47.h8 1p.27.28.1gv 1p.3x.61.ys 1p.48.49.1jv 1b.1p.-87.kl 1p.4g.43.2xh 1p.21.83.2hd 1p.1x.129.22k 1p.2p.298.1ff 19.1p.-114.mf d.1p.-258.bw 1p.2u.262.jx 1p.4n.276.2xx 1p.4r.271.me 1p.4e.297.my 7.1p.-303.f7 1p.4h.306.1ig b.1p.-386.ef 1p.3m.421.1t4 1p.25.474.r2 1p.43.347.248 1p.3n.578.3d2 1p.22.738.23z 1p.2a.712.b4 1p.35.772.cs 1p.3p.995.er 1p.3l.1781.50 19.21.526.148 21.3l.-286.cf 21.48.-298.2i4 7.21.249.pu 21.4p.-223.6x 1o.21.219.w5 21.49.-208.15g b.21.214.j3 21.44.-163.cm 21.43.-114.1iu c.21.141.ps 21.3n.-76.2rq 8.21.109.ki t.21.94.1om 21.4e.-91.1e4 m.21.60.g4 21.3x.-39.1el 3.21.36.mz h.21.34.6g 21.25.-24.14z 21.4r.-16.rf 21.3p.-5.ph q.21.-4.128 21.3m.7.2gz 21.4n.61.3wa 21.45.58.oj d.21.-101.fs 21.3f.110.74 21.2u.116.qd 21.2p.126.1l8 21.22.196.1qv 21.2a.169.gb 21.27.106.1cy 1x.21.-231.2o8 21.35.277.ku 10.21.-320.1bt 21.3q.354.kp 1b.21.-400.vt 21.4h.454.2b1 21.2f.515.b2 21.4g.546.3mb 21.26.624.5h 27.3f.-708.ea 1o.27.481.og 27.44.-467.a2 q.27.418.uk h.27.399.5b 3.27.377.g9 t.27.348.17m 27.3p.-327.jh 8.27.325.el b.27.302.mz 19.27.322.w0 27.4e.-244.11q 27.48.-190.1sp 27.3x.-157.1do d.27.133.dz c.27.124.ht 27.4p.-118.66 27.3l.-67.79 27.3q.-59.c1 10.27.9.u0 27.2a.-41.fw 25.27.33.z9 27.43.-162.20i 27.4h.-7.1i9 22.27.-46.1dm 27.3n.-16.2ci 27.2p.136.16c 27.4n.75.24v 27.3m.175.17g 1b.27.-174.lv 27.2f.187.7y 27.45.242.iv 7.27.-298.ki m.27.-299.aj 27.2u.346.h7 27.35.370.g6 27.49.445.18n 1x.27.-428.1yk 27.4r.481.rm 27.4g.425.2hf t.3n.436.30w 3n.4e.-430.3bq 1x.3n.321.3h9 2j.3n.344.6x 22.3n.273.3au 3n.44.-207.vm 1o.3n.206.1f4 3n.4r.-188.1pb 3n.4n.-208.3k3 3n.3q.-158.sz 3n.3x.-152.2u6 19.3n.26.2fg 3n.4g.-177.3p1 h.3n.136.ae 1b.3n.128.1ff q.3n.116.1pt b.3n.94.16f 3.3n.94.18k 2u.3n.71.14n 3n.49.9.1x8 3f.3n.11.dr 3l.3n.-3.e9 3m.3n.-22.36g 2f.3n.-26.j4 25.3n.-31.2hj 3n.43.111.2s4 3n.3p.55.1m3 c.3n.-59.1k8 8.3n.-85.173 3n.48.100.606 10.3n.-109.2e6 26.3n.-115.80 3n.4p.133.e2 3n.45.153.1nf 7.3n.-195.1do 3n.4h.207.3kl 2p.3n.-341.3xm d.3n.-376.10b 35.3n.-418.154 m.3n.-466.1cm 2a.3n.-478.14j o.3n.-1368.86 1o.43.413.17z 43.4e.-394.1nj 3x.43.175.1ca 43.4r.-158.sp 19.43.132.16z b.43.82.m9 43.4n.-168.29g 8.43.74.ls 22.43.-59.21u 3.43.43.n6 43.4h.-38.26t t.43.36.1jt 43.49.-194.1cg 1b.43.1.ox c.43.-19.s7 1x.43.193.1ku 2u.43.-42.qd 3q.43.-55.dd 25.43.-77.1hc 43.4g.163.2l2 43.44.148.ea 3p.43.-167.ii 3f.43.-198.5e h.43.-200.81 7.43.-210.va q.43.-299.zr m.43.-311.d7 3m.43.-391.1u7 43.48.379.26q 10.43.-486.12b 43.45.422.112 2f.43.-424.7t 3l.43.-434.9s 35.43.-533.qj 43.4p.547.8f d.43.-554.qc 2p.43.-487.1cf 2a.43.-652.ow 26.43.-725.5y 44.48.695.ia c.48.588.tg t.48.539.1ok 48.4e.-492.22e h.48.434.7p 3x.48.418.1tc 3q.48.394.i2 3p.48.285.vs 22.48.220.2gx b.48.271.oh 19.48.202.1fd 48.4r.-180.vy 3.48.175.n8 48.4h.-152.2fx 45.48.147.qh 48.4p.-145.7r 3f.48.126.7g 1b.48.94.u9 25.48.71.1c2 q.48.70.yj 7.48.41.w0 1x.48.70.2jz 3m.48.2.266 48.49.4.1a3 1o.48.-7.tg 3l.48.-20.8d m.48.-23.mg 2p.48.-17.2c3 2u.48.-57.ol 35.48.-87.oz d.48.-101.jh 48.4n.117.2u4 2f.48.-119.ad 8.48.-174.iy 10.48.-246.1fq 26.48.-237.46 48.4g.329.38h 2a.48.-512.ib o.48.-939.4x 49.4r.-502.iu c.49.352.m0 3l.49.241.5d 1o.49.137.qf 19.49.104.nt 44.49.112.89 h.49.99.4c 3q.49.46.ap 3.49.-2.gu 2p.49.-164.15b 7.49.-48.ig b.49.-64.fw 49.4e.65.kq t.49.-73.13h 49.4n.131.1ze 2f.49.-128.67 1x.49.-137.1c3 3p.49.-163.ei 10.49.-247.ox 3x.49.-195.pz 3m.49.-184.13h q.49.-242.pr 35.49.-269.ib 25.49.-277.m4 22.49.-316.17x d.49.-413.dr 1b.49.-449.j2 2u.49.-459.gb 45.49.-464.gu 49.4h.493.1ji m.49.-494.dy 8.49.-510.eg 2a.49.-575.9z 49.4g.621.2l6 b.4g.560.138 3p.4g.538.1fj 8.4g.527.19u 26.4g.470.pt d.4g.386.11c 3f.4g.361.95 1o.4g.361.1bs c.4g.351.10w 4g.4h.-301.54b 3l.4g.300.e8 45.4g.286.219 4g.4p.-226.8s t.4g.193.2ci 7.4g.78.11f m.4g.69.p1 10.4g.18.1jw 4e.4g.36.1jx h.4g.1.9f 3q.4g.-59.ri 2u.4g.-62.128 19.4g.-62.1el 3x.4g.-85.1wr 4g.4n.46.4s6 44.4g.-102.hu 4g.4r.132.18r 35.4g.-178.vd 1x.4g.-122.2bu 2p.4g.-255.26o 1b.4g.-209.195 3.4g.-215.nv 3m.4g.-277.2ya 25.4g.-297.1le q.4g.-315.1hg 2f.4g.-318.da o.4g.-322.6l 22.4g.-428.2jj 2a.4g.-573.pv 26.4n.492.1ds 3f.4n.353.g2 4n.4r.-311.189 2u.4n.288.18k 25.4n.268.1rs 1b.4n.239.1gv t.4n.238.2rg 4e.4n.201.1lw q.4n.198.1ze 3.4n.186.zw 3q.4n.158.sj 2j.4n.136.55 d.4n.82.t9 3m.4n.94.38h 7.4n.67.11s 3x.4n.43.1wh 1x.4n.67.2z0 8.4n.21.w7 45.4n.18.186 4h.4n.-8.33s 19.4n.-104.19q h.4n.-67.7v 44.4n.-123.hi 3p.4n.-140.r3 22.4n.-108.2j3 c.4n.-162.wg 4n.4p.170.a0 2p.4n.-170.1ua 3l.4n.-189.9v 2f.4n.-189.dt 1o.4n.-196.pi 10.4n.-220.1g1 m.4n.-281.m7 o.4n.-296.5g 2a.4n.-312.m8 b.4n.-393.ni 35.4n.-397.ua 1o.22.548.169 22.2u.-543.rf 3.22.421.qd 22.26.-407.4k 22.4p.-405.6w 22.4h.-375.2bq 8.22.360.o0 22.45.-359.vx t.22.340.1qy c.22.334.tz h.22.332.7f 10.22.288.2ca 1x.22.284.1ua q.22.318.1am m.22.218.fa 22.3f.-217.7p 22.2f.-216.d1 22.4r.-188.xy d.22.170.jp 22.3q.-163.n0 22.3m.-110.25r o.22.74.4p 22.25.-30.18x 22.3x.46.1l4 19.22.-14.15f b.22.-59.la 1b.22.-61.sk 22.3l.75.7l 7.22.-103.p2 22.35.110.kc 22.3p.148.pw 22.2p.358.23w 22.44.212.dc 22.2a.224.hy 22.4e.326.16m 3l.3m.781.ct 2f.3m.653.9x 3m.45.-588.x1 3m.4r.-578.sh 19.3m.509.yl 10.3m.439.1n7 3m.3p.-428.tx 3f.3m.375.6k m.3m.361.kb 3m.4p.-355.5s 3m.44.-335.ah 3m.3q.-303.it 1o.3m.267.o4 8.3m.265.hr 3.3m.241.hq 7.3m.237.of c.3m.207.sb 1x.3m.215.20l 3m.4e.-187.y2 35.3m.187.sn 3m.4h.-160.2ne t.3m.159.1wc 3m.3x.-131.1ye 25.3m.82.yi d.3m.51.g3 q.3m.47.15z h.3m.0.5z 2u.3m.-2.oh b.3m.-32.j9 2a.3m.-39.eh 1b.3m.-47.rs 2p.3m.-120.1vx o.3m.-567.4y 26.3m.-602.cj 10.19.-748.ne 10.3x.-609.12b 10.3p.-597.f1 10.44.-574.6f 10.2a.-501.8n 10.4e.-481.lf t.10.401.11c 10.3q.-395.a7 7.10.332.cd c.10.298.gi 10.2f.-273.6b 10.25.-255.jp 10.4h.-252.1kc 10.1o.-194.df 10.2p.-102.zx 10.4r.-178.j4 10.3l.-163.7k 8.10.127.bn 10.1x.-98.20q q.10.66.r3 10.45.-60.g4 d.10.8.83 o.10.-6.4y 10.3f.34.48 m.10.-36.7p b.10.-70.aq 10.35.79.bi 3.10.-139.al 10.2u.239.dh 10.1b.477.dg 19.44.-551.63 c.19.524.cp t.19.361.jm 19.4e.-217.pw 19.1b.-177.9r 3.19.149.9x 19.4h.-140.u9 19.25.-91.h9 19.3p.-58.ak 19.4r.31.cw 19.3x.34.lv 19.3q.71.5y 19.1x.83.11l q.19.-110.bp 19.1o.122.a9 d.19.-150.80 8.19.-184.6t 19.45.212.bh 7.19.-266.bz b.19.-328.92 19.2p.312.12a 19.2u.407.8j m.19.-557.75 19.2a.745.8f 19.35.1043.9g 1x.45.-381.1zz 1x.3f.-264.9n 1o.1x.245.xu 1x.2f.-208.ff 1x.4r.-180.143 c.1x.167.zv q.1x.148.1aj t.1x.131.1kn 3.1x.120.t5 1x.3x.-87.1q2 b.1x.20.kd 1x.44.13.e8 1x.2a.56.hs 7.1x.-64.st 8.1x.-91.ol 1x.25.109.1e2 1x.4e.189.1ds 1b.1x.-307.u4 h.1x.-312.7b 1x.26.314.5j 1x.4p.375.78 1x.4h.387.26c 1x.2u.427.oi 1x.35.450.lj 1x.3q.490.ew m.1x.-515.e5 1x.3p.525.pu 1x.3l.598.7o 1x.2p.561.1y0 o.1x.-632.5f d.1x.-683.m0 2p.44.-753.ch 1o.2p.561.ot 2p.4r.-544.r0 3.2p.536.jr t.2p.486.1av 25.2p.440.11l b.2p.437.gr 2p.3q.-434.ge q.2p.420.wx 2p.3x.-411.1l4 c.2p.392.qo 1b.2p.381.ta 7.2p.307.m7 2p.3f.-277.4w 2p.2u.-241.n3 h.2p.213.5k 2p.3l.-163.74 2p.3p.-152.pe 2p.45.-113.rk 2p.4h.-98.206 26.2p.-113.4j d.2p.-115.m0 2f.2p.-123.6b 2p.4p.134.5m m.2p.-175.ed 8.2p.-188.j0 2p.35.211.r5 2a.2p.-354.fb"
+};
+
+// Unpack the matchup table: MU[role] maps "A|B" to {e: A's win-rate lead in points, g: games}
+const MU = {};
+(function(){
+  for (const role in MATCHUP_DATA) {
+    const m = MU[role] = new Map();
+    MATCHUP_DATA[role].split(" ").forEach(entry => {
+      const [i, j, e, g] = entry.split(".");
+      const A = MATCHUP_NAMES[parseInt(i,36)], B = MATCHUP_NAMES[parseInt(j,36)], edge = +e/100, games = parseInt(g,36);
+      m.set(A+"|"+B, {e:edge, g:games}); m.set(B+"|"+A, {e:-edge, g:games});
+    });
+  }
+})();
+function matchup(p, e, role){ return (MU[role] && MU[role].get(p+"|"+e)) || null; }
+const fmtGames = n => n.toLocaleString("en-US");
+
+// Positive = p favored over e in this lane
+function laneScore(p, e, role){
+  const a = CHAMPS[p], b = CHAMPS[e];
+  const reasons = [];
+  const laneName = ROLES.find(r=>r.key===role).label.toLowerCase();
+  const ta = tierOf(p, role), tb = tierOf(e, role);
+  const tierDiff = TIER_SCORE[ta] - TIER_SCORE[tb];
+  const classEdge = ((CLASS_EDGE[a.cls]||{})[b.cls]||0) - ((CLASS_EDGE[b.cls]||{})[a.cls]||0);
+  const classWhy = () => {
+    const [win, lose] = classEdge > 0 ? [a,b] : [b,a];
+    const why = PAIR_WHY[win.cls+">"+lose.cls] || CLASS_WHY[win.cls];
+    return `${win.name} (${CLASS_NAME[win.cls].toLowerCase()}) ${why}, which is bad news for ${lose.name}`;
+  };
+  const m = matchup(p, e, role);
+  let s;
+  if (m) {
+    // Real ranked data. Shrink small samples toward even; the tier list still adds a little for overall strength.
+    const conf = m.g / (m.g + 500);
+    s = m.e * conf * 0.33 + tierDiff * 0.15;
+    const wr = 50 + m.e;
+    if (Math.abs(m.e) < 1) {
+      reasons.push({v:0.01, data:true, t:`Dead even in real games: ${p} wins ${wr.toFixed(1)}% against ${e} (${fmtGames(m.g)} games)`});
+    } else {
+      const [w, l, pct] = m.e > 0 ? [p, e, wr] : [e, p, 100 - wr];
+      reasons.push({v:(m.e>0?1:-1)*(Math.abs(m.e)+10), data:true, t:`${w} wins ${pct.toFixed(1)}% of games against ${l} in ${laneName} (${fmtGames(m.g)} games this patch)`});
+      // explain the stat with the class matchup, but only when the two agree
+      if (Math.abs(classEdge) >= 0.5 && Math.sign(classEdge) === Math.sign(m.e)) reasons.push({v:classEdge*0.5, t:"Why: " + classWhy()});
+    }
+    if (ta !== tb) reasons.push({v:tierDiff*0.3, t:`${p} is ${TIER_LABEL[ta]} tier in ${laneName} this patch, ${e} is ${TIER_LABEL[tb]}`});
+  } else {
+    // No data for this pair: fall back to the tier + class model
+    s = tierDiff * 0.38;
+    if (ta !== tb) reasons.push({v:tierDiff, t:`${p} is ${TIER_LABEL[ta]} tier in ${laneName} this patch, ${e} is ${TIER_LABEL[tb]}`});
+    const w = role === "jungle" ? 0.25 : 0.5;
+    s += classEdge * w;
+    if (Math.abs(classEdge) >= 0.5) reasons.push({v:classEdge, t:classWhy()});
+    for (const [w1, l1, r] of COUNTERS) {
+      if (r !== role) continue;
+      if (w1 === p && l1 === e) { s += 1.6; reasons.push({v:2, t:`${p} is a well-known counter to ${e}`}); }
+      if (w1 === e && l1 === p) { s -= 1.6; reasons.push({v:-2, t:`${e} is a well-known counter to ${p}`}); }
+    }
+    const tempo = scaleNum(a) - scaleNum(b);
+    s += tempo * (role === "jungle" ? 0.4 : 0.25);
+    if (tempo !== 0 && role === "jungle") reasons.push({v:tempo, t:`${tempo>0?p:e} is the stronger early-game jungler`});
+    reasons.push({v:0.001, t:"Not enough ranked games between these two, so this lane uses the tier and class model"});
+  }
+  if (ta === "off") reasons.push({v:-2, t:`${p} isn't normally played in this role`});
+  return {score:s, reasons, data:!!m};
+}
+
+function teamStats(team){ // team: {role:name}
+  const list = ROLES.map(r => CHAMPS[team[r.key]]);
+  const sum = k => list.reduce((t,c) => t + c[k], 0);
+  const st = {eng:sum("eng"), cc:sum("cc"), front:sum("front"), poke:sum("poke"), peel:sum("peel")};
+  st.ap = list.reduce((t,c) => t + (c.dmg==="M"?1:c.dmg==="X"?0.5:0), 0);
+  st.ad = 5 - st.ap;
+  st.early = list.filter(c=>c.scale==="e").length;
+  st.late = list.filter(c=>c.scale==="l").length;
+  st.hyper = list.some(c => c.cls==="mrk" && c.scale==="l");
+  const styles = {
+    Engage: st.eng + 0.4*st.cc + list.filter(c=>c.cls==="div").length*0.5,
+    Poke: st.poke*1.1,
+    Protect: st.peel + (st.hyper ? 2 : 0),
+    Pick: list.filter(c=>c.cls==="ass"||c.cls==="cat").length*1.8 + list.filter(c=>c.cls==="div").length*0.4,
+    Split: SPLITTERS.has(team.top) ? 6 : 0
+  };
+  st.style = Object.keys(styles).sort((x,y)=>styles[y]-styles[x])[0];
+  st.notes = [];
+  let score = 0.12*st.cc + Math.min(st.front,9)*0.15 + Math.min(st.eng,9)*0.12 + st.peel*0.06;
+  if (st.ap <= 0.5 || st.ap >= 4.5) { score -= 1.6; st.notes.push({bad:true, t:`Almost all ${st.ap<=0.5?"physical":"magic"} damage, so the enemy only needs ${st.ap<=0.5?"armor":"magic resist"}`}); }
+  else if (st.ap <= 1 || st.ap >= 4) { score -= 0.6; st.notes.push({bad:true, t:`Damage leans heavily ${st.ap<=1?"physical":"magic"}`}); }
+  else st.notes.push({bad:false, t:"Good mix of physical and magic damage"});
+  if (st.front < 3) { score -= (3-st.front)*0.7; st.notes.push({bad:true, t:"Very little frontline to soak damage"}); }
+  else if (st.front >= 6) st.notes.push({bad:false, t:"Strong frontline"});
+  if (st.eng < 3 && st.style !== "Poke") { score -= (3-st.eng)*0.45; st.notes.push({bad:true, t:"Hard to start fights on your terms"}); }
+  if (st.hyper && st.peel < 3) { score -= 0.5; st.notes.push({bad:true, t:"The late-game carry has nobody to protect them"}); }
+  if (st.hyper && st.peel >= 5) { score += 0.6; st.notes.push({bad:false, t:"Plenty of peel for the late-game carry"}); }
+  if (st.cc >= 11) st.notes.push({bad:false, t:"Lots of crowd control"});
+  st.score = score;
+  return st;
+}
+
+function typeOf(map, name, fallback){ for (const k in map) if (map[k].includes(name)) return k; return fallback; }
+function adcType(n){ const c = CHAMPS[n]; return typeOf(ADC_TYPE, n, c.cls==="mrk" ? (c.scale==="l"?"hyper":c.scale==="e"?"allin":"utility") : (["art","bmg","bur","con"].includes(c.cls)?"poke":"allin")); }
+function supType(n){ const c = CHAMPS[n]; return typeOf(SUP_TYPE, n, c.cls==="enc"?"enchanter":c.cls==="war"?"warden":(c.cls==="van"||c.cls==="cat")?"engage":"poke"); }
+function duoInfo(adc, sup){
+  const at = adcType(adc), st = supType(sup);
+  let fit = DUO_FIT[at][st]; const notes = [];
+  const why = DUO_FIT_WHY[at+"+"+st];
+  if (why) notes.push({v:fit, t: why.replace("{a}",adc).replace("{s}",sup)});
+  for (const [a, b, t, v] of DUO_PAIRS) if (a===adc && b===sup) { fit += v; notes.push({v, t}); }
+  const style = st==="poke"||at==="poke" ? "poke" : (st==="engage" && (at==="allin"||at==="utility")) ? "allin" : (at==="hyper" && (st==="enchanter"||st==="warden")) ? "scale" : "mixed";
+  return {adc, sup, at, st, fit, notes, style, label:`${withArticle(ADC_WORD[at])} with ${withArticle(SUP_WORD[st])}`};
+}
+function withArticle(w){ return (/^[aeio]/.test(w) || /^u(?!t)/.test(w) ? "an " : "a ") + w; }
+function edgeOf(a, b){ const x = CHAMPS[a], y = CHAMPS[b]; return ((CLASS_EDGE[x.cls]||{})[y.cls]||0) - ((CLASS_EDGE[y.cls]||{})[x.cls]||0); }
+function botDuo(mine, enemy, lanes){
+  const A = lanes.find(l=>l.role==="adc"), Sp = lanes.find(l=>l.role==="support");
+  const dP = duoInfo(mine.adc, mine.support), dE = duoInfo(enemy.adc, enemy.support);
+  const reasons = [];
+  let score = 0.55*A.score + 0.45*Sp.score;
+  [...A.reasons, ...Sp.reasons].forEach(r => reasons.push({v:r.v*0.5, t:r.t}));
+  score += dP.fit - dE.fit;
+  dP.notes.forEach(n => reasons.push({v:n.v*1.5, t:"Your duo: "+n.t}));
+  dE.notes.forEach(n => reasons.push({v:-n.v*1.5, t:"Their duo: "+n.t}));
+  const ps = DUO_STYLE_BEATS[dP.style+">"+dE.style], es = DUO_STYLE_BEATS[dE.style+">"+dP.style];
+  if (ps) { score += ps[0]; reasons.push({v:ps[0]*2, t:`Your duo wins the lane matchup: ${ps[1]}`}); }
+  if (es) { score -= es[0]; reasons.push({v:-es[0]*2, t:`Their duo wins the lane matchup: ${es[1]}`}); }
+  const cross = edgeOf(mine.support, enemy.adc) - edgeOf(enemy.support, mine.adc);
+  score += 0.25*cross;
+  if (Math.abs(cross) >= 1) reasons.push({v:cross*0.5, t: cross > 0 ? `${mine.support} is a nightmare for ${enemy.adc}` : `${enemy.support} is a nightmare for ${mine.adc}`});
+  return {key:"bot", role:"adc", label:"Bot lane", duo:true, p:`${mine.adc} and ${mine.support}`, e:`${enemy.adc} and ${enemy.support}`,
+          fbP:mine.adc, fbE:enemy.adc, score, reasons, dP, dE};
+}
+
+function synergies(team){
+  const names = new Set(Object.values(team)); const found = [];
+  const isDuo = (a,b) => (a===team.adc && b===team.support) || (b===team.adc && a===team.support); // scored in the bot duo instead
+  for (const [as, bs, txt, val] of SYNERGIES) {
+    for (const a of as) for (const b of bs) {
+      if (a !== b && names.has(a) && names.has(b) && !isDuo(a,b)) found.push({t: txt.replace("{a}",a).replace("{b}",b), v:val});
+    }
+  }
+  return found.slice(0,3);
+}
+
+function simulate(mine, enemy, seed){
+  const rng = mulberry32(seed);
+  const lanes = ROLES.map(r => ({role:r.key, label:r.label, p:mine[r.key], e:enemy[r.key], ...laneScore(mine[r.key], enemy[r.key], r.key)}));
+  const verdictOf = x => x > 0.6 ? "w" : x < -0.6 ? "l" : "e";
+  const bot = botDuo(mine, enemy, lanes);
+  const units = [...lanes.filter(l => l.role!=="adc" && l.role!=="support").map(l => ({...l, key:l.role})), bot];
+  units.forEach(u => u.verdict = verdictOf(u.score));
+  lanes.forEach(l => l.verdict = (l.role==="adc"||l.role==="support") ? bot.verdict : verdictOf(l.score));
+  const W = {top:1, jungle:1.15, mid:1.15, bot:1.2};
+  const sP = teamStats(mine), sE = teamStats(enemy);
+  const synP = synergies(mine), synE = synergies(enemy);
+  let E = units.reduce((t,u) => t + u.score*W[u.key], 0) + 0.25*(sP.early - sE.early);
+  let tri = 0, triText = "";
+  if (STYLE_BEATS[sP.style] === sE.style) { tri = 1; triText = `Your ${sP.style.toLowerCase()} comp beats their ${sE.style.toLowerCase()} comp: ${STYLE_WHY[sP.style]}.`; }
+  else if (STYLE_BEATS[sE.style] === sP.style) { tri = -1; triText = `Their ${sE.style.toLowerCase()} comp beats your ${sP.style.toLowerCase()} comp: ${STYLE_WHY[sE.style]}.`; }
+  const synSum = a => a.reduce((t,x)=>t+x.v,0);
+  const L = (sP.score - sE.score) + tri + (synSum(synP) - synSum(synE)) + 0.35*(sP.late - sE.late);
+  let F = 0.6*E + 0.55*L;
+  if (Math.abs(F) < 0.05) F = rng() < 0.5 ? 0.05 : -0.05;
+  const prob = clamp(1/(1+Math.exp(-F/1.8)), 0.03, 0.97);
+  const win = F > 0;
+  const res = {lanes, units, sP, sE, synP, synE, tri, triText, E, L, F, prob, win};
+  res.dur = Math.round((34 - Math.min(Math.abs(F),6)*2 + rng()*4) * 10) / 10;
+  const base = 10 + res.dur*0.5, m = Math.min(Math.abs(F),6);
+  const wk = Math.round(base*(0.55+m*0.05) + rng()*4), lk = Math.max(2, Math.round(base*(0.45-m*0.04) + rng()*3));
+  res.kills = win ? [wk, lk] : [lk, wk];
+  res.timeline = buildTimeline(res, mine, enemy, rng);
+  res.gold = buildGold(res, rng);
+  return res;
+}
+
+function topBy(team, key){ return ROLES.map(r=>team[r.key]).sort((a,b)=>CHAMPS[b][key]-CHAMPS[a][key])[0]; }
+
+function buildTimeline(res, mine, enemy, rng){
+  const ev = []; const add = (t, side, text) => ev.push({t, side, text});
+  const byAbs = [...res.units].sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
+  const fb = byAbs[0]; const fbYou = fb.score >= 0;
+  const kP = fb.fbP || fb.p, kE = fb.fbE || fb.e;
+  add(2 + rng()*3.5, fbYou?"y":"e", `First blood: ${fbYou?kP:kE} takes down ${fbYou?kE:kP} in ${LANE_WORD[fb.role]}.`);
+  res.units.forEach(l => {
+    if (l === fb || Math.abs(l.score) < 0.9) return;
+    const y = l.score > 0;
+    add(7 + rng()*4, y?"y":"e", `${y?l.p:l.e} pulls ahead of ${y?l.e:l.p} in ${LANE_WORD[l.role]}.`);
+  });
+  const lane = k => res.units.find(u=>u.key===k).score;
+  const drag = lane("jungle") + lane("bot") + (rng()-0.5)*0.6;
+  add(6 + rng()*2, drag>=0?"y":"e", `${drag>=0?"Your team":"The enemy team"} takes the first dragon.`);
+  const grubs = lane("top") + lane("jungle") + (rng()-0.5)*0.6;
+  add(8 + rng()*3, grubs>=0?"y":"e", `${grubs>=0?mine.jungle:enemy.jungle} secures the Voidgrubs for ${grubs>=0?"your":"their"} top side.`);
+  const midF = 0.5*res.E + 0.5*res.L + (rng()-0.5);
+  const midY = midF >= 0; const fightTeam = midY ? mine : enemy;
+  add(16 + rng()*4, midY?"y":"e", `${topBy(fightTeam,"eng")} starts a fight at dragon and ${midY?"your team":"the enemy team"} wins it.`);
+  if ((res.E >= 0) !== res.win) {
+    const why = res.win ? (res.sP.late > res.sE.late ? "your late-game champions outscale theirs" : res.triText || "your team comp is better for teamfights")
+                        : (res.sE.late > res.sP.late ? "their late-game champions outscale yours" : res.triText || "their team comp is better for teamfights");
+    add(21 + rng()*3, res.win?"y":"e", `${res.win?"Your team":"The enemy team"} comes back from behind: ${why.replace(/\.$/,"")}.`);
+  }
+  const baronT = Math.min(res.dur - 2.5, 22 + rng()*5);
+  const wTeam = res.win ? mine : enemy;
+  add(baronT, res.win?"y":"e", `${topBy(wTeam,"cc")} lands a big play around Baron and ${res.win?"your team":"the enemy team"} takes it.`);
+  add(res.dur, res.win?"y":"e", `${res.win?"Your team destroys":"The enemy team destroys"} the Nexus.`);
+  return ev.sort((a,b)=>a.t-b.t);
+}
+
+function buildGold(res, rng){
+  const pts = []; const dur = res.dur;
+  const g15 = clamp(res.E*500, -6000, 6000);
+  const gEnd = (res.win?1:-1) * (2500 + Math.min(Math.abs(res.F),6)*1200);
+  for (let t = 0; t <= Math.floor(dur); t++) {
+    let g;
+    if (t <= 15) g = g15 * Math.pow(t/15, 1.2);
+    else { const u = (t-15)/(dur-15); g = g15 + (gEnd-g15)*(u*u*(3-2*u)); }
+    if (t > 0) g += (rng()-0.5) * 500 * (t/dur);
+    pts.push([t, Math.round(g)]);
+  }
+  pts.push([dur, Math.round(gEnd)]);
+  return pts;
+}
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+const S = {spinning:0, pendingRender:false, mode:"daily", enemy:{}, mine:{}, rolls:{}, seen:{}, order:[], fresh:new Set(), result:null, seed:0, rollRng:null};
+
+function weightedPick(pool, weightOf, rng){
+  const weights = pool.map(weightOf);
+  let x = rng() * weights.reduce((a,b)=>a+b,0), i = 0;
+  while (i < pool.length-1 && x > weights[i]) { x -= weights[i]; i++; }
+  return pool[i];
+}
+
+function pickEnemy(rng){
+  const used = new Set(); const team = {};
+  ROLES.forEach(r => {
+    const pool = POOL[r.key].filter(n => !used.has(n) && CHAMPS[n]);
+    team[r.key] = weightedPick(pool, n => ENEMY_WEIGHT[ROLE_TIER[r.key][n]] || 1, rng);
+    used.add(team[r.key]);
+  });
+  return team;
+}
+
+// Give every open lane a new random champion that plays that role.
+function rollOpen(){
+  const used = new Set([...Object.values(S.enemy), ...Object.values(S.mine)]);
+  S.fresh = new Set();
+  ROLES.filter(r => !S.mine[r.key]).forEach(r => {
+    const prev = S.rolls[r.key];
+    let pool = POOL[r.key].filter(n => CHAMPS[n] && !used.has(n) && n !== prev);
+    if (!pool.length) pool = [prev];
+    const pick = weightedPick(pool, n => ROLE_TIER[r.key][n] === "U" ? 0.6 : 1, S.rollRng);
+    S.rolls[r.key] = pick; used.add(pick); S.fresh.add(r.key);
+    (S.seen[r.key] = S.seen[r.key] || []).push(pick);
+  });
+}
+
+function startGame(mode){
+  S.spinning = 0; S.pendingRender = false;
+  S.mode = mode; S.mine = {}; S.rolls = {}; S.seen = {}; S.order = []; S.result = null;
+  S.seed = mode === "daily" ? hashStr("daily:"+todayStr()) : (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
+  S.enemy = pickEnemy(mulberry32(S.seed));
+  S.rollRng = mulberry32((S.seed ^ 0x5bd1e995) >>> 0);
+  if (mode === "daily") {
+    const saved = store.get("daily", null);
+    if (saved && saved.date === todayStr() && saved.mine) {
+      S.mine = saved.mine; S.seen = saved.seen || {}; S.order = saved.order || [];
+      S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
+      render(true); return;
+    }
+  }
+  rollOpen();
+  render(true);
+}
+
+function lockLane(role){
+  if (S.result || !S.rolls[role]) return;
+  const champ = S.rolls[role];
+  S.mine[role] = champ; delete S.rolls[role]; S.order.push(role);
+  const left = ROLES.filter(r => !S.mine[r.key]).length;
+  if (!left) { finish(); return; }
+  rollOpen();
+  render();
+  announce(`${champ} locked in ${ROLES.find(r=>r.key===role).label}. ${left} lane${left>1?"s":""} rerolled.`);
+}
+
+function finish(){
+  S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
+  S.fresh = new Set();
+  const st = store.get("stats", {played:0, wins:0, streak:0, best:0});
+  st.played++; if (S.result.win) { st.wins++; st.streak++; st.best = Math.max(st.best, st.streak); } else st.streak = 0;
+  store.set("stats", st);
+  if (S.mode === "daily") store.set("daily", {date: todayStr(), mine: S.mine, seen: S.seen, order: S.order});
+  render();
+  announce(S.result.win ? "Victory." : "Defeat.");
+  const el = $("#results"); if (el && el.scrollIntoView) el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+}
+
+function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(fresh){
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
+  const st = store.get("stats", {played:0, wins:0, streak:0, best:0});
+  $("#stats").innerHTML = `<div><b>${st.played}</b>played</div><div><b>${st.played?Math.round(st.wins/st.played*100):0}%</b>won</div><div><b>${st.streak}</b>streak</div>`;
+  $("#draft").innerHTML = boardHTML(fresh);
+  $("#results").innerHTML = S.result ? resultsHTML(S.result) : "";
+  if (S.result) mountAd($("#ad-results"), CONFIG.adSlots.results);
+  if (!S.result && S.fresh.size) { const roles = ROLES.map(r=>r.key).filter(k => S.fresh.has(k)); S.fresh = new Set(); spinSlots(roles, 0); }
+}
+
+function boardHTML(fresh){
+  const done = !!S.result;
+  const rows = ROLES.map((r, i) => {
+    const m = S.mine[r.key], roll = S.rolls[r.key], e = S.enemy[r.key];
+    const lane = done ? S.result.lanes.find(l=>l.role===r.key) : null;
+    const chip = lane ? `<span class="chip ${lane.verdict}">${lane.verdict==="w"?"Won":lane.verdict==="l"?"Lost":"Even"}</span>` : "";
+    let mineEl;
+    if (m) {
+      mineEl = `<div class="slot mine locked">${portrait(m,48)}<span style="min-width:0"><span class="nm">${esc(m)}</span><span class="sub">${done?esc(CLASS_NAME[CHAMPS[m].cls]):"Locked"}</span></span></div>`;
+    } else {
+      mineEl = `<button type="button" class="slot mine rolled${S.fresh.has(r.key)?" new":""}" data-lock="${r.key}" aria-label="Lock in ${esc(roll)} for ${esc(r.label)}">${portrait(roll,48)}<span style="min-width:0"><span class="nm">${esc(roll)}</span><span class="sub">Tap to lock in</span></span><span class="lockpill" aria-hidden="true">Lock in</span></button>`;
+    }
+    const enemyEl = `<div class="slot enemy" style="--i:${fresh?i:0}">${portrait(e,48)}<span style="min-width:0"><span class="nm">${esc(e)}</span><span class="sub">${esc(CLASS_NAME[CHAMPS[e].cls])}</span></span></div>`;
+    return `<div class="row">${mineEl}<div class="lane"><span class="full">${esc(r.label)}</span><span class="short" aria-hidden="true">${esc(SHORT[r.key])}</span>${chip}</div>${enemyEl}</div>`;
+  }).join("");
+  const left = ROLES.filter(r=>!S.mine[r.key]).length;
+  const status = done ? "" : `<p class="status">${left === 1
+      ? "Last lane. Lock it in to play the match."
+      : `Lock in one lane and the other ${left-1} will reroll.`}</p>`;
+  return `<div class="board${fresh?" reveal":""}"><div class="sides"><span class="you">Your team</span><span></span><span class="them">Enemy team</span></div>${rows}${status}</div>`;
+}
+
+function goldSVG(gold){
+  const W = 600, H = 150, pad = 6;
+  const maxT = gold[gold.length-1][0];
+  const maxG = Math.max(2000, ...gold.map(p=>Math.abs(p[1])));
+  const x = t => pad + (W-2*pad)*t/maxT, y = g => H/2 - (H/2-pad)*g/maxG;
+  const line = gold.map((p,i)=>`${i?"L":"M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join("");
+  const area = `${line}L${x(maxT)},${H/2}L${x(0)},${H/2}Z`;
+  const last = gold[gold.length-1][1];
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gold lead over time, ending ${Math.abs(last).toLocaleString()} gold ${last>=0?"in your favor":"in the enemy's favor"}">
+    <defs><clipPath id="up"><rect x="0" y="0" width="${W}" height="${H/2}"/></clipPath><clipPath id="dn"><rect x="0" y="${H/2}" width="${W}" height="${H/2}"/></clipPath></defs>
+    <path d="${area}" fill="rgba(78,161,223,.28)" clip-path="url(#up)"/><path d="${area}" fill="rgba(227,91,79,.28)" clip-path="url(#dn)"/>
+    <line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#2A4560" stroke-width="1"/>
+    <path d="${line}" fill="none" stroke="#E9EEF3" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+function compCol(st, cls, title){
+  const apPct = Math.round(st.ap/5*100);
+  const meter = (label, v, max) => `<div class="meter">${label}<div class="bar"><i class="fill" style="width:${Math.min(100,Math.round(v/max*100))}%"></i></div></div>`;
+  return `<div class="${cls}"><h4>${title}: ${st.style.toLowerCase()} comp</h4>
+    <div class="meter">Damage: ${100-apPct}% physical, ${apPct}% magic<div class="bar"><i class="ad-part" style="width:${100-apPct}%"></i><i class="ap-part" style="width:${apPct}%"></i></div></div>
+    ${meter("Frontline", st.front, 10)}${meter("Engage", st.eng, 10)}${meter("Crowd control", st.cc, 13)}
+    <div class="meter">Power curve: ${st.early>st.late?"strongest early":st.late>st.early?"strongest late":"even across the game"}</div>
+    <ul class="warn">${st.notes.map(n=>`<li class="${n.bad?"bad":"good"}">${esc(n.t)}</li>`).join("")}</ul></div>`;
+}
+
+function resultsHTML(res){
+  const pct = Math.round(res.prob*100);
+  const won = res.units.filter(l=>l.verdict==="w").length, lost = res.units.filter(l=>l.verdict==="l").length;
+  const lede = res.win
+    ? (res.E >= 0 ? `You won ${won} of 4 lanes and turned that lead into a win.` : `You lost the early game but your team took over later on.`)
+    : (res.E < 0 ? `The enemy won ${lost} of 4 lanes and never gave the lead back.` : `You won the early game, but the enemy took over later on.`);
+  const lanes = res.units.map(l => {
+    const rs = [...l.reasons].sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0, l.duo ? 4 : 3);
+    const head = l.duo
+      ? `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in bot lane</em></div>`
+      : `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in ${esc(l.label.toLowerCase())}</em></div>`;
+    const duoLine = l.duo ? `<p class="duo">Your duo: ${esc(l.dP.label)}. Theirs: ${esc(l.dE.label)}.</p>` : "";
+    return `<div class="lr">${head}
+      <span class="chip ${l.verdict}">${l.verdict==="w"?"You won":l.verdict==="l"?"You lost":"Even"}</span>
+      ${duoLine}<ul>${rs.length?rs.map(r=>`<li>${esc(r.t)}</li>`).join(""):"<li>Close matchup with no big edge either way</li>"}</ul></div>`;
+  }).join("");
+  const syn = (arr) => arr.length ? arr.map(s=>`<li class="good">${esc(s.t)}</li>`).join("") : `<li>No standout combos</li>`;
+  const tl = res.timeline.map(e => `<li><time>${fmtTime(e.t)}</time><span class="${e.side}">${esc(e.text)}</span></li>`).join("");
+  const sug = ROLES.map(r => {
+    const mine = S.mine[r.key]; const seen = S.seen[r.key] || [mine];
+    const rolled = seen.length > 1 ? `Saw ${seen.length} rolls before locking ${esc(mine)}.` : `Locked ${esc(mine)} on the first roll.`;
+    const mineS = laneScore(mine, S.enemy[r.key], r.key).score;
+    const better = seen.filter(n => n !== mine).map(n => ({n, s:laneScore(n, S.enemy[r.key], r.key).score})).sort((a,b)=>b.s-a.s)[0];
+    const note = better && better.s > mineS + 0.5 ? ` ${esc(better.n)} was rolled here earlier and would have done better against ${esc(S.enemy[r.key])}.` : "";
+    return `<div><b>${esc(r.label)}</b><span>${rolled}${note}</span></div>`;
+  }).join("");
+  return `<div class="verdict ${res.win?"win":"loss"}"><div><h2>${res.win?"Victory":"Defeat"}</h2><p class="lede">${esc(lede)}</p></div>
+    <div class="kpis"><div class="kpi"><b>${pct}%</b>win chance</div><div class="kpi"><b>${fmtTime(res.dur)}</b>game length</div><div class="kpi"><b>${res.kills[0]}–${res.kills[1]}</b>kills</div></div></div>
+    <div class="actions">${S.mode==="daily"
+      ? `<button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`
+      : `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`}</div>
+    <div class="panels">
+      <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold)}<p>Above the line, your team is ahead. Below it, the enemy is.</p></div>
+      <div class="panel"><h3>How the game went</h3><ol class="tl">${tl}</ol></div>
+      <div class="panel wide"><h3>Lane by lane</h3>${lanes}<p class="src">Win rates: ${esc(MATCHUP_SOURCE)} ranked solo queue. A lane with no stat line didn't have enough games between those two champions, so it uses the tier and class model.</p></div>
+      <div class="panel wide"><h3>Team comps</h3><div class="comp">${compCol(res.sP,"you","Yours")}${compCol(res.sE,"them","Theirs")}</div>
+        ${res.triText?`<p class="meter" style="color:var(--text);margin-top:12px">${esc(res.triText)}</p>`:""}
+        <div class="comp" style="margin-top:8px"><div class="you"><h4>Your combos</h4><ul class="warn">${syn(res.synP)}</ul></div><div class="them"><h4>Their combos</h4><ul class="warn">${syn(res.synE)}</ul></div></div></div>
+      <div class="panel wide"><h3>Your rolls</h3><div class="sug">${sug}</div></div>
+    </div>
+    <div class="ad" id="ad-results" hidden></div>`;
+}
+
+/* ============================================================
+   SHARE
+   ============================================================ */
+function shareText(){
+  const r = S.result;
+  const sq = r.units.map(l => l.verdict==="w"?"🟦":l.verdict==="l"?"🟥":"⬜").join("");
+  const head = S.mode==="daily" ? `LeagueSim Daily #${dailyNumber()}` : "LeagueSim";
+  return `${head}: ${r.win?"Victory":"Defeat"} (${Math.round(r.prob*100)}% win chance)\n${sq}\n${CONFIG.siteUrl}`;
+}
+function toast(html, ms=2600){
+  const old = $(".toast"); if (old) old.remove();
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role","status"); t.innerHTML = html;
+  document.body.appendChild(t); setTimeout(() => t.remove(), ms);
+}
+async function share(){
+  const text = shareText();
+  try { await navigator.clipboard.writeText(text); toast("Result copied. Paste it anywhere to share."); return; } catch(e){}
+  try {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); ta.remove();
+    if (ok) { toast("Result copied. Paste it anywhere to share."); return; }
+  } catch(e){}
+  toast(`Copy your result:<textarea rows="3" readonly>${esc(text)}</textarea>`, 9000);
+}
+
+/* ============================================================
+   ADS (only active once CONFIG.adsenseClient is set)
+   ============================================================ */
+let adsLoaded = false;
+function mountAd(el, slot){
+  if (!el) return;
+  if (!CONFIG.adsenseClient || !slot) { el.hidden = true; return; }
+  if (!adsLoaded) {
+    const s = document.createElement("script"); s.async = true; s.crossOrigin = "anonymous";
+    s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + encodeURIComponent(CONFIG.adsenseClient);
+    document.head.appendChild(s); adsLoaded = true;
+  }
+  el.hidden = false;
+  el.innerHTML = `<small>Advertisement</small><ins class="adsbygoogle" style="display:block" data-ad-client="${esc(CONFIG.adsenseClient)}" data-ad-slot="${esc(slot)}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
+  try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+}
+
+/* ============================================================
+   REROLL ANIMATION (slot-machine reels; skipped for reduced motion)
+   ============================================================ */
+const SPIN_MS = 3000; // every lane spins for the same time and stops together
+// Portraits that have finished downloading. Reels only use these, so a phone
+// on a slow connection never spins through empty boxes.
+const LOADED = new Set();
+function preloadPortraits(){
+  const names = [...new Set(Object.values(POOL).flat())].filter(n => CHAMPS[n]);
+  let i = 0;
+  const next = () => {
+    if (i >= names.length) return;
+    const n = names[i++], im = new Image();
+    im.onload = () => { LOADED.add(n); next(); };
+    im.onerror = next;
+    im.src = imgUrl(n);
+  };
+  for (let k = 0; k < 4; k++) next();
+}
+
+function spinSlots(roles, startDelay){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !roles.length) return;
+  const slots = roles.map(r => [r, $(`[data-lock="${r}"]`)]).filter(([,el]) => el);
+  if (!slots.length) return;
+  const phone = matchMedia("(max-width: 520px)").matches;
+  S.spinning = slots.length;
+  document.querySelectorAll(".slot.rolled").forEach(b => b.disabled = true);
+  slots.forEach(([role, slot]) => {
+    const final = S.rolls[role];
+    const fin = new Image(); fin.onload = () => LOADED.add(final); fin.src = imgUrl(final);
+    const taken = new Set([...Object.values(S.enemy), ...Object.values(S.mine)]);
+    const others = POOL[role].filter(n => CHAMPS[n] && n !== final && !taken.has(n));
+    const ready = others.filter(n => LOADED.has(n));
+    const source = ready.length >= 6 ? ready : others;
+    const seq = [];
+    while (seq.length < 17) {
+      const n = source[Math.floor(Math.random()*source.length)];
+      if (n !== seq[seq.length-1] || source.length < 2) seq.push(n);
+    }
+    seq.push(final);
+    const pt = slot.querySelector(".pt"), nm = slot.querySelector(".nm"), sub = slot.querySelector(".sub");
+    slot.classList.add("spin"); if (sub) sub.textContent = "Rolling…";
+    const reel = document.createElement("div"); reel.className = "reel";
+    reel.innerHTML = seq.map(n => `<span class="cell"><b>${esc(initials(n))}</b><img src="${esc(imgUrl(n))}" alt="" decoding="async" onerror="this.remove()"></span>`).join("");
+    pt.appendChild(reel); pt.classList.add("spinning");
+    nm.textContent = seq[0];
+    const n = seq.length - 1;
+    const end = `translate3d(0,-${n/(n+1)*100}%,0)`, near = `translate3d(0,-${(n-1)/(n+1)*100}%,0)`;
+    const frames = phone
+      ? [{transform:"translate3d(0,0,0)"}, {transform:near, offset:.75}, {transform:end}]
+      : [{transform:"translate3d(0,0,0)", filter:"blur(2.5px)"}, {transform:near, filter:"blur(1px)", offset:.75}, {transform:end, filter:"blur(0)"}];
+    const anim = reel.animate(frames, {duration:SPIN_MS, delay:startDelay, easing:"cubic-bezier(.2,.65,.3,1)", fill:"both"});
+    // keep the name in step with whichever portrait the reel is showing
+    const tick = () => {
+      if (!reel.isConnected) return;
+      const ty = new DOMMatrix(getComputedStyle(reel).transform).m42;
+      const name = seq[Math.min(n, Math.max(0, Math.round(-ty / (pt.clientHeight || 1))))];
+      if (nm.textContent !== name) nm.textContent = name;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    anim.onfinish = () => {
+      if (!slot.isConnected) return;
+      reel.remove(); pt.classList.remove("spinning");
+      pt.innerHTML = `<b>${esc(initials(final))}</b><img src="${esc(imgUrl(final))}" alt="" onerror="this.remove()">`;
+      nm.textContent = final; slot.classList.remove("spin");
+      if (sub) sub.textContent = "Tap to lock in";
+      pt.classList.add("settle");
+      S.spinning--;
+      if (S.spinning <= 0) {
+        S.spinning = 0;
+        document.querySelectorAll(".slot.rolled").forEach(b => b.disabled = false);
+        if (S.pendingRender) { S.pendingRender = false; render(); }
+      }
+    };
+  });
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.addEventListener("click", e => {
+  const mode = e.target.closest("[data-mode]");
+  if (mode) { if (mode.dataset.mode !== S.mode || S.mode === "unlimited") startGame(mode.dataset.mode); return; }
+  const lock = e.target.closest("[data-lock]");
+  if (lock) {
+    if (S.spinning) return;
+    const role = lock.dataset.lock;
+    lockLane(role);
+    return;
+  }
+  const act = e.target.closest("[data-act]");
+  if (act) {
+    if (act.dataset.act === "share") share();
+    if (act.dataset.act === "again" || act.dataset.act === "unlimited") { startGame("unlimited"); window.scrollTo({top:0}); }
+  }
+});
+
+/* ============================================================
+   START
+   ============================================================ */
+mountAd($("#ad-top"), CONFIG.adSlots.top);
+mountAd($("#ad-bottom"), CONFIG.adSlots.bottom);
+startGame("daily");
+loadDdragon().then(ok => {
+  preloadPortraits();
+  if (!ok) return; if (S.spinning) S.pendingRender = true; else render();
+});
+</script>
+</body>
+</html>

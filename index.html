@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoL Galaxy: League of Legends fan games</title>
+<meta name="description" content="Free League of Legends fan games. Play LeagueSim: counter-draft a random enemy team lane by lane.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0F1D2C;--deck:#16283B;--deck2:#1C3249;--rule:#2A4560;--text:#E9EEF3;--mute:#97A9BC;--blue:#4EA1DF;--red:#E35B4F;--gold:#E7B53C;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;--body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--text);font:17px/1.55 var(--body)}
+a{color:var(--blue)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 40px}
+.mark{font:700 52px/0.95 var(--cond);margin:0}
+.tag{color:var(--mute);margin:8px 0 28px;max-width:52ch}
+.game{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:var(--deck);border:1px solid var(--rule);border-left:4px solid var(--blue);border-radius:12px;padding:20px 22px;text-decoration:none;color:inherit}
+.game:hover{background:var(--deck2)}
+.game h2{font:700 34px/1 var(--cond);margin:0 0 6px}
+.game p{margin:0;color:var(--mute);max-width:56ch}
+.play{font:700 20px/1 var(--cond);background:var(--gold);color:#1a1405;border-radius:10px;padding:12px 20px;white-space:nowrap}
+@media (max-width:560px){.game{grid-template-columns:1fr}.play{justify-self:start}.mark{font-size:44px}}
+footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);color:var(--mute);font-size:13px}
+footer p{margin:6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="mark">LoL Galaxy</h1>
+  <p class="tag">Free fan-made games for League of Legends players.</p>
+
+  <a class="game" href="leagueSim/">
+    <div>
+      <h2>LeagueSim</h2>
+      <p>The enemy team is locked in. Roll champions for each lane, lock in your best counters, and see if your draft wins. New daily draft every day.</p>
+    </div>
+    <span class="play">Play LeagueSim</span>
+  </a>
+
+  <footer>
+    <p><a href="privacy.html">Privacy policy</a></p>
+    <p>LoL Galaxy was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
+  </footer>
+</div>
+</body>
+</html>

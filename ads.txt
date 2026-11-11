@@ -1,0 +1,4 @@
+# ads.txt for lolgalaxy.com
+# After AdSense approves the site, copy the line AdSense gives you (Account > Settings > ads.txt)
+# and replace the commented line below with it. Remove the leading "# " so it takes effect.
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
