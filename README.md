@@ -4,7 +4,7 @@ Source for lolgalaxy.com, served by GitHub Pages.
 
 - `index.html`: homepage
 - `leagueSim/index.html`: the LeagueSim game (everything in one file)
-- `privacy.html`: privacy policy (add a contact before applying for AdSense)
+- `privacy.html`: privacy policy 
 - `ads.txt`: fill in your AdSense publisher line after approval
 - `404.html`: sends lowercase links like /leaguesim to /leagueSim/
 
