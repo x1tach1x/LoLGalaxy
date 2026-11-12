@@ -1222,7 +1222,7 @@ document.addEventListener("click", e => {
    ============================================================ */
 mountAd($("#ad-top"), CONFIG.adSlots.top);
 mountAd($("#ad-bottom"), CONFIG.adSlots.bottom);
-startGame("daily");
+startGame(new URLSearchParams(location.search).get("mode") === "unlimited" ? "unlimited" : "daily");
 loadDdragon().then(ok => {
   preloadPortraits();
   if (!ok) return; if (S.spinning) S.pendingRender = true; else render();
