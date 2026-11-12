@@ -107,6 +107,9 @@ button{cursor:pointer}
 .kpi{font-size:14px;color:var(--mute)}
 .kpi b{display:block;font:600 28px/1 var(--cond);color:var(--text)}
 .lede{max-width:70ch;color:var(--text);margin:6px 0 0}
+.community{margin:4px 0 0;padding:10px 14px;background:var(--deck);border:1px solid var(--rule);border-radius:10px;max-width:70ch;font-size:15px;color:var(--mute)}
+.community b{color:var(--text);font-weight:600}.community .cw{color:var(--blue)}.community .cl{color:var(--red)}
+.next{margin:8px 0 0;font-size:14px;color:var(--mute)}
 .chip{font:600 13px/1 var(--body);padding:4px 8px;border-radius:999px;background:var(--deck2);color:var(--even)}
 .chip.w{background:rgba(78,161,223,.16);color:var(--blue)}
 .chip.l{background:rgba(227,91,79,.16);color:var(--red)}
@@ -215,6 +218,8 @@ const CONFIG = {
   adsenseClient: "",            // e.g. "ca-pub-1234567890123456"
   adSlots: { top: "", results: "", bottom: "" },   // ad unit slot IDs from AdSense
   siteUrl: "lolgalaxy.com/leagueSim",
+  // Community stats counter (Cloudflare Worker). Leave blank to hide community stats.
+  statsApi: "",                 // e.g. "https://lolgalaxy-stats.yourname.workers.dev"
   launchDate: "2026-11-11",     // Daily #1
   fallbackDdragonVersion: "16.22.1"
 };
@@ -643,8 +648,14 @@ const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function hashStr(s){ let h = 2166136261; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h>>>0; }
 function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; }; }
-function todayStr(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-function dailyNumber(){ const a = new Date(CONFIG.launchDate+"T00:00:00"); const b = new Date(todayStr()+"T00:00:00"); return Math.max(1, Math.round((b-a)/864e5)+1); }
+// The daily changes at midnight UTC so every player worldwide shares the same draft (and community stats).
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function dailyNumber(){ const a = Date.parse(CONFIG.launchDate+"T00:00:00Z"), b = Date.parse(todayStr()+"T00:00:00Z"); return Math.max(1, Math.round((b-a)/864e5)+1); }
+function untilNextDaily(){
+  const now = new Date(), next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1);
+  const mins = Math.max(1, Math.ceil((next - now)/60000)), h = Math.floor(mins/60), m = mins % 60;
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
 function initials(n){ const w = n.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean); return (w.length>1 ? w[0][0]+w[1][0] : n.slice(0,2)).toUpperCase(); }
 function portrait(name, size){
   return `<span class="pt" style="--s:${size}px"><b>${esc(initials(name))}</b><img src="${esc(imgUrl(name))}" alt="" loading="lazy" onerror="this.remove()"></span>`;
@@ -898,7 +909,7 @@ function buildGold(res, rng){
 /* ============================================================
    GAME STATE
    ============================================================ */
-const S = {spinning:0, pendingRender:false, mode:"daily", enemy:{}, mine:{}, rolls:{}, seen:{}, order:[], fresh:new Set(), result:null, seed:0, rollRng:null};
+const S = {community:null, spinning:0, pendingRender:false, mode:"daily", enemy:{}, mine:{}, rolls:{}, seen:{}, order:[], fresh:new Set(), result:null, seed:0, rollRng:null};
 
 function weightedPick(pool, weightOf, rng){
   const weights = pool.map(weightOf);
@@ -933,7 +944,7 @@ function rollOpen(){
 
 function startGame(mode){
   S.spinning = 0; S.pendingRender = false;
-  S.mode = mode; S.mine = {}; S.rolls = {}; S.seen = {}; S.order = []; S.result = null;
+  S.mode = mode; S.mine = {}; S.rolls = {}; S.seen = {}; S.order = []; S.result = null; S.community = null;
   S.seed = mode === "daily" ? hashStr("daily:"+todayStr()) : (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
   S.enemy = pickEnemy(mulberry32(S.seed));
   S.rollRng = mulberry32((S.seed ^ 0x5bd1e995) >>> 0);
@@ -942,7 +953,10 @@ function startGame(mode){
     if (saved && saved.date === todayStr() && saved.mine) {
       S.mine = saved.mine; S.seen = saved.seen || {}; S.order = saved.order || [];
       S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
-      render(true); return;
+      render(true);
+      // Already played today: just look up the community totals (and send the result if it never went through).
+      store.get("posted", null) === todayStr() ? communityFetch() : communityPost(S.result.win);
+      return;
     }
   }
   rollOpen();
@@ -968,8 +982,39 @@ function finish(){
   store.set("stats", st);
   if (S.mode === "daily") store.set("daily", {date: todayStr(), mine: S.mine, seen: S.seen, order: S.order});
   render();
+  if (S.mode === "daily") communityPost(S.result.win);
   announce(S.result.win ? "Victory." : "Defeat.");
   const el = $("#results"); if (el && el.scrollIntoView) el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+}
+
+/* ---------- Community stats for today's daily ---------- */
+async function communityCall(path, opts){
+  if (!CONFIG.statsApi) return null;
+  try {
+    const r = await fetch(CONFIG.statsApi.replace(/\/$/,"") + path, opts);
+    if (!r.ok) return null;
+    const t = await r.json();
+    return (typeof t.wins === "number" && typeof t.losses === "number") ? t : null;
+  } catch(e) { return null; }
+}
+function communityShow(t){
+  if (!t || S.mode !== "daily") return;
+  S.community = t;
+  const el = $("#community");
+  if (el) { el.innerHTML = communityHTML(); el.hidden = false; }
+}
+async function communityFetch(){ communityShow(await communityCall(`/stats?date=${todayStr()}`)); }
+async function communityPost(win){
+  if (!CONFIG.statsApi) return;
+  const date = todayStr();
+  const t = await communityCall(`/result?date=${date}`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({win: !!win})});
+  if (t) { store.set("posted", date); communityShow(t); } else communityFetch();
+}
+function communityHTML(){
+  const t = S.community; if (!t) return "";
+  const total = t.wins + t.losses; if (!total) return "";
+  const pct = Math.round(t.wins / total * 100);
+  return `<b>${total.toLocaleString("en-US")}</b> ${total === 1 ? "player has" : "players have"} played today's draft: <b class="cw">${t.wins.toLocaleString("en-US")} won</b>, <b class="cl">${t.losses.toLocaleString("en-US")} lost</b> (${pct}% win rate).`;
 }
 
 function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
@@ -1062,6 +1107,7 @@ function resultsHTML(res){
   }).join("");
   return `<div class="verdict ${res.win?"win":"loss"}"><div><h2>${res.win?"Victory":"Defeat"}</h2><p class="lede">${esc(lede)}</p></div>
     <div class="kpis"><div class="kpi"><b>${pct}%</b>win chance</div><div class="kpi"><b>${fmtTime(res.dur)}</b>game length</div><div class="kpi"><b>${res.kills[0]}–${res.kills[1]}</b>kills</div></div></div>
+    ${S.mode==="daily" ? `<p class="community" id="community"${S.community ? "" : " hidden"}>${communityHTML()}</p><p class="next">Next daily draft in ${untilNextDaily()}.</p>` : ""}
     <div class="actions">${S.mode==="daily"
       ? `<button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`
       : `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`}</div>
@@ -1084,7 +1130,8 @@ function shareText(){
   const r = S.result;
   const sq = r.units.map(l => l.verdict==="w"?"🟦":l.verdict==="l"?"🟥":"⬜").join("");
   const head = S.mode==="daily" ? `LeagueSim Daily #${dailyNumber()}` : "LeagueSim";
-  return `${head}: ${r.win?"Victory":"Defeat"} (${Math.round(r.prob*100)}% win chance)\n${sq}\n${CONFIG.siteUrl}`;
+  const t = S.community, comm = (S.mode==="daily" && t && (t.wins+t.losses)) ? `\nCommunity: ${Math.round(t.wins/(t.wins+t.losses)*100)}% won today` : "";
+  return `${head}: ${r.win?"Victory":"Defeat"} (${Math.round(r.prob*100)}% win chance)\n${sq}${comm}\n${CONFIG.siteUrl}`;
 }
 function toast(html, ms=2600){
   const old = $(".toast"); if (old) old.remove();
