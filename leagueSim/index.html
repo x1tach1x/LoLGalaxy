@@ -35,6 +35,12 @@ button{cursor:pointer}
 .wrap{max-width:1100px;margin:0 auto;padding:14px 16px 40px}
 
 /* header */
+.site-nav{display:flex;justify-content:space-between;align-items:center;padding:4px 0 14px;margin-bottom:14px;border-bottom:1px solid var(--rule)}
+.site-nav a{color:var(--mute);text-decoration:none;font:600 16px var(--cond);margin-left:16px}
+.site-nav a:hover{color:var(--text)}
+.site-nav .home{margin-left:0;font:700 22px/1 var(--cond);color:var(--text)}
+.site-nav .home span{color:var(--mute);font-weight:500}
+footer .links a{margin-right:14px}
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
 .mark{font:700 40px/0.95 var(--cond);letter-spacing:-0.5px;margin:0}
 .mark span{color:var(--mute);font-weight:500}
@@ -180,6 +186,10 @@ footer p{margin:6px 0}
 </head>
 <body>
 <div class="wrap">
+  <nav class="site-nav" aria-label="Site">
+    <a class="home" href="../">LoL <span>Galaxy</span></a>
+    <span><a href="../">Home</a><a href="../privacy.html">Privacy</a></span>
+  </nav>
   <header class="top">
     <div>
       <h1 class="mark">LeagueSim</h1>
@@ -205,6 +215,7 @@ footer p{margin:6px 0}
   <div class="ad" id="ad-bottom" hidden></div>
 
   <footer>
+    <p class="links"><a href="../">LoL Galaxy home</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lolgalaxy.com">contact@lolgalaxy.com</a></p>
     <p>LeagueSim was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
     <p>Lane matchups use real ranked win rates from LoLalytics (patch 26.22, Emerald+ solo queue) where there are enough games. Lane tiers follow public patch 26.22 tier lists; "niche" champions are playable in a lane but weren't ranked there. Team comps, duo fit and the play-by-play are a simplified model, so treat results as for fun, not as coaching.</p>
   </footer>
