@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LeagueSim: counter-draft a random enemy team</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
 <meta name="description" content="Pick a champion for every lane to beat a random enemy draft. LeagueSim scores lane tiers, matchups and team comps to decide who wins.">
 <meta property="og:title" content="LeagueSim">
 <meta property="og:description" content="Counter-draft a random enemy team, lane by lane. A new daily draft every day.">
@@ -215,7 +216,7 @@ footer p{margin:6px 0}
    ============================================================ */
 const CONFIG = {
   // Google AdSense. Leave blank until your site is approved; ad boxes stay hidden while blank.
-  adsenseClient: "",            // e.g. "ca-pub-1234567890123456"
+  adsenseClient: "ca-pub-7663278305650835",
   adSlots: { top: "", results: "", bottom: "" },   // ad unit slot IDs from AdSense
   siteUrl: "lolgalaxy.com/leagueSim",
   // Community stats counter (Cloudflare Worker). Leave blank to hide community stats.
@@ -1152,7 +1153,7 @@ async function share(){
 /* ============================================================
    ADS (only active once CONFIG.adsenseClient is set)
    ============================================================ */
-let adsLoaded = false;
+let adsLoaded = !!document.querySelector('script[src*="adsbygoogle.js"]'); // already in <head>
 function mountAd(el, slot){
   if (!el) return;
   if (!CONFIG.adsenseClient || !slot) { el.hidden = true; return; }
