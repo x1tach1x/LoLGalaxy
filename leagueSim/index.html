@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>LeagueSim: counter-draft a random enemy team</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
 <meta name="description" content="Pick a champion for every lane to beat a random enemy draft. LeagueSim scores lane tiers, matchups and team comps to decide who wins.">
@@ -674,6 +676,8 @@ function portrait(name, size){
 }
 const store = {
   get(k, d){ try { const v = localStorage.getItem("leaguesim:"+k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  // stats always come back as plain non-negative integers, even if storage was edited by hand
+  stats(){ const r = this.get("stats", {}) || {}, n = x => Math.max(0, Math.floor(Number(x) || 0)); return {played:n(r.played), wins:n(r.wins), streak:n(r.streak), best:n(r.best)}; },
   set(k, v){ try { localStorage.setItem("leaguesim:"+k, JSON.stringify(v)); } catch(e){} }
 };
 const fmtTime = m => { const mm = Math.floor(m), ss = Math.round((m-mm)*60); return `${mm}:${String(Math.min(ss,59)).padStart(2,"0")}`; };
@@ -962,7 +966,7 @@ function startGame(mode){
   S.rollRng = mulberry32((S.seed ^ 0x5bd1e995) >>> 0);
   if (mode === "daily") {
     const saved = store.get("daily", null);
-    if (saved && saved.date === todayStr() && saved.mine) {
+    if (saved && saved.date === todayStr() && saved.mine && ROLES.every(r => CHAMPS[saved.mine[r.key]])) {
       S.mine = saved.mine; S.seen = saved.seen || {}; S.order = saved.order || [];
       S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
       render(true);
@@ -989,7 +993,7 @@ function lockLane(role){
 function finish(){
   S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
   S.fresh = new Set();
-  const st = store.get("stats", {played:0, wins:0, streak:0, best:0});
+  const st = store.stats();
   st.played++; if (S.result.win) { st.wins++; st.streak++; st.best = Math.max(st.best, st.streak); } else st.streak = 0;
   store.set("stats", st);
   if (S.mode === "daily") store.set("daily", {date: todayStr(), mine: S.mine, seen: S.seen, order: S.order});
@@ -1006,7 +1010,9 @@ async function communityCall(path, opts){
     const r = await fetch(CONFIG.statsApi.replace(/\/$/,"") + path, opts);
     if (!r.ok) return null;
     const t = await r.json();
-    return (typeof t.wins === "number" && typeof t.losses === "number") ? t : null;
+    const n = x => (Number.isFinite(x) && x >= 0) ? Math.floor(x) : null;
+    const wins = n(t && t.wins), losses = n(t && t.losses);
+    return (wins === null || losses === null) ? null : {wins, losses};
   } catch(e) { return null; }
 }
 function communityShow(t){
@@ -1036,7 +1042,7 @@ function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
    ============================================================ */
 function render(fresh){
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
-  const st = store.get("stats", {played:0, wins:0, streak:0, best:0});
+  const st = store.stats();
   $("#stats").innerHTML = `<div><b>${st.played}</b>played</div><div><b>${st.played?Math.round(st.wins/st.played*100):0}%</b>won</div><div><b>${st.streak}</b>streak</div>`;
   $("#draft").innerHTML = boardHTML(fresh);
   $("#results").innerHTML = S.result ? resultsHTML(S.result) : "";

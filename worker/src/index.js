@@ -3,8 +3,10 @@
 //   GET  /stats?date=YYYY-MM-DD   -> {"date","wins","losses"}
 //   POST /result?date=YYYY-MM-DD  body {"win": true|false} -> updated totals
 //
-// Each day has its own Durable Object, so counting is atomic. A player (IP address,
-// hashed with the date so raw IPs are never stored) is counted once per day.
+// Each day has its own Durable Object, so counting is atomic. A player is counted once
+// per day by a SHA-256 hash of their IP address and a random secret that's generated for
+// that day and never leaves Cloudflare. Raw IPs are never stored, and because the code is
+// public the secret is what stops anyone from reversing the hashes.
 // Results are only accepted from the LoL Galaxy site, and only for today or yesterday (UTC).
 
 const ALLOWED_ORIGINS = [
@@ -22,6 +24,7 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type",
       "Access-Control-Max-Age": "86400",
       "Vary": "Origin",
+      "X-Content-Type-Options": "nosniff",
     };
     const reply = (body, status = 200, extra = {}) =>
       new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...cors, ...extra } });
@@ -45,13 +48,13 @@ export default {
       const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
       if (date !== today && date !== yesterday) return reply({ error: "only today's daily can be submitted" }, 400);
 
+      if (Number(request.headers.get("Content-Length") || 0) > 200) return reply({ error: "body too large" }, 413);
       let body;
-      try { body = await request.json(); } catch { return reply({ error: "invalid JSON" }, 400); }
+      try { body = JSON.parse((await request.text()).slice(0, 200)); } catch { return reply({ error: "invalid JSON" }, 400); }
       if (typeof body?.win !== "boolean") return reply({ error: "win must be true or false" }, 400);
 
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-      const voter = await sha256(`${ip}|${date}|${env.SALT || "lolgalaxy"}`);
-      const res = await day.fetch("https://do/vote", { method: "POST", body: JSON.stringify({ voter, win: body.win }) });
+      const res = await day.fetch("https://do/vote", { method: "POST", body: JSON.stringify({ ip, win: body.win }) });
       return reply({ date, ...(await res.json()) });
     }
 
@@ -71,8 +74,13 @@ export class DailyStats {
   async fetch(request) {
     const path = new URL(request.url).pathname;
     if (path === "/vote" && request.method === "POST") {
-      const { voter, win } = await request.json();
-      const key = "v:" + voter;
+      const { ip, win } = await request.json();
+      let salt = await this.storage.get("salt");
+      if (!salt) {
+        salt = [...crypto.getRandomValues(new Uint8Array(32))].map(b => b.toString(16).padStart(2, "0")).join("");
+        await this.storage.put("salt", salt);
+      }
+      const key = "v:" + (await sha256(`${salt}|${ip}`));
       const totals = await this.totals();
       if (!(await this.storage.get(key))) {
         win ? totals.wins++ : totals.losses++;

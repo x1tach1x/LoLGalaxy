@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>LoL Galaxy: League of Legends fan games</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
 <meta name="description" content="Free League of Legends fan games. Today's LeagueSim draft is live: roll champions, lock in counters to a random enemy team, and see if your draft wins.">
@@ -252,9 +254,11 @@ tick(); setInterval(tick, 30000);
 
 // Community totals for today's daily
 if (STATS_API) fetch(`${STATS_API.replace(/\/$/,"")}/stats?date=${today}`).then(r => r.ok ? r.json() : null).then(t => {
-  if (!t || !(t.wins + t.losses)) return;
-  const total = t.wins + t.losses, el = document.getElementById("comm");
-  el.innerHTML = `<b>${total.toLocaleString("en-US")}</b> ${total === 1 ? "player has" : "players have"} tried it so far: <b class="w">${t.wins.toLocaleString("en-US")} won</b>, <b class="l">${t.losses.toLocaleString("en-US")} lost</b>.`;
+  const n = x => (Number.isFinite(x) && x >= 0) ? Math.floor(x) : null;
+  const wins = n(t && t.wins), losses = n(t && t.losses);
+  if (wins === null || losses === null || !(wins + losses)) return;
+  const total = wins + losses, el = document.getElementById("comm");
+  el.innerHTML = `<b>${total.toLocaleString("en-US")}</b> ${total === 1 ? "player has" : "players have"} tried it so far: <b class="w">${wins.toLocaleString("en-US")} won</b>, <b class="l">${losses.toLocaleString("en-US")} lost</b>.`;
   el.hidden = false;
 }).catch(() => {});
 
@@ -264,7 +268,10 @@ try {
   const daily = JSON.parse(localStorage.getItem("leaguesim:daily") || "null");
   const me = document.getElementById("me");
   if (daily && daily.date === today) me.innerHTML = `You've played today's draft. <a href="leagueSim/">See your result</a>`;
-  else if (st && st.played) me.innerHTML = `Your streak: <b>${st.streak}</b>. Best: <b>${st.best || st.streak}</b>.`;
+  else if (st && st.played) {
+    const n = x => Math.max(0, Math.floor(Number(x) || 0));
+    me.innerHTML = `Your streak: <b>${n(st.streak)}</b>. Best: <b>${n(st.best) || n(st.streak)}</b>.`;
+  }
 } catch(e) {}
 </script>
 </body>
