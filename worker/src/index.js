@@ -1,4 +1,4 @@
-// LoL Galaxy community stats: counts wins and losses for each day's LaneLock daily draft.
+// LaneLock community stats: counts wins and losses for each day's LaneLock daily draft.
 //
 //   GET  /stats?date=YYYY-MM-DD   -> {"date","wins","losses"}
 //   POST /result?date=YYYY-MM-DD  body {"win": true|false} -> updated totals
@@ -7,9 +7,11 @@
 // per day by a SHA-256 hash of their IP address and a random secret that's generated for
 // that day and never leaves Cloudflare. Raw IPs are never stored, and because the code is
 // public the secret is what stops anyone from reversing the hashes.
-// Results are only accepted from the LoL Galaxy site, and only for today or yesterday (UTC).
+// Results are only accepted from the LaneLock site, and only for today or yesterday (UTC).
 
 const ALLOWED_ORIGINS = [
+  "https://lanelock.net",
+  "https://www.lanelock.net",
   "https://lolgalaxy.com",
   "https://www.lolgalaxy.com",
   "https://x1tach1x.github.io",

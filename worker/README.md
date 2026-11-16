@@ -1,4 +1,4 @@
-# LoL Galaxy community stats
+# LaneLock community stats
 
 Cloudflare Worker that counts wins and losses for each day's LaneLock daily draft.
 
