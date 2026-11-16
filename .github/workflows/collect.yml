@@ -1,0 +1,63 @@
+# Collects ranked games from the Riot API and updates lane matchup totals on the "data" branch.
+# Run it from the Actions tab: "Collect match data" > Run workflow.
+# Needs a RIOT_API_KEY secret (Settings > Secrets and variables > Actions).
+# Development keys expire every 24 hours, so paste a fresh one before each run until the
+# production key is approved. Then uncomment the schedule below to run it daily.
+name: Collect match data
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "How many minutes to collect for"
+        default: "60"
+      regions:
+        description: "Regions (na1, euw1, kr)"
+        default: "na1,euw1,kr"
+  # schedule:
+  #   - cron: "17 7 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load saved totals from the data branch
+        run: |
+          if git ls-remote --exit-code --heads origin data >/dev/null; then
+            git fetch --depth=1 origin data
+            git worktree add -B data state origin/data
+          else
+            git worktree add --detach state
+            git -C state checkout --orphan data
+            git -C state rm -rf --quiet . || true
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect games
+        env:
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+        run: python3 collector/collect.py --state state --minutes "${{ inputs.minutes || '60' }}" --regions "${{ inputs.regions || 'na1,euw1,kr' }}"
+
+      - name: Save totals to the data branch
+        if: always()
+        run: |
+          cd state
+          [ -f report.md ] && cat report.md >> "$GITHUB_STEP_SUMMARY"
+          git add -A
+          if git diff --cached --quiet; then echo "Nothing new to save."; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Match totals $(date -u +%Y-%m-%d)"
+          git push -q origin data
