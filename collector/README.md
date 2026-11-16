@@ -13,13 +13,15 @@ so nothing reaches the live game until you choose to apply it.
 1. Get an API key from https://developer.riotgames.com (sign in with your Riot account).
 2. In GitHub: Settings > Secrets and variables > Actions > New repository secret.
    Name it `RIOT_API_KEY` and paste the key.
-3. Actions tab > **Collect match data** > **Run workflow**. Choose how many minutes to collect.
+3. Wait for the next scheduled run, or start one now: Actions tab > **Collect match data** > **Run workflow**.
 4. When it finishes, open the run to read the report: games collected, how many matchups have
    enough games, and how our numbers compare with the game's current data.
 
-Development keys expire every 24 hours, so update the secret before each run until LaneLock's
-production key is approved. With the production key, uncomment the `schedule` in
-`.github/workflows/collect.yml` to collect every day.
+It also runs by itself every 6 hours, collecting for about 5.5 hours each time. Development keys
+expire after 24 hours; when that happens, runs stop early without failing (the run summary says the
+key expired). So until the production key is approved, the only manual step is pasting a fresh key
+into the `RIOT_API_KEY` secret, and one key covers about a day of collecting. Once the production
+key is saved there, nothing needs doing at all.
 
 ## Using the data
 

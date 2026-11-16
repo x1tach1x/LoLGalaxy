@@ -317,18 +317,26 @@ def main():
     if not a.report_only:
         key = os.environ.get("RIOT_API_KEY", "").strip()
         if not key:
-            print("::error::No RIOT_API_KEY secret is set. Add it under Settings > Secrets and variables > Actions.")
-            return 2
+            print("::warning::No RIOT_API_KEY secret is set, so nothing was collected. "
+                  "Add it under Settings > Secrets and variables > Actions.")
+            write_outputs(state, known)
+            return 0
         regions = [r.strip() for r in a.regions.split(",") if r.strip() in REGIONS]
         riot = Riot(key, os.environ.get("RIOT_API_BASE", "https://{host}.api.riotgames.com"))
         try:
             names = champion_names(os.environ.get("DDRAGON_BASE", "https://ddragon.leagueoflegends.com"))
             collect(riot, state, names, regions, a.minutes, a.players)
         except KeyProblem as e:
+            # Expected every day with a development key, so this isn't treated as a failure:
+            # scheduled runs just skip until a fresh key is saved.
             state.save(); write_outputs(state, known)
-            print(f"::error::{e}. Development keys expire every 24 hours: generate a new one in the Riot Developer "
-                  "Portal and update the RIOT_API_KEY secret. Totals collected so far were saved.")
-            return 3
+            print(f"::warning::{e}: the API key has expired or isn't allowed. Development keys last 24 hours; "
+                  "generate a new one in the Riot Developer Portal and update the RIOT_API_KEY secret. "
+                  "Totals collected so far were saved, and the next scheduled run will pick up the new key.")
+            with open(os.environ.get("GITHUB_STEP_SUMMARY", os.devnull), "a") as f:
+                f.write("> **Riot API key expired.** Paste a fresh development key into the RIOT_API_KEY secret "
+                        "and the next scheduled run will continue.\n\n")
+            return 0
     write_outputs(state, known)
     return 0
 

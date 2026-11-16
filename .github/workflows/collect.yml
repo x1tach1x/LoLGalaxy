@@ -1,8 +1,9 @@
 # Collects ranked games from the Riot API and updates lane matchup totals on the "data" branch.
-# Run it from the Actions tab: "Collect match data" > Run workflow.
-# Needs a RIOT_API_KEY secret (Settings > Secrets and variables > Actions).
-# Development keys expire every 24 hours, so paste a fresh one before each run until the
-# production key is approved. Then uncomment the schedule below to run it daily.
+# Runs every 6 hours on its own (about 5.5 hours of collecting each time), and can also be
+# started from the Actions tab: "Collect match data" > Run workflow.
+# Needs a RIOT_API_KEY secret (Settings > Secrets and variables > Actions). Development keys
+# expire every 24 hours; when the key has expired a run just stops early without failing,
+# so pasting a fresh key is the only manual step until the production key is approved.
 name: Collect match data
 
 on:
@@ -14,8 +15,8 @@ on:
       regions:
         description: "Regions (na1, euw1, kr)"
         default: "na1,euw1,kr"
-  # schedule:
-  #   - cron: "17 7 * * *"
+  schedule:
+    - cron: "17 */6 * * *"
 
 permissions:
   contents: write
@@ -49,7 +50,7 @@ jobs:
       - name: Collect games
         env:
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
-        run: python3 collector/collect.py --state state --minutes "${{ inputs.minutes || '60' }}" --regions "${{ inputs.regions || 'na1,euw1,kr' }}"
+        run: python3 collector/collect.py --state state --minutes "${{ inputs.minutes || '330' }}" --regions "${{ inputs.regions || 'na1,euw1,kr' }}"
 
       - name: Save totals to the data branch
         if: always()
