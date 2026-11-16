@@ -11,3 +11,7 @@ class_name = "DailyStats"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["DailyStats"]
+
+# Post each new daily to Discord just after midnight UTC (only if the DISCORD_WEBHOOK secret is set)
+[triggers]
+crons = ["2 0 * * *"]

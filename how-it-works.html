@@ -22,6 +22,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +44,7 @@
     <p>Top, jungle and mid are scored as one-on-one matchups between your champion and the enemy in the same role.</p>
 
     <h3>Real ranked win rates come first</h3>
-    <p>For most popular matchups LaneLock uses real data: how often one champion beats the other in that lane in Emerald+ ranked solo queue on the current patch (from LoLalytics, patch 26.22). If Darius wins 54% of his games against Kayle in top lane, that 4-point edge counts toward your score.</p>
+    <p>For most popular matchups LaneLock uses real data: how often one champion beats the other in that lane in Emerald+ ranked solo queue on the current patch (from LoLalytics, patch 26.22). If one top laner wins 54% of their games against another, that 4-point edge counts toward your score. Every lane on the results page links to the full head-to-head on LoLalytics if you want to dig deeper.</p>
     <p>Small samples are treated with suspicion. A matchup played 300 times can swing a few points on luck alone, so LaneLock shrinks the edge toward even until there are enough games to trust it. A pairing with tens of thousands of games keeps nearly all of its edge, and one with a few hundred keeps less than half.</p>
 
     <h3>Tier lists and champion classes fill the gaps</h3>
@@ -118,5 +119,6 @@
     <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
   </footer>
 </div>
+<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));</script>
 </body>
 </html>

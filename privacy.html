@@ -12,6 +12,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,10 +35,10 @@
   <p>You don't sign up or log in, and we don't ask for your name, email or any other personal details.</p>
 
   <h2>Game progress stored on your device</h2>
-  <p>LaneLock saves your stats (games played, win rate, streak) and your daily result in your browser's local storage. This stays on your device, isn't sent to us, and you can clear it at any time by clearing your browser's site data.</p>
+  <p>LaneLock saves your stats (games played, win rate, streaks), your daily results and your settings in your browser's local storage. If you install LaneLock as an app, your browser also keeps a copy of the site's pages so it can open without a connection. This stays on your device, isn't sent to us, and you can clear it at any time by clearing your browser's site data.</p>
 
   <h2>Community stats</h2>
-  <p>When you finish the daily LaneLock draft, the site sends whether you won or lost to our stats counter (a Cloudflare Worker) so we can show how the community did that day. To count each player only once per day, the counter stores a one-way hash of your IP address combined with the date. Your actual IP address isn't stored, and the hash can't be turned back into it.</p>
+  <p>When you finish the daily LaneLock draft, the site sends whether you won or lost, and your draft's win chance, to our stats counter (a Cloudflare Worker) so we can show how the community did that day and how your draft ranked. Neither is linked to you. To count each player only once per day, the counter stores a one-way hash of your IP address combined with the date. Your actual IP address isn't stored, and the hash can't be turned back into it.</p>
 
   <h2>Advertising</h2>
   <p>This site may show ads from Google AdSense. Google and its partners use cookies to serve ads based on your visits to this and other websites. You can learn how Google uses this information at <a href="https://policies.google.com/technologies/partner-sites">policies.google.com/technologies/partner-sites</a> and turn off personalized ads at <a href="https://adssettings.google.com">adssettings.google.com</a>. Visitors in the European Economic Area, the UK and Switzerland are asked for consent before personalized ads are shown.</p>
@@ -65,5 +66,6 @@
     <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
   </footer>
 </div>
+<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));</script>
 </body>
 </html>

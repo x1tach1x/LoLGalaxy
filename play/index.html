@@ -23,6 +23,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
@@ -45,6 +46,7 @@
 html,body{margin:0}
 body{background:var(--ink);color:var(--text);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
 button,input{font:inherit;color:inherit}
+a{color:var(--blue)}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .wrap{max-width:1100px;margin:0 auto;padding:14px 16px 40px}
@@ -66,6 +68,22 @@ footer .links a{margin-right:14px}
 .seg button[aria-pressed="true"]{background:var(--deck2);color:var(--text)}
 .stats{display:flex;gap:14px;font-size:14px;color:var(--mute)}
 .stats b{display:block;font:600 20px/1 var(--cond);color:var(--text)}
+.seg button[hidden]{display:none}
+.hard{display:inline-flex;align-items:center;gap:7px;font:600 16px var(--cond);color:var(--mute);cursor:pointer;user-select:none}
+.hard[hidden]{display:none}
+.hard input{width:18px;height:18px;accent-color:var(--gold);margin:0}
+.hard:has(input:checked){color:var(--gold)}
+.pastbar{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 0 6px;max-width:760px;scrollbar-width:thin}
+.pastbar[hidden]{display:none}
+.pastbar button{flex:none;display:grid;gap:1px;text-align:left;padding:7px 12px;border:1px solid var(--rule);border-radius:10px;background:var(--deck);min-width:96px}
+.pastbar button b{font:600 17px/1.1 var(--cond)}
+.pastbar button span{font-size:12px;color:var(--mute)}
+.pastbar button.w span{color:var(--blue)} .pastbar button.l span{color:var(--red)}
+.pastbar button[aria-current="true"]{border-color:var(--gold);background:var(--deck2)}
+.slot.enemy.hidden .pt b{color:var(--red);font-size:24px}
+.slot.enemy.hidden .nm{color:var(--mute)}
+.slot.enemy.flipin .pt{animation:flip .5s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){.slot.enemy.flipin .pt{animation:none}}
 
 /* ads */
 .ad{margin:14px auto;text-align:center;min-height:0}
@@ -147,6 +165,7 @@ footer .links a{margin-right:14px}
 .src{font-size:13px;color:var(--mute);margin:10px 0 0}
 .lr .duo{grid-column:1/-1;margin:2px 0 0;font-size:14px;color:var(--text)}
 .lr ul{grid-column:1/-1;margin:2px 0 0;padding-left:18px;color:var(--mute);font-size:14px}
+.lr .more{grid-column:1/-1;margin:4px 0 0;font-size:13px;color:var(--mute)}
 .comp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .comp h4{margin:0 0 6px;font:600 18px var(--cond)}
 .comp .you h4{color:var(--blue)} .comp .them h4{color:var(--red)}
@@ -213,8 +232,10 @@ footer p{margin:6px 0}
     <div class="controls">
       <div class="seg" role="group" aria-label="Game mode">
         <button type="button" data-mode="daily">Daily</button>
+        <button type="button" data-mode="past" id="past-btn" hidden>Past</button>
         <button type="button" data-mode="unlimited">Unlimited</button>
       </div>
+      <label class="hard" id="hard-wrap" hidden><input type="checkbox" id="hard"> Hard mode</label>
       <div class="stats" id="stats"></div>
     </div>
   </header>
@@ -222,6 +243,7 @@ footer p{margin:6px 0}
   <div class="ad" id="ad-top" hidden></div>
 
   <main>
+    <nav class="pastbar" id="pastbar" aria-label="Past daily drafts" hidden></nav>
     <section class="draft" id="draft"></section>
     <section class="results" id="results"></section>
     <div class="sr" id="live" aria-live="polite"></div>
@@ -677,7 +699,15 @@ function hashStr(s){ let h = 2166136261; for (let i=0;i<s.length;i++){ h ^= s.ch
 function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; }; }
 // The daily changes at midnight UTC so every player worldwide shares the same draft (and community stats).
 function todayStr(){ return new Date().toISOString().slice(0,10); }
-function dailyNumber(){ const a = Date.parse(CONFIG.launchDate+"T00:00:00Z"), b = Date.parse(todayStr()+"T00:00:00Z"); return Math.max(1, Math.round((b-a)/864e5)+1); }
+function addDays(d, n){ return new Date(Date.parse(d+"T00:00:00Z") + n*864e5).toISOString().slice(0,10); }
+function dailyNumber(d){ const a = Date.parse(CONFIG.launchDate+"T00:00:00Z"), b = Date.parse((d || todayStr())+"T00:00:00Z"); return Math.max(1, Math.round((b-a)/864e5)+1); }
+// Past dailies you can still play: up to a week back, never before launch.
+function pastDates(){
+  const out = [], today = todayStr();
+  for (let i = 1; i <= 7; i++) { const d = addDays(today, -i); if (d < CONFIG.launchDate) break; out.push(d); }
+  return out;
+}
+function fmtDay(d){ return new Date(d+"T12:00:00Z").toLocaleDateString("en-US", {month:"short", day:"numeric", timeZone:"UTC"}); }
 function untilNextDaily(){
   const now = new Date(), next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1);
   const mins = Math.max(1, Math.ceil((next - now)/60000)), h = Math.floor(mins/60), m = mins % 60;
@@ -692,7 +722,31 @@ const store = {
   get(k, d){ try { const v = localStorage.getItem("leaguesim:"+k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
   // stats always come back as plain non-negative integers, even if storage was edited by hand
   stats(){ const r = this.get("stats", {}) || {}, n = x => Math.max(0, Math.floor(Number(x) || 0)); return {played:n(r.played), wins:n(r.wins), streak:n(r.streak), best:n(r.best)}; },
-  set(k, v){ try { localStorage.setItem("leaguesim:"+k, JSON.stringify(v)); } catch(e){} }
+  set(k, v){ try { localStorage.setItem("leaguesim:"+k, JSON.stringify(v)); } catch(e){} },
+  // Days in a row with a finished daily. It lapses if yesterday's daily was skipped.
+  dayStreak(){
+    const r = this.get("dstreak", {}) || {}, n = x => Math.max(0, Math.floor(Number(x) || 0));
+    const today = todayStr(), live = r.last === today || r.last === addDays(today, -1);
+    return {cur: live ? n(r.cur) : 0, best: n(r.best), last: typeof r.last === "string" ? r.last : ""};
+  },
+  bumpDayStreak(){
+    const today = todayStr(), d = this.dayStreak();
+    if (d.last === today) return;
+    const cur = d.last === addDays(today, -1) ? d.cur + 1 : 1;
+    this.set("dstreak", {cur, best: Math.max(d.best, cur), last: today});
+  },
+  // Finished dailies by date, so past ones can be revisited. Keeps the last 21.
+  savedDaily(date){
+    const a = this.get("archive", {}) || {}, d = this.get("daily", null);
+    return a[date] || (d && d.date === date ? d : null);
+  },
+  saveDaily(date, rec){
+    const a = this.get("archive", {}) || {};
+    a[date] = {date, ...rec};
+    Object.keys(a).sort().slice(0, -21).forEach(k => delete a[k]);
+    this.set("archive", a);
+    if (date === todayStr()) this.set("daily", {date, ...rec});
+  }
 };
 const fmtTime = m => { const mm = Math.floor(m), ss = Math.round((m-mm)*60); return `${mm}:${String(Math.min(ss,59)).padStart(2,"0")}`; };
 const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
@@ -939,7 +993,7 @@ function buildGold(res, rng){
 /* ============================================================
    GAME STATE
    ============================================================ */
-const S = {community:null, spinning:0, pendingRender:false, mode:"daily", enemy:{}, mine:{}, rolls:{}, seen:{}, order:[], fresh:new Set(), result:null, seed:0, rollRng:null};
+const S = {community:null, spinning:0, pendingRender:false, mode:"daily", date:null, hard:false, revealOrder:[], justRevealed:null, enemy:{}, mine:{}, rolls:{}, seen:{}, order:[], fresh:new Set(), result:null, seed:0, rollRng:null};
 
 function weightedPick(pool, weightOf, rng){
   const weights = pool.map(weightOf);
@@ -972,20 +1026,27 @@ function rollOpen(){
   });
 }
 
-function startGame(mode){
+function startGame(mode, date){
   S.spinning = 0; S.pendingRender = false;
-  S.mode = mode; S.mine = {}; S.rolls = {}; S.seen = {}; S.order = []; S.result = null; S.community = null;
-  S.seed = mode === "daily" ? hashStr("daily:"+todayStr()) : (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
+  S.mode = mode; S.mine = {}; S.rolls = {}; S.seen = {}; S.order = []; S.result = null; S.community = null; S.justRevealed = null;
+  S.date = mode === "daily" ? todayStr() : mode === "past" ? date : null;
+  S.hard = mode === "unlimited" && store.get("hard", false) === true;
+  S.seed = S.date ? hashStr("daily:"+S.date) : (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
   S.enemy = pickEnemy(mulberry32(S.seed));
   S.rollRng = mulberry32((S.seed ^ 0x5bd1e995) >>> 0);
-  if (mode === "daily") {
-    const saved = store.get("daily", null);
-    if (saved && saved.date === todayStr() && saved.mine && ROLES.every(r => CHAMPS[saved.mine[r.key]])) {
+  // hard mode reveals the enemy one lane at a time, in a random order
+  const rr = mulberry32((S.seed ^ 0x9e3779b9) >>> 0);
+  S.revealOrder = ROLES.map(r => r.key).map(k => [rr(), k]).sort((a,b) => a[0]-b[0]).map(x => x[1]);
+  if (S.date) {
+    const saved = store.savedDaily(S.date);
+    if (saved && saved.mine && ROLES.every(r => CHAMPS[saved.mine[r.key]])) {
       S.mine = saved.mine; S.seen = saved.seen || {}; S.order = saved.order || [];
       S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
       render(true);
-      // Already played today: just look up the community totals (and send the result if it never went through).
-      store.get("posted", null) === todayStr() ? communityFetch() : communityPost(S.result.win);
+      if (mode === "daily") {
+        // Already played today: just look up the community totals (and send the result if it never went through).
+        store.get("posted", null) === todayStr() ? communityFetch() : communityPost(S.result.win, S.result.prob);
+      }
       return;
     }
   }
@@ -993,26 +1054,36 @@ function startGame(mode){
   render(true);
 }
 
+function revealedEnemies(){
+  if (!S.hard || S.result) return new Set(ROLES.map(r => r.key));
+  return new Set(S.revealOrder.slice(0, Math.min(5, 1 + S.order.length)));
+}
+
 function lockLane(role){
   if (S.result || !S.rolls[role]) return;
   const champ = S.rolls[role];
+  const before = revealedEnemies();
   S.mine[role] = champ; delete S.rolls[role]; S.order.push(role);
   const left = ROLES.filter(r => !S.mine[r.key]).length;
   if (!left) { finish(); return; }
+  const newly = [...revealedEnemies()].find(k => !before.has(k));
+  S.justRevealed = newly || null;
   rollOpen();
   render();
-  announce(`${champ} locked in ${ROLES.find(r=>r.key===role).label}. ${left} lane${left>1?"s":""} rerolled.`);
+  const lbl = k => ROLES.find(r=>r.key===k).label;
+  announce(`${champ} locked in ${lbl(role)}. ${left} lane${left>1?"s":""} rerolled.` + (newly ? ` Enemy ${lbl(newly)} revealed: ${S.enemy[newly]}.` : ""));
 }
 
 function finish(){
   S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
-  S.fresh = new Set();
+  S.fresh = new Set(); S.justRevealed = null;
   const st = store.stats();
   st.played++; if (S.result.win) { st.wins++; st.streak++; st.best = Math.max(st.best, st.streak); } else st.streak = 0;
   store.set("stats", st);
-  if (S.mode === "daily") store.set("daily", {date: todayStr(), mine: S.mine, seen: S.seen, order: S.order});
+  if (S.date) store.saveDaily(S.date, {mine: S.mine, seen: S.seen, order: S.order, win: S.result.win});
+  if (S.mode === "daily") store.bumpDayStreak();
   render();
-  if (S.mode === "daily") communityPost(S.result.win);
+  if (S.mode === "daily") communityPost(S.result.win, S.result.prob);
   announce(S.result.win ? "Victory." : "Defeat.");
   const el = $("#results"); if (el && el.scrollIntoView) el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
 }
@@ -1026,7 +1097,10 @@ async function communityCall(path, opts){
     const t = await r.json();
     const n = x => (Number.isFinite(x) && x >= 0) ? Math.floor(x) : null;
     const wins = n(t && t.wins), losses = n(t && t.losses);
-    return (wins === null || losses === null) ? null : {wins, losses};
+    if (wins === null || losses === null) return null;
+    // win-chance histogram (index = whole percent); ignored if it looks wrong
+    const hist = Array.isArray(t.hist) && t.hist.length === 101 && t.hist.every(x => n(x) !== null) ? t.hist.map(n) : null;
+    return {wins, losses, hist};
   } catch(e) { return null; }
 }
 function communityShow(t){
@@ -1036,17 +1110,31 @@ function communityShow(t){
   if (el) { el.innerHTML = communityHTML(); el.hidden = false; }
 }
 async function communityFetch(){ communityShow(await communityCall(`/stats?date=${todayStr()}`)); }
-async function communityPost(win){
+async function communityPost(win, prob){
   if (!CONFIG.statsApi) return;
   const date = todayStr();
-  const t = await communityCall(`/result?date=${date}`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({win: !!win})});
+  const p = Math.max(0, Math.min(100, Math.round((prob || 0) * 100)));
+  const t = await communityCall(`/result?date=${date}`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({win: !!win, p})});
   if (t) { store.set("posted", date); communityShow(t); } else communityFetch();
 }
 function communityHTML(){
   const t = S.community; if (!t) return "";
   const total = t.wins + t.losses; if (!total) return "";
   const pct = Math.round(t.wins / total * 100);
-  return `<b>${total.toLocaleString("en-US")}</b> ${total === 1 ? "player has" : "players have"} played today's draft: <b class="cw">${t.wins.toLocaleString("en-US")} won</b>, <b class="cl">${t.losses.toLocaleString("en-US")} lost</b> (${pct}% win rate).`;
+  const b = beatPct();
+  const rank = b === null ? "" : ` Your draft's ${Math.round(S.result.prob*100)}% win chance beat <b>${b}%</b> of them.`;
+  return `<b>${total.toLocaleString("en-US")}</b> ${total === 1 ? "player has" : "players have"} played today's draft: <b class="cw">${t.wins.toLocaleString("en-US")} won</b>, <b class="cl">${t.losses.toLocaleString("en-US")} lost</b> (${pct}% win rate).${rank}`;
+}
+// Share of today's other drafts with a lower win chance than yours (ties count half).
+function beatPct(){
+  const t = S.community, h = t && t.hist;
+  if (!h || !S.result) return null;
+  const p = Math.round(S.result.prob*100);
+  let lower = 0, equal = 0, total = 0;
+  h.forEach((c, i) => { total += c; if (i < p) lower += c; else if (i === p) equal += c; });
+  const others = total - 1; // your own draft is in there too
+  if (others < 4) return null;
+  return Math.max(0, Math.min(100, Math.round((lower + Math.max(0, equal - 1)/2) / others * 100)));
 }
 
 function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
@@ -1057,8 +1145,20 @@ function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
 function render(fresh){
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
   const st = store.stats();
-  $("#stats").innerHTML = `<div><b>${st.played}</b>played</div><div><b>${st.played?Math.round(st.wins/st.played*100):0}%</b>won</div><div><b>${st.streak}</b>streak</div>`;
+  const ds = store.dayStreak();
+  $("#stats").innerHTML = `<div><b>${st.played}</b>played</div><div><b>${st.played?Math.round(st.wins/st.played*100):0}%</b>won</div><div><b>${st.streak}</b>win streak</div><div><b>${ds.cur}</b>day streak</div>`;
+  const past = pastDates();
+  $("#past-btn").hidden = !past.length;
+  $("#hard-wrap").hidden = S.mode !== "unlimited";
+  $("#hard").checked = S.hard;
+  const pb = $("#pastbar");
+  pb.hidden = S.mode !== "past";
+  if (S.mode === "past") pb.innerHTML = past.map(d => {
+    const sv = store.savedDaily(d), st2 = sv && typeof sv.win === "boolean" ? (sv.win ? "w" : "l") : sv ? "p" : "";
+    return `<button type="button" data-past="${d}" class="${st2}"${d === S.date ? ' aria-current="true"' : ""}><b>#${dailyNumber(d)} ${esc(fmtDay(d))}</b><span>${st2==="w"?"Won":st2==="l"?"Lost":st2==="p"?"Played":"Not played"}</span></button>`;
+  }).join("");
   $("#draft").innerHTML = boardHTML(fresh);
+  S.justRevealed = null; // only animate a newly revealed enemy once
   $("#results").innerHTML = S.result ? resultsHTML(S.result) : "";
   if (S.result) mountAd($("#ad-results"), CONFIG.adSlots.results);
   if (!S.result && S.fresh.size) { const roles = ROLES.map(r=>r.key).filter(k => S.fresh.has(k)); S.fresh = new Set(); spinSlots(roles, 0); }
@@ -1066,6 +1166,7 @@ function render(fresh){
 
 function boardHTML(fresh){
   const done = !!S.result;
+  const shown = revealedEnemies();
   const rows = ROLES.map((r, i) => {
     const m = S.mine[r.key], roll = S.rolls[r.key], e = S.enemy[r.key];
     const lane = done ? S.result.lanes.find(l=>l.role===r.key) : null;
@@ -1076,13 +1177,15 @@ function boardHTML(fresh){
     } else {
       mineEl = `<button type="button" class="slot mine rolled${S.fresh.has(r.key)?" new":""}" data-lock="${r.key}" aria-label="Lock in ${esc(roll)} for ${esc(r.label)}">${portrait(roll,48)}<span style="min-width:0"><span class="nm">${esc(roll)}</span><span class="sub">Tap to lock in</span></span><span class="lockpill" aria-hidden="true">Lock in</span></button>`;
     }
-    const enemyEl = `<div class="slot enemy" style="--i:${fresh?i:0}">${portrait(e,48)}<span style="min-width:0"><span class="nm">${esc(e)}</span><span class="sub">${esc(CLASS_NAME[CHAMPS[e].cls])}</span></span></div>`;
+    const enemyEl = shown.has(r.key)
+      ? `<div class="slot enemy${S.justRevealed===r.key?" flipin":""}" style="--i:${fresh?i:0}">${portrait(e,48)}<span style="min-width:0"><span class="nm">${esc(e)}</span><span class="sub">${esc(CLASS_NAME[CHAMPS[e].cls])}</span></span></div>`
+      : `<div class="slot enemy hidden"><span class="pt"><b>?</b></span><span style="min-width:0"><span class="nm">Hidden</span><span class="sub">Lock to reveal</span></span></div>`;
     return `<div class="row">${mineEl}<div class="lane"><span class="full">${esc(r.label)}</span><span class="short" aria-hidden="true">${esc(SHORT[r.key])}</span>${chip}</div>${enemyEl}</div>`;
   }).join("");
   const left = ROLES.filter(r=>!S.mine[r.key]).length;
   const status = done ? "" : `<p class="status">${left === 1
       ? "Last lane. Lock it in to play the match."
-      : `Lock in one lane and the other ${left-1} will reroll.`}</p>`;
+      : `Lock in one lane and the other ${left-1} will reroll.`}${S.hard && shown.size < 5 ? " Hard mode: each lock reveals one more enemy." : ""}${S.mode==="past" ? ` Daily #${dailyNumber(S.date)} from ${esc(fmtDay(S.date))}.` : ""}</p>`;
   return `<div class="board${fresh?" reveal":""}"><div class="sides"><span class="you">Your team</span><span></span><span class="them">Enemy team</span></div>${rows}${status}</div>`;
 }
 
@@ -1101,6 +1204,20 @@ function goldSVG(gold){
     <path d="${line}" fill="none" stroke="#E9EEF3" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
 }
 
+// Link to the full head-to-head page on LoLalytics (builds, runes, win rate by game length).
+const LOLA_SLUG = {"Nunu & Willump":"nunu", "Renata Glasc":"renata"};
+const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
+function lolaUrl(p, e, role){
+  const slug = n => LOLA_SLUG[n] || n.toLowerCase().replace(/[^a-z]/g, "");
+  return `https://lolalytics.com/lol/${slug(p)}/vs/${slug(e)}/build/?lane=${LOLA_LANE[role]}`;
+}
+function lolaLink(p, e, role, label){
+  return `<a class="lola" href="${esc(lolaUrl(p, e, role))}" target="_blank" rel="noopener">${esc(label)}</a>`;
+}
+
+// the most recent past daily you haven't played yet
+function nextPast(){ return pastDates().find(d => d !== S.date && !store.savedDaily(d)) || null; }
+
 function compCol(st, cls, title){
   const apPct = Math.round(st.ap/5*100);
   const meter = (label, v, max) => `<div class="meter">${label}<div class="bar"><i class="fill" style="width:${Math.min(100,Math.round(v/max*100))}%"></i></div></div>`;
@@ -1115,17 +1232,24 @@ function resultsHTML(res){
   const pct = Math.round(res.prob*100);
   const won = res.units.filter(l=>l.verdict==="w").length, lost = res.units.filter(l=>l.verdict==="l").length;
   const lede = res.win
-    ? (res.E >= 0 ? `You won ${won} of 4 lanes and turned that lead into a win.` : `You lost the early game but your team took over later on.`)
-    : (res.E < 0 ? `The enemy won ${lost} of 4 lanes and never gave the lead back.` : `You won the early game, but the enemy took over later on.`);
+    ? (res.E < 0 ? `You lost the early game, but your team took over later on.`
+       : won > lost ? `You won ${won} of 4 lanes and turned that lead into a win.`
+       : `The lanes were close, but your draft came out ahead and closed out the game.`)
+    : (res.E >= 0 ? `You won the early game, but the enemy took over later on.`
+       : lost > won ? `The enemy won ${lost} of 4 lanes and never gave the lead back.`
+       : `The lanes were close, but the enemy's draft came out ahead and closed out the game.`);
   const lanes = res.units.map(l => {
     const rs = [...l.reasons].sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0, l.duo ? 4 : 3);
     const head = l.duo
       ? `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in bot lane</em></div>`
       : `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in ${esc(l.label.toLowerCase())}</em></div>`;
     const duoLine = l.duo ? `<p class="duo">Your duo: ${esc(l.dP.label)}. Theirs: ${esc(l.dE.label)}.</p>` : "";
+    const more = l.duo
+      ? `<p class="more">Full stats on LoLalytics: ${lolaLink(S.mine.adc, S.enemy.adc, "adc", `${S.mine.adc} vs ${S.enemy.adc}`)}, ${lolaLink(S.mine.support, S.enemy.support, "support", `${S.mine.support} vs ${S.enemy.support}`)}</p>`
+      : `<p class="more">${lolaLink(l.p, l.e, l.role, `Full ${l.p} vs ${l.e} stats on LoLalytics`)}</p>`;
     return `<div class="lr">${head}
       <span class="chip ${l.verdict}">${l.verdict==="w"?"You won":l.verdict==="l"?"You lost":"Even"}</span>
-      ${duoLine}<ul>${rs.length?rs.map(r=>`<li>${esc(r.t)}</li>`).join(""):"<li>Close matchup with no big edge either way</li>"}</ul></div>`;
+      ${duoLine}<ul>${rs.length?rs.map(r=>`<li>${esc(r.t)}</li>`).join(""):"<li>Close matchup with no big edge either way</li>"}</ul>${more}</div>`;
   }).join("");
   const syn = (arr) => arr.length ? arr.map(s=>`<li class="good">${esc(s.t)}</li>`).join("") : `<li>No standout combos</li>`;
   const tl = res.timeline.map(e => `<li><time>${fmtTime(e.t)}</time><span class="${e.side}">${esc(e.text)}</span></li>`).join("");
@@ -1140,9 +1264,10 @@ function resultsHTML(res){
   return `<div class="verdict ${res.win?"win":"loss"}"><div><h2>${res.win?"Victory":"Defeat"}</h2><p class="lede">${esc(lede)}</p></div>
     <div class="kpis"><div class="kpi"><b>${pct}%</b>win chance</div><div class="kpi"><b>${fmtTime(res.dur)}</b>game length</div><div class="kpi"><b>${res.kills[0]}–${res.kills[1]}</b>kills</div></div></div>
     ${S.mode==="daily" ? `<p class="community" id="community"${S.community ? "" : " hidden"}>${communityHTML()}</p><p class="next">Next daily draft in ${untilNextDaily()}.</p>` : ""}
-    <div class="actions">${S.mode==="daily"
-      ? `<button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`
-      : `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`}</div>
+    ${S.mode==="past" ? `<p class="next">This was Daily #${dailyNumber(S.date)} from ${esc(fmtDay(S.date))}. Past dailies count toward your win streak, but not your day streak.</p>` : ""}
+    <div class="actions">${S.mode==="unlimited"
+      ? `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`
+      : `<button type="button" class="btn" data-act="share">Share result</button>${nextPast() ? `<button type="button" class="btn ghost" data-past="${nextPast()}">Play #${dailyNumber(nextPast())}</button>` : ""}<button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`}</div>
     <div class="panels">
       <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold)}<p>Above the line, your team is ahead. Below it, the enemy is.</p></div>
       <div class="panel"><h3>How the game went</h3><ol class="tl">${tl}</ol></div>
@@ -1163,12 +1288,18 @@ function shareText(){
   const LBL = {top:"Top", jungle:"Jungle", mid:"Mid", bot:"Bot"};
   const sq = v => v==="w" ? "🟦" : v==="l" ? "🟥" : "⬜";
   const lanes = r.units.map(u => `${sq(u.verdict)} ${LBL[u.key]}`).join("  ");
-  const head = `${S.mode==="daily" ? `LaneLock #${dailyNumber()}` : "LaneLock"} ${r.win ? "🏆 Victory" : "❌ Defeat"}, ${Math.round(r.prob*100)}% win chance`;
-  const rolls = ROLES.reduce((n, x) => n + Math.max(1, (S.seen[x.key] || []).length), 0);
-  const streak = store.stats().streak;
-  const extra = `🎲 ${rolls} rolls` + (streak >= 2 ? `  🔥 ${streak} win streak` : "");
-  const t = S.community, comm = (S.mode==="daily" && t && (t.wins+t.losses)) ? `\nCommunity: ${Math.round(t.wins/(t.wins+t.losses)*100)}% won today` : "";
-  return `${head}\n${lanes}\n${extra}${comm}\n${CONFIG.siteUrl}`;
+  const name = S.date ? `LaneLock #${dailyNumber(S.date)}` : S.hard ? "LaneLock Hard" : "LaneLock";
+  const head = `${name} ${r.win ? "🏆 Victory" : "❌ Defeat"}, ${Math.round(r.prob*100)}% win chance`;
+  const streak = store.stats().streak, days = store.dayStreak().cur;
+  const bits = [];
+  if (S.mode === "daily" && days >= 2) bits.push(`📅 ${days}-day streak`);
+  if (streak >= 2) bits.push(`🔥 ${streak} win streak`);
+  const extra = bits.length ? `\n${bits.join("  ")}` : "";
+  const t = S.community, b = S.mode === "daily" ? beatPct() : null;
+  const comm = b !== null ? `\n📊 Beat ${b}% of today's drafts`
+    : (S.mode==="daily" && t && (t.wins+t.losses)) ? `\nCommunity: ${Math.round(t.wins/(t.wins+t.losses)*100)}% won today` : "";
+  const link = S.mode === "past" ? `${CONFIG.siteUrl}/?date=${S.date}` : CONFIG.siteUrl;
+  return `${head}\n${lanes}${extra}${comm}\n${link}`;
 }
 function toast(html, ms=2600){
   const old = $(".toast"); if (old) old.remove();
@@ -1225,29 +1356,82 @@ function preloadPortraits(){
     im.onerror = next;
     im.src = imgUrl(n);
   };
-  for (let k = 0; k < 4; k++) next();
+  for (let k = 0; k < 6; k++) next();
 }
 
-function spinSlots(roles, startDelay){
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !roles.length) return;
-  const slots = roles.map(r => [r, $(`[data-lock="${r}"]`)]).filter(([,el]) => el);
-  if (!slots.length) return;
-  const phone = matchMedia("(max-width: 520px)").matches;
-  S.spinning = slots.length;
-  document.querySelectorAll(".slot.rolled").forEach(b => b.disabled = true);
+// Puts a lane back to normal once its reroll has landed.
+function settleSlot(slot, pt, nm, sub, final){
+  if (!slot.isConnected) return;
+  pt.classList.remove("spinning");
+  pt.innerHTML = `<b>${esc(initials(final))}</b><img src="${esc(imgUrl(final))}" alt="" onerror="this.remove()">`;
+  nm.textContent = final; slot.classList.remove("spin");
+  if (sub) sub.textContent = "Tap to lock in";
+  pt.classList.add("settle");
+  S.spinning--;
+  if (S.spinning <= 0) {
+    S.spinning = 0;
+    document.querySelectorAll(".slot.rolled").forEach(b => b.disabled = false);
+    if (S.pendingRender) { S.pendingRender = false; render(); }
+  }
+}
+
+// Random fillers for a lane's reroll, preferring portraits that have already downloaded.
+function rollSequence(role, final, count){
+  const taken = new Set([...Object.values(S.enemy), ...Object.values(S.mine)]);
+  const others = POOL[role].filter(n => CHAMPS[n] && n !== final && !taken.has(n));
+  const ready = others.filter(n => LOADED.has(n));
+  const source = ready.length >= 6 ? ready : others;
+  const seq = [];
+  while (seq.length < count) {
+    const n = source[Math.floor(Math.random()*source.length)];
+    if (n !== seq[seq.length-1] || source.length < 2) seq.push(n);
+  }
+  seq.push(final);
+  return seq;
+}
+
+// Phones (and Reduce Motion): swap portraits in place, fast at first and slowing to a stop.
+// No sliding strip, so it can't hit mobile Safari's clipping bugs, and nothing moves on screen.
+function flipSlots(slots, startDelay, reduced){
+  const steps = reduced ? 7 : 20, curve = reduced ? 1.2 : 1.7;
   slots.forEach(([role, slot]) => {
     const final = S.rolls[role];
     const fin = new Image(); fin.onload = () => LOADED.add(final); fin.src = imgUrl(final);
-    const taken = new Set([...Object.values(S.enemy), ...Object.values(S.mine)]);
-    const others = POOL[role].filter(n => CHAMPS[n] && n !== final && !taken.has(n));
-    const ready = others.filter(n => LOADED.has(n));
-    const source = ready.length >= 6 ? ready : others;
-    const seq = [];
-    while (seq.length < 17) {
-      const n = source[Math.floor(Math.random()*source.length)];
-      if (n !== seq[seq.length-1] || source.length < 2) seq.push(n);
-    }
-    seq.push(final);
+    const seq = rollSequence(role, final, steps);
+    const pt = slot.querySelector(".pt"), nm = slot.querySelector(".nm"), sub = slot.querySelector(".sub");
+    slot.classList.add("spin"); if (sub) sub.textContent = "Rolling…";
+    pt.innerHTML = `<b></b><img alt="">`;
+    const b = pt.querySelector("b"), img = pt.querySelector("img");
+    img.onerror = () => { img.style.visibility = "hidden"; };
+    const show = n => {
+      b.textContent = initials(n); nm.textContent = n;
+      if (LOADED.has(n) || n === final) { img.style.visibility = ""; img.src = imgUrl(n); }
+      else img.style.visibility = "hidden";
+    };
+    show(seq[0]);
+    seq.forEach((n, k) => {
+      if (!k) return;
+      const at = startDelay + SPIN_MS * Math.pow(k / (seq.length - 1), curve);
+      setTimeout(() => {
+        if (!slot.isConnected) return;
+        if (k === seq.length - 1) settleSlot(slot, pt, nm, sub, final); else show(n);
+      }, at);
+    });
+  });
+}
+
+function spinSlots(roles, startDelay){
+  if (!roles.length) return;
+  const slots = roles.map(r => [r, $(`[data-lock="${r}"]`)]).filter(([,el]) => el);
+  if (!slots.length) return;
+  S.spinning = slots.length;
+  document.querySelectorAll(".slot.rolled").forEach(b => b.disabled = true);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced || matchMedia("(max-width: 520px), (pointer: coarse)").matches) { flipSlots(slots, startDelay, reduced); return; }
+  slots.forEach(([role, slot]) => {
+    const final = S.rolls[role];
+    const fin = new Image(); fin.onload = () => LOADED.add(final); fin.src = imgUrl(final);
+    const seq = rollSequence(role, final, 17);
     const pt = slot.querySelector(".pt"), nm = slot.querySelector(".nm"), sub = slot.querySelector(".sub");
     slot.classList.add("spin"); if (sub) sub.textContent = "Rolling…";
     const reel = document.createElement("div"); reel.className = "reel";
@@ -1256,9 +1440,7 @@ function spinSlots(roles, startDelay){
     nm.textContent = seq[0];
     const n = seq.length - 1;
     const end = `translate3d(0,-${n/(n+1)*100}%,0)`, near = `translate3d(0,-${(n-1)/(n+1)*100}%,0)`;
-    const frames = phone
-      ? [{transform:"translate3d(0,0,0)"}, {transform:near, offset:.75}, {transform:end}]
-      : [{transform:"translate3d(0,0,0)", filter:"blur(2.5px)"}, {transform:near, filter:"blur(1px)", offset:.75}, {transform:end, filter:"blur(0)"}];
+    const frames = [{transform:"translate3d(0,0,0)", filter:"blur(2.5px)"}, {transform:near, filter:"blur(1px)", offset:.75}, {transform:end, filter:"blur(0)"}];
     const anim = reel.animate(frames, {duration:SPIN_MS, delay:startDelay, easing:"cubic-bezier(.2,.65,.3,1)", fill:"both"});
     // keep the name in step with whichever portrait the reel is showing
     const tick = () => {
@@ -1269,20 +1451,7 @@ function spinSlots(roles, startDelay){
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-    anim.onfinish = () => {
-      if (!slot.isConnected) return;
-      reel.remove(); pt.classList.remove("spinning");
-      pt.innerHTML = `<b>${esc(initials(final))}</b><img src="${esc(imgUrl(final))}" alt="" onerror="this.remove()">`;
-      nm.textContent = final; slot.classList.remove("spin");
-      if (sub) sub.textContent = "Tap to lock in";
-      pt.classList.add("settle");
-      S.spinning--;
-      if (S.spinning <= 0) {
-        S.spinning = 0;
-        document.querySelectorAll(".slot.rolled").forEach(b => b.disabled = false);
-        if (S.pendingRender) { S.pendingRender = false; render(); }
-      }
-    };
+    anim.onfinish = () => { if (slot.isConnected) { reel.remove(); settleSlot(slot, pt, nm, sub, final); } };
   });
 }
 
@@ -1291,7 +1460,14 @@ function spinSlots(roles, startDelay){
    ============================================================ */
 document.addEventListener("click", e => {
   const mode = e.target.closest("[data-mode]");
-  if (mode) { if (mode.dataset.mode !== S.mode || S.mode === "unlimited") startGame(mode.dataset.mode); return; }
+  if (mode) {
+    const m = mode.dataset.mode;
+    if (m === "past") { if (S.mode !== "past") startGame("past", nextPast() || pastDates()[0]); return; }
+    if (m !== S.mode || m === "unlimited") startGame(m);
+    return;
+  }
+  const pastBtn = e.target.closest("[data-past]");
+  if (pastBtn) { if (S.spinning) return; startGame("past", pastBtn.dataset.past); window.scrollTo({top:0}); return; }
   const lock = e.target.closest("[data-lock]");
   if (lock) {
     if (S.spinning) return;
@@ -1306,16 +1482,25 @@ document.addEventListener("click", e => {
   }
 });
 
+document.addEventListener("change", e => {
+  if (e.target.id === "hard") { store.set("hard", e.target.checked); startGame("unlimited"); }
+});
+
 /* ============================================================
    START
    ============================================================ */
 mountAd($("#ad-top"), CONFIG.adSlots.top);
 mountAd($("#ad-bottom"), CONFIG.adSlots.bottom);
-startGame(new URLSearchParams(location.search).get("mode") === "unlimited" ? "unlimited" : "daily");
+(() => {
+  const q = new URLSearchParams(location.search), d = q.get("date");
+  if (d && pastDates().includes(d)) startGame("past", d);
+  else startGame(q.get("mode") === "unlimited" ? "unlimited" : "daily");
+})();
 loadDdragon().then(ok => {
   preloadPortraits();
   if (!ok) return; if (S.spinning) S.pendingRender = true; else render();
 });
 </script>
+<script>if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));</script>
 </body>
 </html>
