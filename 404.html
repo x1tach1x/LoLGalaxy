@@ -7,12 +7,13 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Page not found – LoL Galaxy</title>
 <script>
-  // GitHub Pages paths are case-sensitive: send /leaguesim, /LEAGUESIM, etc. to /leagueSim/
+  // GitHub Pages paths are case-sensitive: send /LaneLock, /LANELOCK and the old /leaguesim
+  // (the game's previous name) to /lanelock/, keeping any ?mode=unlimited.
   (function(){
     var path = location.pathname;
     var base = location.hostname.endsWith("github.io") ? "/" + path.split("/")[1] + "/" : "/";
-    var rest = path.slice(base.length).toLowerCase().replace(/\/+$/, "");
-    if (rest === "leaguesim" || rest === "leaguesim/index.html") location.replace(base + "leagueSim/");
+    var rest = path.slice(base.length).toLowerCase().replace(/\/+$/, "").replace(/\/index\.html$/, "");
+    if (rest === "lanelock" || rest === "leaguesim") location.replace(base + "lanelock/" + location.search);
   })();
 </script>
 <style>
@@ -23,7 +24,7 @@ body{margin:0;background:#0F1D2C;color:#E9EEF3;font:17px/1.6 system-ui,-apple-sy
 <body>
 <div class="wrap">
   <h1>That page doesn't exist</h1>
-  <p>Check the address, or go to the <a id="home" href="/">LoL Galaxy homepage</a> to play LeagueSim.</p>
+  <p>Check the address, or go to the <a id="home" href="/">LoL Galaxy homepage</a> to play LaneLock.</p>
   <script>if (location.hostname.endsWith("github.io")) document.getElementById("home").href = "/" + location.pathname.split("/")[1] + "/";</script>
 </div>
 </body>

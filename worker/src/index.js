@@ -1,4 +1,4 @@
-// LoL Galaxy community stats: counts wins and losses for each day's LeagueSim daily draft.
+// LoL Galaxy community stats: counts wins and losses for each day's LaneLock daily draft.
 //
 //   GET  /stats?date=YYYY-MM-DD   -> {"date","wins","losses"}
 //   POST /result?date=YYYY-MM-DD  body {"win": true|false} -> updated totals

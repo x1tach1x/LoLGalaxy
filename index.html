@@ -7,9 +7,9 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>LoL Galaxy: League of Legends fan games</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
-<meta name="description" content="Free League of Legends fan games. Today's LeagueSim draft is live: roll champions, lock in counters to a random enemy team, and see if your draft wins.">
+<meta name="description" content="Free League of Legends fan games. Today's LaneLock draft is live: roll champions, lock in counters to a random enemy team, and see if your draft wins.">
 <meta property="og:title" content="LoL Galaxy">
-<meta property="og:description" content="Today's LeagueSim draft is live. Can you counter it?">
+<meta property="og:description" content="Today's LaneLock draft is live. Can you counter it?">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
@@ -107,16 +107,16 @@ footer.site p{margin:6px 0;max-width:80ch}
   <div class="wrap">
     <header class="top">
       <a class="mark" href="./">LoL <span>Galaxy</span></a>
-      <nav><a href="leagueSim/">LeagueSim</a><a href="privacy.html">Privacy</a></nav>
+      <nav><a href="lanelock/">LaneLock</a><a href="privacy.html">Privacy</a></nav>
     </header>
 
     <section class="hero">
       <div>
         <h1>Five enemies are already locked in.</h1>
-        <p class="lede">Today's LeagueSim draft is live. Roll champions for each lane, lock in your counters, and find out if your team wins.</p>
+        <p class="lede">Today's LaneLock draft is live. Roll champions for each lane, lock in your counters, and find out if your team wins.</p>
         <div class="ctas">
-          <a class="btn primary" href="leagueSim/">Draft your counter</a>
-          <a class="btn ghost" href="leagueSim/?mode=unlimited">Play unlimited</a>
+          <a class="btn primary" href="lanelock/">Draft your counter</a>
+          <a class="btn ghost" href="lanelock/?mode=unlimited">Play unlimited</a>
         </div>
         <p class="me" id="me"></p>
       </div>
@@ -132,7 +132,7 @@ footer.site p{margin:6px 0;max-width:80ch}
 
 <main class="wrap">
   <section class="how" aria-labelledby="how">
-    <h2 id="how">How LeagueSim works</h2>
+    <h2 id="how">How LaneLock works</h2>
     <ol class="steps">
       <li><h3>Roll</h3><p>Every open lane rolls a random champion who's actually played in that role.</p></li>
       <li><h3>Lock one in</h3><p>Keep the roll you like best. The other lanes reroll, so pick your moment.</p></li>
@@ -147,8 +147,8 @@ footer.site p{margin:6px 0;max-width:80ch}
 </main>
 
 <script>
-/* Today's daily enemy team. This must match LeagueSim exactly, so the tiers,
-   weights, seed and pick order below are copied from leagueSim/index.html.
+/* Today's daily enemy team. This must match LaneLock exactly, so the tiers,
+   weights, seed and pick order below are copied from lanelock/index.html.
    If you change TIERS or ENEMY_WEIGHT there, copy them here too. */
 const TIERS = {
   top: {
@@ -192,7 +192,7 @@ const TIERS = {
 const ENEMY_WEIGHT = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
 
 const LAUNCH = "2026-11-11";
-// Community stats counter: same URL as statsApi in leagueSim/index.html. Leave blank to hide.
+// Community stats counter: same URL as statsApi in lanelock/index.html. Leave blank to hide.
 const STATS_API = "https://lolgalaxy.dartanganj.workers.dev";
 const ROLES = [["top","Top"],["jungle","Jungle"],["mid","Mid"],["adc","Bot"],["support","Support"]];
 const CLASS = {"Aatrox":"jug","Ahri":"bur","Akali":"ass","Akshan":"ass","Alistar":"van","Ambessa":"div","Amumu":"van","Anivia":"con","Annie":"bur","Aphelios":"mrk","Ashe":"mrk","Aurelion Sol":"bmg","Aurora":"bur","Azir":"con","Bard":"cat","Bel'Veth":"skr","Blitzcrank":"cat","Brand":"bmg","Braum":"war","Briar":"div","Caitlyn":"mrk","Camille":"div","Cassiopeia":"bmg","Cho'Gath":"jug","Corki":"mrk","Darius":"jug","Diana":"div","Dr. Mundo":"jug","Draven":"mrk","Ekko":"ass","Elise":"ass","Evelynn":"ass","Ezreal":"mrk","Fiddlesticks":"spc","Fiora":"skr","Fizz":"ass","Galio":"war","Gangplank":"spc","Garen":"jug","Gnar":"spc","Gragas":"van","Graves":"skr","Gwen":"skr","Hecarim":"div","Heimerdinger":"spc","Hwei":"art","Illaoi":"jug","Irelia":"div","Ivern":"enc","Janna":"enc","Jarvan IV":"div","Jax":"skr","Jayce":"art","Jhin":"mrk","Jinx":"mrk","K'Sante":"van","Kai'Sa":"mrk","Kalista":"mrk","Karma":"enc","Karthus":"bmg","Kassadin":"ass","Katarina":"ass","Kayle":"spc","Kayn":"skr","Kennen":"bmg","Kha'Zix":"ass","Kindred":"mrk","Kled":"div","Kog'Maw":"mrk","LeBlanc":"ass","Lee Sin":"div","Leona":"van","Lillia":"spc","Lissandra":"con","Locke":"ass","Lucian":"mrk","Lulu":"enc","Lux":"art","Malphite":"van","Malzahar":"con","Maokai":"van","Master Yi":"skr","Mel":"art","Milio":"enc","Miss Fortune":"mrk","Mordekaiser":"jug","Morgana":"cat","Naafiri":"ass","Nami":"enc","Nasus":"jug","Nautilus":"van","Neeko":"bur","Nidalee":"ass","Nilah":"skr","Nocturne":"ass","Nunu & Willump":"van","Olaf":"div","Orianna":"con","Ornn":"van","Pantheon":"div","Poppy":"war","Pyke":"cat","Qiyana":"ass","Quinn":"mrk","Rakan":"cat","Rammus":"van","Rek'Sai":"div","Rell":"van","Renata Glasc":"enc","Renekton":"div","Rengar":"ass","Riven":"skr","Rumble":"bmg","Ryze":"bmg","Samira":"mrk","Sejuani":"van","Senna":"enc","Seraphine":"enc","Sett":"jug","Shaco":"ass","Shen":"war","Shyvana":"jug","Singed":"spc","Sion":"van","Sivir":"mrk","Skarner":"van","Smolder":"mrk","Sona":"enc","Soraka":"enc","Swain":"bmg","Sylas":"bmg","Syndra":"bur","Tahm Kench":"war","Taliyah":"con","Talon":"ass","Taric":"war","Teemo":"spc","Thresh":"cat","Tristana":"mrk","Trundle":"jug","Tryndamere":"skr","Twisted Fate":"bur","Twitch":"mrk","Udyr":"jug","Urgot":"jug","Varus":"mrk","Vayne":"mrk","Veigar":"bur","Vel'Koz":"art","Vex":"bur","Vi":"div","Viego":"skr","Viktor":"con","Vladimir":"bmg","Volibear":"jug","Warwick":"div","Wukong":"div","Xayah":"mrk","Xerath":"art","Xin Zhao":"div","Yasuo":"skr","Yone":"skr","Yorick":"spc","Yunara":"mrk","Yuumi":"enc","Zaahen":"jug","Zac":"van","Zed":"ass","Zeri":"mrk","Ziggs":"art","Zilean":"enc","Zoe":"bur","Zyra":"art"};
@@ -267,7 +267,7 @@ try {
   const st = JSON.parse(localStorage.getItem("leaguesim:stats") || "null");
   const daily = JSON.parse(localStorage.getItem("leaguesim:daily") || "null");
   const me = document.getElementById("me");
-  if (daily && daily.date === today) me.innerHTML = `You've played today's draft. <a href="leagueSim/">See your result</a>`;
+  if (daily && daily.date === today) me.innerHTML = `You've played today's draft. <a href="lanelock/">See your result</a>`;
   else if (st && st.played) {
     const n = x => Math.max(0, Math.floor(Number(x) || 0));
     me.innerHTML = `Your streak: <b>${n(st.streak)}</b>. Best: <b>${n(st.best) || n(st.streak)}</b>.`;
