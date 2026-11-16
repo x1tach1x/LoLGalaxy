@@ -1,3 +1,27 @@
-adc|Ezreal|Jhin:40.00:10,Kai'Sa:60.00:10
-adc|Jhin|Ezreal:60.00:10
-adc|Kai'Sa|Ezreal:40.00:10
+adc|Aphelios|Ezreal:30.00:10,Jhin:38.46:13,Jinx:36.36:11,Kai'Sa:54.55:11
+adc|Ashe|Jhin:50.00:10
+adc|Caitlyn|Jhin:50.00:16
+adc|Ezreal|Aphelios:70.00:10,Jhin:40.00:20,Kai'Sa:55.56:27
+adc|Jhin|Aphelios:61.54:13,Ashe:50.00:10,Caitlyn:50.00:16,Ezreal:60.00:20,Jinx:38.46:13,Kai'Sa:40.00:30,Yunara:44.44:18,Zeri:42.86:14
+adc|Jinx|Aphelios:63.64:11,Jhin:61.54:13,Kai'Sa:60.00:10,Yunara:33.33:12
+adc|Kai'Sa|Aphelios:45.45:11,Ezreal:44.44:27,Jhin:60.00:30,Jinx:40.00:10,Kalista:70.00:10,Lucian:27.27:11,Xayah:65.22:23,Yunara:31.25:16
+adc|Kalista|Kai'Sa:30.00:10,Yunara:33.33:12
+adc|Lucian|Kai'Sa:72.73:11
+adc|Xayah|Kai'Sa:34.78:23
+adc|Yunara|Jhin:55.56:18,Jinx:66.67:12,Kai'Sa:68.75:16,Kalista:66.67:12,Zeri:61.54:13
+adc|Zeri|Jhin:57.14:14,Yunara:38.46:13
+jungle|Jarvan IV|Lee Sin:45.45:11
+jungle|Lee Sin|Jarvan IV:54.55:11,Qiyana:41.67:12,Vi:54.55:11,Wukong:33.33:15
+jungle|Qiyana|Lee Sin:58.33:12
+jungle|Vi|Lee Sin:45.45:11
+jungle|Wukong|Lee Sin:66.67:15
+mid|Syndra|Yone:40.00:10
+mid|Yone|Syndra:60.00:10
+support|Alistar|Nautilus:73.33:15
+support|Blitzcrank|Thresh:50.00:12
+support|Braum|Nautilus:58.33:12
+support|Janna|Lulu:60.00:10
+support|Karma|Lulu:45.45:11,Nautilus:41.67:12
+support|Lulu|Janna:40.00:10,Karma:54.55:11,Thresh:41.18:17
+support|Nautilus|Alistar:26.67:15,Braum:41.67:12,Karma:58.33:12,Thresh:27.27:11
+support|Thresh|Blitzcrank:50.00:12,Lulu:58.82:17,Nautilus:72.73:11
