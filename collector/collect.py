@@ -179,13 +179,20 @@ def seed_players(riot, platform, limit):
     for league in APEX:
         d = riot.get(platform, f"/lol/league/v4/{league}/by-queue/{QUEUE}") or {}
         puuids += [e.get("puuid") for e in d.get("entries", [])]
-    for tier, div in DIVISIONS:
-        page = random.randint(1, 3)
-        for e in riot.get(platform, f"/lol/league/v4/entries/{QUEUE}/{tier}/{div}", {"page": page}) or []:
-            if e.get("puuid"): puuids.append(e["puuid"])
-            elif e.get("summonerId") and len(puuids) < limit * 2:   # older responses without PUUIDs
-                s = riot.get(platform, f"/lol/summoner/v4/summoners/{e['summonerId']}") or {}
-                if s.get("puuid"): puuids.append(s["puuid"])
+    # Each page lists about 200 players. Read random pages from every division until there are
+    # enough players to keep a whole run busy.
+    pages = {(t, d): random.sample(range(1, 21), 20) for t, d in DIVISIONS}
+    while len(set(puuids)) < limit * 1.2 and any(pages.values()):
+        for tier, div in DIVISIONS:
+            if not pages[(tier, div)]: continue
+            page = pages[(tier, div)].pop()
+            got = riot.get(platform, f"/lol/league/v4/entries/{QUEUE}/{tier}/{div}", {"page": page}) or []
+            if not got: pages[(tier, div)] = []   # past the last page
+            for e in got:
+                if e.get("puuid"): puuids.append(e["puuid"])
+                elif e.get("summonerId") and len(puuids) < limit * 2:   # older responses without PUUIDs
+                    s = riot.get(platform, f"/lol/summoner/v4/summoners/{e['summonerId']}") or {}
+                    if s.get("puuid"): puuids.append(s["puuid"])
     puuids = list({p for p in puuids if p})
     random.shuffle(puuids)
     return puuids[:limit]
@@ -310,7 +317,7 @@ def main():
     ap.add_argument("--state", default="data", help="folder that keeps totals between runs")
     ap.add_argument("--minutes", type=float, default=60, help="stop collecting after this long")
     ap.add_argument("--regions", default=",".join(REGIONS), help="comma-separated: " + ", ".join(REGIONS))
-    ap.add_argument("--players", type=int, default=400, help="players to sample per region")
+    ap.add_argument("--players", type=int, default=3000, help="players to sample per region (enough for a 5.5-hour run)")
     ap.add_argument("--report-only", action="store_true", help="just rebuild rows files and the report")
     a = ap.parse_args()
     state, known = State(a.state), game_champions()
