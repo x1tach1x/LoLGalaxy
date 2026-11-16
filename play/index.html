@@ -8,8 +8,21 @@
 <title>LaneLock: counter-draft a random enemy team</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
 <meta name="description" content="Pick a champion for every lane to beat a random enemy draft. LaneLock scores lane tiers, matchups and team comps to decide who wins.">
-<meta property="og:title" content="LaneLock">
-<meta property="og:description" content="Counter-draft a random enemy team, lane by lane. A new daily draft every day.">
+<link rel="canonical" href="https://lanelock.net/play/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LaneLock">
+<meta property="og:title" content="LaneLock: counter-draft a random enemy team">
+<meta property="og:description" content="Lock in a champion for every lane against a random enemy draft. A new daily draft every day.">
+<meta property="og:url" content="https://lanelock.net/play/">
+<meta property="og:image" content="https://lanelock.net/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LaneLock: the daily League of Legends counter-draft game">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F1D2C">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
@@ -190,7 +203,7 @@ footer p{margin:6px 0}
 <div class="wrap">
   <nav class="site-nav" aria-label="Site">
     <a class="home" href="../">Lane<span>Lock</span></a>
-    <span><a href="../">Home</a><a href="../privacy.html">Privacy</a></span>
+    <span><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span>
   </nav>
   <header class="top">
     <div>
@@ -217,7 +230,7 @@ footer p{margin:6px 0}
   <div class="ad" id="ad-bottom" hidden></div>
 
   <footer>
-    <p class="links"><a href="../">LaneLock home</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
+    <p class="links"><a href="../">LaneLock home</a><a href="../how-it-works.html">How scoring works</a><a href="../about.html">About</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
     <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
     <p>Lane matchups use real ranked win rates from LoLalytics (patch 26.22, Emerald+ solo queue) where there are enough games. Lane tiers follow public patch 26.22 tier lists; "niche" champions are playable in a lane but weren't ranked there. Team comps, duo fit and the play-by-play are a simplified model, so treat results as for fun, not as coaching.</p>
   </footer>
@@ -231,7 +244,7 @@ const CONFIG = {
   // Google AdSense. Leave blank until your site is approved; ad boxes stay hidden while blank.
   adsenseClient: "ca-pub-7663278305650835",
   adSlots: { top: "", results: "", bottom: "" },   // ad unit slot IDs from AdSense
-  siteUrl: "lanelock.net/play",
+  siteUrl: "https://lanelock.net/play",
   // Community stats counter (Cloudflare Worker). Leave blank to hide community stats.
   statsApi: "https://lolgalaxy.dartanganj.workers.dev",
   launchDate: "2026-11-11",     // Daily #1
@@ -1133,7 +1146,7 @@ function resultsHTML(res){
     <div class="panels">
       <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold)}<p>Above the line, your team is ahead. Below it, the enemy is.</p></div>
       <div class="panel"><h3>How the game went</h3><ol class="tl">${tl}</ol></div>
-      <div class="panel wide"><h3>Lane by lane</h3>${lanes}<p class="src">Win rates: ${esc(MATCHUP_SOURCE)} ranked solo queue. A lane with no stat line didn't have enough games between those two champions, so it uses the tier and class model.</p></div>
+      <div class="panel wide"><h3>Lane by lane</h3>${lanes}<p class="src">Win rates: ${esc(MATCHUP_SOURCE)} ranked solo queue. A lane with no stat line didn't have enough games between those two champions, so it uses the tier and class model. <a href="../how-it-works.html">How scoring works</a></p></div>
       <div class="panel wide"><h3>Team comps</h3><div class="comp">${compCol(res.sP,"you","Yours")}${compCol(res.sE,"them","Theirs")}</div>
         ${res.triText?`<p class="meter" style="color:var(--text);margin-top:12px">${esc(res.triText)}</p>`:""}
         <div class="comp" style="margin-top:8px"><div class="you"><h4>Your combos</h4><ul class="warn">${syn(res.synP)}</ul></div><div class="them"><h4>Their combos</h4><ul class="warn">${syn(res.synE)}</ul></div></div></div>
@@ -1147,10 +1160,15 @@ function resultsHTML(res){
    ============================================================ */
 function shareText(){
   const r = S.result;
-  const sq = r.units.map(l => l.verdict==="w"?"🟦":l.verdict==="l"?"🟥":"⬜").join("");
-  const head = S.mode==="daily" ? `LaneLock Daily #${dailyNumber()}` : "LaneLock";
+  const LBL = {top:"Top", jungle:"Jungle", mid:"Mid", bot:"Bot"};
+  const sq = v => v==="w" ? "🟦" : v==="l" ? "🟥" : "⬜";
+  const lanes = r.units.map(u => `${sq(u.verdict)} ${LBL[u.key]}`).join("  ");
+  const head = `${S.mode==="daily" ? `LaneLock #${dailyNumber()}` : "LaneLock"} ${r.win ? "🏆 Victory" : "❌ Defeat"}, ${Math.round(r.prob*100)}% win chance`;
+  const rolls = ROLES.reduce((n, x) => n + Math.max(1, (S.seen[x.key] || []).length), 0);
+  const streak = store.stats().streak;
+  const extra = `🎲 ${rolls} rolls` + (streak >= 2 ? `  🔥 ${streak} win streak` : "");
   const t = S.community, comm = (S.mode==="daily" && t && (t.wins+t.losses)) ? `\nCommunity: ${Math.round(t.wins/(t.wins+t.losses)*100)}% won today` : "";
-  return `${head}: ${r.win?"Victory":"Defeat"} (${Math.round(r.prob*100)}% win chance)\n${sq}${comm}\n${CONFIG.siteUrl}`;
+  return `${head}\n${lanes}\n${extra}${comm}\n${CONFIG.siteUrl}`;
 }
 function toast(html, ms=2600){
   const old = $(".toast"); if (old) old.remove();
@@ -1159,13 +1177,18 @@ function toast(html, ms=2600){
 }
 async function share(){
   const text = shareText();
+  // On phones, open the share sheet (Messages, Discord, etc.). Elsewhere, copy to the clipboard.
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+    try { await navigator.share({text}); return; }
+    catch(e){ if (e && e.name === "AbortError") return; }
+  }
   try { await navigator.clipboard.writeText(text); toast("Result copied. Paste it anywhere to share."); return; } catch(e){}
   try {
     const ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
     document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); ta.remove();
     if (ok) { toast("Result copied. Paste it anywhere to share."); return; }
   } catch(e){}
-  toast(`Copy your result:<textarea rows="3" readonly>${esc(text)}</textarea>`, 9000);
+  toast(`Copy your result:<textarea rows="5" readonly>${esc(text)}</textarea>`, 9000);
 }
 
 /* ============================================================

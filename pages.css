@@ -1,0 +1,58 @@
+/* Shared styles for LaneLock's reading pages (About, How it works, Privacy). */
+:root{
+  --ink:#0F1D2C; --deck:#16283B; --rule:#2A4560;
+  --text:#E9EEF3; --soft:#C9D4DF; --mute:#97A9BC; --blue:#4EA1DF; --red:#E35B4F; --gold:#E7B53C;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ink);color:var(--text);font:18px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+a{color:var(--blue)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:760px;margin:0 auto;padding:18px 20px 48px}
+
+.site-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 0;padding:4px 0 14px;margin-bottom:28px;border-bottom:1px solid var(--rule)}
+.site-nav .home{font:700 24px/1 var(--cond);color:var(--text);text-decoration:none}
+.site-nav .home span{color:var(--mute);font-weight:500}
+.site-nav .links a{color:var(--mute);text-decoration:none;font:600 17px var(--cond);margin-left:16px}
+.site-nav .links a:hover,.site-nav .links a[aria-current]{color:var(--text)}
+
+h1{font:700 46px/1.02 var(--cond);margin:0 0 10px;letter-spacing:.2px}
+h2{font:700 28px/1.1 var(--cond);margin:40px 0 8px}
+h3{font:600 21px/1.2 var(--cond);margin:24px 0 4px}
+p,li{color:var(--soft)}
+p{margin:0 0 14px;max-width:68ch}
+ul,ol{padding-left:22px;max-width:66ch}
+li{margin:4px 0}
+strong{color:var(--text);font-weight:600}
+.lede{font-size:20px;color:var(--text);max-width:60ch}
+.muted{color:var(--mute);font-size:15px}
+
+.cta{display:inline-block;margin:6px 0 4px;padding:12px 22px;border-radius:999px;background:var(--gold);color:#1A1405;font:700 19px/1 var(--cond);text-decoration:none}
+.cta:hover{filter:brightness(1.07)}
+
+/* the comp-style cycle on How it works */
+.cycle{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:10px 0 18px;padding:0;list-style:none;max-width:none}
+.cycle li{margin:0;font:600 18px/1 var(--cond);color:var(--text)}
+.cycle .st{padding:7px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--deck)}
+.cycle .ar{color:var(--gold)}
+
+table{border-collapse:collapse;margin:8px 0 18px;font-size:16px}
+th,td{text-align:left;padding:7px 14px 7px 0;border-bottom:1px solid var(--rule);color:var(--soft)}
+th{font:600 15px var(--cond);color:var(--mute);letter-spacing:.3px}
+td:first-child{color:var(--text)}
+
+dl{margin:0}
+dt{font:600 21px/1.2 var(--cond);color:var(--text);margin-top:22px}
+dd{margin:4px 0 0;color:var(--soft);max-width:66ch}
+
+footer.site{margin-top:52px;padding-top:16px;border-top:1px solid var(--rule)}
+footer.site p{color:var(--mute);font-size:14px}
+footer.site .links a{margin-right:16px}
+
+@media (max-width:520px){
+  body{font-size:17px}
+  h1{font-size:38px}
+  .site-nav .links a{margin-left:12px;font-size:16px}
+}

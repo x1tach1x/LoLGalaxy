@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>How LaneLock scores a draft – LaneLock</title>
+<meta name="description" content="How LaneLock decides who wins: real ranked lane win rates, patch tier lists, bot lane duo synergy and team comp strengths, explained step by step.">
+<link rel="canonical" href="https://lanelock.net/how-it-works.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="LaneLock">
+<meta property="og:title" content="How LaneLock scores a draft">
+<meta property="og:description" content="Real ranked win rates, tier lists, bot lane duos and team comps: how LaneLock decides who wins.">
+<meta property="og:url" content="https://lanelock.net/how-it-works.html">
+<meta property="og:image" content="https://lanelock.net/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LaneLock: the daily League of Legends counter-draft game">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F1D2C">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pages.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav" aria-label="Site">
+    <a class="home" href="./">Lane<span>Lock</span></a>
+    <span class="links"><a href="play/">Play</a><a href="how-it-works.html" aria-current="page">How it works</a><a href="about.html">About</a></span>
+  </nav>
+
+  <main>
+    <h1>How LaneLock scores a draft</h1>
+    <p class="lede">When your fifth lane locks in, LaneLock compares your team to the enemy's in three layers: each lane on its own, the bot lane as a duo, and the two team comps as a whole. Here's what goes into each one.</p>
+
+    <h2>1. Each lane, one matchup at a time</h2>
+    <p>Top, jungle and mid are scored as one-on-one matchups between your champion and the enemy in the same role.</p>
+
+    <h3>Real ranked win rates come first</h3>
+    <p>For most popular matchups LaneLock uses real data: how often one champion beats the other in that lane in Emerald+ ranked solo queue on the current patch (from LoLalytics, patch 26.22). If Darius wins 54% of his games against Kayle in top lane, that 4-point edge counts toward your score.</p>
+    <p>Small samples are treated with suspicion. A matchup played 300 times can swing a few points on luck alone, so LaneLock shrinks the edge toward even until there are enough games to trust it. A pairing with tens of thousands of games keeps nearly all of its edge, and one with a few hundred keeps less than half.</p>
+
+    <h3>Tier lists and champion classes fill the gaps</h3>
+    <p>Some pairings are too rare to have reliable data, especially with off-meta picks. For those, LaneLock falls back to a model built from three things:</p>
+    <ul>
+      <li><strong>Lane tiers.</strong> Each champion has a tier in each role (S+ down to D) from public patch tier lists. Champions that are playable in a role but rarely ranked there are marked "niche". A champion rolled outside their usual roles takes a penalty.</li>
+      <li><strong>Class matchups.</strong> Every champion belongs to a class, such as juggernaut, diver, assassin, burst mage, artillery mage or marksman. Some classes have a natural edge over others: an assassin can jump on an immobile artillery mage, while a juggernaut walks through a squishy duelist who can't kite.</li>
+      <li><strong>Known counters.</strong> A short list of famous lane counters adds a bigger bump when they show up.</li>
+    </ul>
+    <p>In the jungle, early-game strength also matters, because a jungler who wins early skirmishes can snowball the whole map.</p>
+    <p>Even when real data exists, the tier list still adds a small amount, since a champion who is strong on the patch overall tends to do better in any given game.</p>
+
+    <h2>2. Bot lane is scored as a duo</h2>
+    <p>Your ADC and support are judged together, because that's how bot lane is actually played. Their individual matchups still count, but three extra things are layered on top:</p>
+    <ul>
+      <li><strong>How well the pair fits.</strong> Each ADC has a style (late-game hypercarry, all-in, utility or poke) and each support has a style (engage, enchanter, warden or poke). A hypercarry with an enchanter who shields and heals them is a classic fit. Two poke champions with nobody to start a fight is not.</li>
+      <li><strong>Which duo wins the lane.</strong> An all-in duo punishes a scaling duo before it comes online, and a poke duo can chip a scaling duo out of lane.</li>
+      <li><strong>Cross matchups.</strong> Your support fights their ADC as much as your ADC does. A hook support against an immobile marksman is a nightmare for the marksman.</li>
+    </ul>
+
+    <h2>3. The team comps</h2>
+    <p>Once the lanes are scored, LaneLock looks at each five-champion team as a whole.</p>
+    <ul>
+      <li><strong>Damage mix.</strong> A team doing almost all physical or almost all magic damage is easy to itemize against, so it loses points.</li>
+      <li><strong>Frontline, engage and crowd control.</strong> Teams need someone to soak damage, someone to start fights and enough stuns and slows to make them stick.</li>
+      <li><strong>Protecting the carry.</strong> A late-game marksman with no peel around them gets punished. One with plenty of peel gets a bonus.</li>
+      <li><strong>Power curve.</strong> Early-game champions push the result toward the first half of the game, late-game champions toward the second.</li>
+      <li><strong>Champion combos.</strong> Well-known pairings across lanes, such as a wombo-combo engage followed by area damage, add a little extra.</li>
+    </ul>
+
+    <h3>Comp styles counter each other</h3>
+    <p>Each team is given the style it leans hardest toward. Some styles beat others, like rock, paper, scissors:</p>
+    <ul class="cycle" aria-label="Engage beats Poke, Poke beats Protect, Protect beats Engage">
+      <li class="st">Engage</li><li class="ar" aria-hidden="true">beats</li><li class="st">Poke</li><li class="ar" aria-hidden="true">beats</li><li class="st">Protect</li><li class="ar" aria-hidden="true">beats</li><li class="st">Engage</li>
+    </ul>
+    <ul class="cycle" aria-label="Pick beats Split, Split beats Engage">
+      <li class="st">Pick</li><li class="ar" aria-hidden="true">beats</li><li class="st">Split push</li><li class="ar" aria-hidden="true">beats</li><li class="st">Engage</li>
+    </ul>
+    <p>Hard engage closes the gap before poke can wear a team down. Poke chips away at a backline before a protect comp can fight. Peel and disengage stop a dive cold. A pick comp catches a split pusher alone, and side-lane pressure pulls a teamfight comp apart.</p>
+
+    <h2>Putting it together</h2>
+    <p>The lane results make up the early game. Jungle and mid count a little more than top, because they move around the map, and the bot duo counts the most:</p>
+    <table>
+      <thead><tr><th>Lane</th><th>Weight</th></tr></thead>
+      <tbody>
+        <tr><td>Top</td><td>1.00</td></tr>
+        <tr><td>Jungle</td><td>1.15</td></tr>
+        <tr><td>Mid</td><td>1.15</td></tr>
+        <tr><td>Bot lane (ADC and support)</td><td>1.20</td></tr>
+      </tbody>
+    </table>
+    <p>The team comp results make up the late game. The early and late game are added together into one number, which becomes your win chance. That's why a draft can lose two lanes and still win if its comp is much stronger, or win every lane and still throw.</p>
+    <p>Win chance never goes below 3% or above 97%, because no draft is ever a sure thing. Luck only decides a game when the two drafts are almost exactly even. The play-by-play, kills and gold graph are generated to match the result, so they tell the story of why you won or lost.</p>
+
+    <h2>Tips for better drafts</h2>
+    <ul>
+      <li><strong>Lock your best counter first.</strong> Every lock rerolls the other lanes, so grab a great matchup as soon as you see it.</li>
+      <li><strong>Think about bot lane as a pair.</strong> A strong ADC roll is worth more if you can still find a support that fits them.</li>
+      <li><strong>Watch your damage mix.</strong> If you already have three magic damage champions, lean toward physical damage for the last lanes.</li>
+      <li><strong>Don't forget a frontline.</strong> A team of five squishy carries struggles even if every lane is won.</li>
+      <li><strong>Read the results page.</strong> It shows which rolls you passed on would have done better, and why.</li>
+    </ul>
+
+    <h2>Limits</h2>
+    <p>LaneLock is a game, not a coaching tool. Real matches depend on players, runes, items and a hundred decisions the model can't see. The data reflects one patch and one skill bracket, and the comp model is a simplification of how pros think about drafts. It should still reward the kind of drafting that wins real games.</p>
+
+    <p><a class="cta" href="play/">Try today's draft</a></p>
+  </main>
+
+  <footer class="site">
+    <p class="links"><a href="./">Home</a><a href="about.html">About</a><a href="privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
+    <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.</p>
+  </footer>
+</div>
+</body>
+</html>
