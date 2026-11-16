@@ -1,0 +1,3 @@
+adc|Ezreal|Jhin:40.00:10,Kai'Sa:60.00:10
+adc|Jhin|Ezreal:60.00:10
+adc|Kai'Sa|Ezreal:40.00:10
