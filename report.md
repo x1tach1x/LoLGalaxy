@@ -1,47 +1,47 @@
 # LaneLock data collector
 
-Games counted so far, by game version: 16.21: 1,699, 16.22: 33,102.
+Games counted so far, by game version: 16.21: 2,603, 16.22: 70,856.
 
 ## Version 16.22
 
-- 33,102 games (euw1: 11,185, kr: 11,357, na1: 10,560)
-- 14,913 lane matchups seen: 713 with 50+ games, 55 with 200+, 0 with 1,000+
+- 70,856 games (euw1: 23,693, kr: 24,345, na1: 22,818)
+- 19,130 lane matchups seen: 1,795 with 50+ games, 244 with 200+, 6 with 1,000+
 
 ## Version 16.21
 
-- 1,699 games (euw1: 492, kr: 372, na1: 835)
-- 4,038 lane matchups seen: 0 with 50+ games, 0 with 200+, 0 with 1,000+
+- 2,603 games (euw1: 804, kr: 470, na1: 1,329)
+- 5,140 lane matchups seen: 1 with 50+ games, 0 with 200+, 0 with 1,000+
 
 ## Compared with the game's current numbers (LoLalytics, patch 26.22, Emerald+)
 
-Matchups with 100+ of our games that the game also has: 212.
+Matchups with 100+ of our games that the game also has: 676.
 
-- Correlation: 0.44 (1.00 would be identical)
-- Average difference: 3.45 win-rate points
-- Same favourite in 69% of matchups that aren't close to even
+- Correlation: 0.49 (1.00 would be identical)
+- Average difference: 3.34 win-rate points
+- Same favourite in 74% of matchups that aren't close to even
 
 Biggest disagreements:
 
 | Lane | Matchup | Ours | Current | Our games |
 |---|---|---|---|---|
-| adc | Kai'Sa vs Miss Fortune | 35.9% | 49.2% | 131 |
-| jungle | Hecarim vs Qiyana | 45.4% | 57.9% | 119 |
-| mid | Sylas vs Syndra | 59.8% | 49.8% | 117 |
-| mid | Akali vs Twisted Fate | 53.7% | 43.7% | 121 |
-| adc | Corki vs Xayah | 55.7% | 45.9% | 140 |
-| support | Leona vs Thresh | 41.0% | 50.2% | 205 |
-| support | Leona vs Nami | 59.3% | 50.4% | 113 |
-| adc | Sivir vs Yunara | 43.9% | 52.8% | 107 |
-| adc | Ashe vs Kai'Sa | 42.3% | 50.9% | 123 |
-| support | Lulu vs Sona | 54.8% | 46.2% | 124 |
+| adc | Kalista vs Miss Fortune | 58.5% | 43.7% | 142 |
+| adc | Sivir vs Yunara | 39.3% | 52.8% | 201 |
+| top | Gangplank vs Olaf | 61.1% | 48.8% | 108 |
+| mid | Kassadin vs Syndra | 39.8% | 52.1% | 113 |
+| top | Jax vs Jayce | 61.6% | 49.8% | 138 |
+| mid | Yasuo vs Zed | 38.8% | 50.5% | 152 |
+| jungle | Sylas vs Vi | 60.7% | 49.5% | 112 |
+| top | Gangplank vs Irelia | 60.0% | 48.9% | 105 |
+| jungle | Kha'Zix vs Naafiri | 53.2% | 42.6% | 218 |
+| jungle | Graves vs Naafiri | 58.3% | 47.6% | 103 |
 
 ## Best champions by role (16.22, 200+ games)
 
-- **top:** Anivia 55.9% (458), Wukong 54.2% (277), Tryndamere 53.8% (898), Riven 53.4% (728), Kennen 52.9% (947)
-- **jungle:** Nidalee 54.3% (1,756), Darius 53.9% (421), Sejuani 53.7% (393), Skarner 53.6% (489), Zyra 53.3% (1,140)
-- **mid:** Jayce 55.5% (533), Tryndamere 55.0% (238), Pantheon 54.8% (405), Ekko 54.6% (1,931), Riven 54.6% (328)
-- **adc:** Vel'Koz 58.8% (551), Vladimir 57.9% (209), Nilah 55.2% (288), Vayne 54.2% (472), Karthus 54.2% (454)
-- **support:** Elise 55.3% (544), Galio 53.5% (346), Soraka 53.3% (1,248), Rell 53.2% (2,379), Poppy 53.2% (758)
+- **top:** Zilean 57.4% (263), Zoe 56.5% (322), Qiyana 55.7% (210), Kalista 55.1% (227), Akshan 54.5% (290)
+- **jungle:** Zyra 54.5% (2,480), Skarner 54.5% (1,052), Olaf 53.3% (441), Nunu & Willump 53.0% (1,965), Nidalee 52.9% (3,636)
+- **mid:** Singed 55.6% (261), Pantheon 54.0% (900), Gragas 54.0% (300), Riven 53.6% (696), Ekko 53.2% (4,150)
+- **adc:** Vel'Koz 56.7% (1,237), Ekko 56.6% (249), Vladimir 54.4% (452), Yone 54.0% (328), Lux 53.7% (872)
+- **support:** Galio 55.1% (759), Elise 53.5% (1,145), Alistar 52.8% (8,414), Leona 52.4% (6,127), Rell 52.1% (4,998)
 
 To use this data in the game: `python3 tools/update_data.py --matchups <state>/rows-16.22.txt --source "Riot API, patch 26.22, Emerald+"`
 Only do this once LaneLock has an approved production API key.
