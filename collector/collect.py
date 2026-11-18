@@ -256,10 +256,13 @@ def write_outputs(state, known):
     if not state.patches:
         (state.dir / "report.md").write_text("# LaneLock data collector\n\nNo games collected yet.\n"); return
     order = sorted(state.patches, key=lambda p: [int(x) for x in p.split(".")])
-    latest = order[-1]
+    # The newest patch only takes over once it has a real sample; right after a patch
+    # launches, the previous one is still the better picture.
+    biggest = max(order, key=lambda p: state.patches[p]["games"])
+    latest = order[-1] if state.patches[order[-1]]["games"] >= min(30000, state.patches[biggest]["games"]) else biggest
     lines = [f"# LaneLock data collector", "",
              f"Games counted so far, by game version: " + ", ".join(f"{p}: {state.patches[p]['games']:,}" for p in order) + ".", ""]
-    for p in order[::-1][:2]:
+    for p in [x for x in order[::-1] if state.patches[x]["games"] >= 1000 or x == order[-1]][:3]:
         d = state.patches[p]
         rows = {}
         for key, (g, w) in d["pairs"].items():
@@ -291,17 +294,21 @@ def write_outputs(state, known):
                   f"- Correlation: {cov / sd:.2f} (1.00 would be identical)",
                   f"- Average difference: {sum(abs(o - t) for o, t in zip(ours, theirs)) / len(both):.2f} win-rate points",
                   f"- Same favourite in {100 * agree:.0f}% of matchups that aren't close to even", "",
-                  "Biggest disagreements:", "", "| Lane | Matchup | Ours | Current | Our games |", "|---|---|---|---|---|"]
-        for role, x, y, o, t, g in sorted(both, key=lambda b: -abs(b[3] - b[4]))[:10]:
+                  "Biggest disagreements among matchups with 400+ of our games (smaller samples are mostly noise):", "", "| Lane | Matchup | Ours | Current | Our games |", "|---|---|---|---|---|"]
+        for role, x, y, o, t, g in sorted([b for b in both if b[5] >= 400] or both, key=lambda b: -abs(b[3] - b[4]))[:10]:
             lines.append(f"| {role} | {x} vs {y} | {50 + o:.1f}% | {50 + t:.1f}% | {g:,} |")
     else:
         lines.append("Not enough overlapping matchups with 100+ games yet. Run the collector for longer.")
-    lines += ["", f"## Best champions by role ({latest}, 200+ games)", ""]
+    lines += ["", f"## Best champions by role ({latest}, regularly played picks only)", ""]
     if not any(g >= 200 for g, _ in d["champs"].values()):
         lines.append("No champion has 200+ games in one role yet.")
     for role in ROLE.values():
+        # Ignore rare off-role picks (usually one-tricks with inflated win rates): a champion
+        # needs at least 0.5% of the role's games to be listed.
+        picks = sum(g for k, (g, _) in d["champs"].items() if k.startswith(role + "|"))
+        floor = max(200, picks * 0.005)
         best = sorted(((w / g, g, k.split("|")[1]) for k, (g, w) in d["champs"].items()
-                       if k.startswith(role + "|") and g >= 200), reverse=True)[:5]
+                       if k.startswith(role + "|") and g >= floor), reverse=True)[:5]
         if best:
             lines.append(f"- **{role}:** " + ", ".join(f"{n} {100 * r:.1f}% ({g:,})" for r, g, n in best))
     major, minor = latest.split(".")
