@@ -1,0 +1,19 @@
+/* LaneLock: the nav and footer shared by every page. Page stylesheets supply the colour variables. */
+.site-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 0;padding:6px 0 12px;margin-bottom:18px;border-bottom:1px solid var(--rule,#2A4560)}
+.site-nav .home{font:700 24px/1 var(--cond,"Arial Narrow",sans-serif);color:var(--text,#E9EEF3);text-decoration:none}
+.site-nav .home span{color:var(--mute,#97A9BC);font-weight:500}
+.site-nav .links{display:flex;gap:18px}
+.site-nav .links a{color:var(--mute,#97A9BC);text-decoration:none;font:600 17px var(--cond,"Arial Narrow",sans-serif);padding:6px 0}
+.site-nav .links a:hover,.site-nav .links a[aria-current="page"]{color:var(--text,#E9EEF3)}
+
+footer.site{margin-top:48px;padding:16px 0 32px;border-top:1px solid var(--rule,#2A4560);color:var(--mute,#97A9BC);font-size:13px;line-height:1.55}
+footer.site p{margin:6px 0;max-width:80ch}
+footer.site .links{display:flex;flex-wrap:wrap;gap:0 18px;font-size:14px}
+footer.site .links a{color:var(--blue,#4EA1DF);padding:6px 0;display:inline-block}
+
+/* phones: nav links and footer links at least 44px tall */
+@media (max-width:520px){
+  .site-nav .links{gap:14px}
+  .site-nav .links a{display:inline-flex;align-items:center;min-height:44px;padding:0}
+  footer.site .links a{min-height:44px;display:inline-flex;align-items:center;padding:0}
+}

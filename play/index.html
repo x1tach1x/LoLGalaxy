@@ -38,6 +38,8 @@
   --blue:#4EA1DF;     /* your side */
   --red:#E35B4F;      /* enemy side */
   --gold:#E7B53C;     /* victory */
+  --red-text:#F07A6E; /* red for text: passes 4.5:1 on every background (--red is for lines and fills) */
+  --soft:#C9D4DF;
   --even:#A8B3BF;
   --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -52,12 +54,6 @@ button{cursor:pointer}
 .wrap{max-width:1100px;margin:0 auto;padding:14px 16px 40px}
 
 /* header */
-.site-nav{display:flex;justify-content:space-between;align-items:center;padding:4px 0 14px;margin-bottom:14px;border-bottom:1px solid var(--rule)}
-.site-nav a{color:var(--mute);text-decoration:none;font:600 16px var(--cond);margin-left:16px}
-.site-nav a:hover{color:var(--text)}
-.site-nav .home{margin-left:0;font:700 22px/1 var(--cond);color:var(--text)}
-.site-nav .home span{color:var(--mute);font-weight:500}
-footer .links a{margin-right:14px}
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
 .mark{font:700 40px/0.95 var(--cond);letter-spacing:-0.5px;margin:0}
 .mark span{color:var(--mute);font-weight:500}
@@ -78,9 +74,9 @@ footer .links a{margin-right:14px}
 .pastbar button{flex:none;display:grid;gap:1px;text-align:left;padding:7px 12px;border:1px solid var(--rule);border-radius:10px;background:var(--deck);min-width:96px}
 .pastbar button b{font:600 17px/1.1 var(--cond)}
 .pastbar button span{font-size:12px;color:var(--mute)}
-.pastbar button.w span{color:var(--blue)} .pastbar button.l span{color:var(--red)}
+.pastbar button.w span{color:var(--blue)} .pastbar button.l span{color:var(--red-text)}
 .pastbar button[aria-current="true"]{border-color:var(--gold);background:var(--deck2)}
-.slot.enemy.hidden .pt b{color:var(--red);font-size:24px}
+.slot.enemy.hidden .pt b{color:var(--red-text);font-size:24px}
 .slot.enemy.hidden .nm{color:var(--mute)}
 .slot.enemy.flipin .pt{animation:flip .5s cubic-bezier(.2,.7,.2,1) both}
 @media (prefers-reduced-motion:reduce){.slot.enemy.flipin .pt{animation:none}}
@@ -93,7 +89,7 @@ footer .links a{margin-right:14px}
 /* draft layout */
 .draft{max-width:760px}
 .sides{display:grid;grid-template-columns:1fr 64px 1fr;font:600 17px var(--cond);margin-bottom:6px}
-.sides .you{color:var(--blue)} .sides .them{color:var(--red);text-align:right}
+.sides .you{color:var(--blue)} .sides .them{color:var(--red-text);text-align:right}
 .row{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:0;margin-bottom:8px}
 .lane{text-align:center;font:600 15px/1.1 var(--cond);color:var(--mute)}
 .lane .chip{display:block;margin:4px auto 0;width:max-content}
@@ -119,7 +115,42 @@ footer .links a{margin-right:14px}
 .slot.rolled:hover{background:var(--deck2)}
 .slot.locked{background:linear-gradient(90deg,rgba(78,161,223,.14),var(--deck) 70%)}
 .slot.locked .sub{color:var(--blue)}
-.lockpill{margin-left:auto;font:700 15px/1 var(--cond);color:var(--gold);border:1px solid rgba(231,181,60,.55);border-radius:999px;padding:6px 11px;flex:none}
+.lockpill{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:700 15px/1 var(--cond);color:var(--gold);border:1px solid rgba(231,181,60,.55);border-radius:999px;padding:6px 11px;flex:none}
+.lockpill .lk{width:15px;height:15px}
+.lockpill.on{border-color:transparent;color:var(--blue);padding:6px 4px}
+.lockpill.on .lk{width:18px;height:18px}
+.slot.rolled:hover .lockpill,.slot.rolled:focus-visible .lockpill{background:var(--gold);color:#1a1405}
+/* bot lane: ADC and support share one lane label and one result */
+.row.duo{grid-template-rows:auto auto;row-gap:8px}
+.row.duo > .lane{grid-column:2;grid-row:1 / span 2;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:6px 6px;border-left:2px solid var(--rule);border-right:2px solid var(--rule);border-radius:8px}
+.row.duo > .slot.mine{grid-column:1}
+.row.duo > .slot.enemy{grid-column:3}
+.lane .roles{font:500 12px/1.1 var(--body);color:var(--mute)}
+/* lane reasons: marked for or against you */
+.lr ul.why{list-style:none;padding-left:0}
+.why li{display:grid;grid-template-columns:20px 1fr;gap:6px;margin:3px 0}
+.why .mk{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:700 14px/1 var(--body);margin-top:1px}
+.why .for .mk{background:rgba(78,161,223,.2);color:var(--blue)}
+.why .against .mk{background:rgba(227,91,79,.2);color:var(--red-text)}
+.why .info .mk{background:var(--deck2);color:var(--mute)}
+.why .for{color:var(--text)} .why .against{color:var(--soft)}
+/* where the win chance came from */
+.kpi.split b{font-size:24px;white-space:nowrap}
+.kpi.split small{font:500 14px var(--body);color:var(--mute);margin-right:6px}
+.kpi .pos{color:var(--blue)} .kpi .neg{color:var(--red-text)}
+/* gold chart: minute ticks and event markers */
+.chart{position:relative}
+.chart .marks{position:absolute;inset:0;pointer-events:none}
+.chart .mk{position:absolute;transform:translate(-50%,-50%);width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 var(--body);color:#0F1D2C;border:2px solid var(--ink);pointer-events:auto;cursor:default}
+.chart .mk.y{background:var(--blue)} .chart .mk.e{background:var(--red-text)}
+.ticks{position:relative;height:18px;font:500 12px/18px var(--body);color:var(--mute)}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.ticks span:first-child{transform:none}
+.ticks .unit{right:0;transform:none}
+.tl .n{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;font:700 10px/1 var(--body);color:#0F1D2C;margin-right:7px;vertical-align:1px}
+.tl .y .n{background:var(--blue)} .tl .e .n{background:var(--red-text)}
+.countdown b{font:600 18px var(--cond);color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.3px}
+.stats .who{align-self:center;font:600 14px var(--cond);color:var(--mute);border:1px solid var(--rule);border-radius:6px;padding:3px 7px}
 /* reroll reel */
 .pt{isolation:isolate;contain:paint;-webkit-mask-image:-webkit-radial-gradient(white,black)}
 .pt .reel{position:absolute;left:0;top:0;width:100%;display:flex;flex-direction:column;z-index:2;will-change:transform;backface-visibility:hidden}
@@ -142,17 +173,17 @@ footer .links a{margin-right:14px}
 .results{margin-top:22px}
 .verdict{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 26px;padding:18px 0 14px;border-top:1px solid var(--rule)}
 .verdict h2{font:700 72px/0.85 var(--cond);margin:0;letter-spacing:-1px}
-.verdict.win h2{color:var(--gold)} .verdict.loss h2{color:var(--red)}
+.verdict.win h2{color:var(--gold)} .verdict.loss h2{color:var(--red-text)}
 .kpis{display:flex;gap:22px;flex-wrap:wrap}
 .kpi{font-size:14px;color:var(--mute)}
 .kpi b{display:block;font:600 28px/1 var(--cond);color:var(--text)}
 .lede{max-width:70ch;color:var(--text);margin:6px 0 0}
 .community{margin:4px 0 0;padding:10px 14px;background:var(--deck);border:1px solid var(--rule);border-radius:10px;max-width:70ch;font-size:15px;color:var(--mute)}
-.community b{color:var(--text);font-weight:600}.community .cw{color:var(--blue)}.community .cl{color:var(--red)}
+.community b{color:var(--text);font-weight:600}.community .cw{color:var(--blue)}.community .cl{color:var(--red-text)}
 .next{margin:8px 0 0;font-size:14px;color:var(--mute)}
 .chip{font:600 13px/1 var(--body);padding:4px 8px;border-radius:999px;background:var(--deck2);color:var(--even)}
 .chip.w{background:rgba(78,161,223,.16);color:var(--blue)}
-.chip.l{background:rgba(227,91,79,.16);color:var(--red)}
+.chip.l{background:rgba(227,91,79,.16);color:var(--red-text)}
 .panels{display:grid;gap:16px;margin-top:8px}
 @media (min-width:860px){.panels{grid-template-columns:1fr 1fr}}
 .panel{background:var(--deck);border:1px solid var(--rule);border-radius:12px;padding:14px 16px}
@@ -168,7 +199,7 @@ footer .links a{margin-right:14px}
 .lr .more{grid-column:1/-1;margin:4px 0 0;font-size:13px;color:var(--mute)}
 .comp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .comp h4{margin:0 0 6px;font:600 18px var(--cond)}
-.comp .you h4{color:var(--blue)} .comp .them h4{color:var(--red)}
+.comp .you h4{color:var(--blue)} .comp .them h4{color:var(--red-text)}
 .meter{font-size:14px;color:var(--mute);margin:6px 0}
 .bar{height:8px;border-radius:4px;background:var(--deck2);overflow:hidden;display:flex;margin-top:3px}
 .bar i{display:block;height:100%}
@@ -180,7 +211,7 @@ footer .links a{margin-right:14px}
 .tl li{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:7px 0;border-top:1px solid var(--rule);font-size:15px}
 .tl li:first-child{border-top:0}
 .tl time{font:600 16px var(--cond);color:var(--mute)}
-.tl .y{color:var(--blue)}.tl .e{color:var(--red)}
+.tl .y{color:var(--blue)}.tl .e{color:var(--red-text)}
 .gold svg{width:100%;height:150px;display:block}
 .gold p{margin:6px 0 0;font-size:13px;color:var(--mute)}
 .sug{display:grid;gap:8px}
@@ -188,8 +219,6 @@ footer .links a{margin-right:14px}
 .sug b{font:600 17px var(--cond);color:var(--mute)}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
 
-footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--rule);color:var(--mute);font-size:13px;max-width:80ch}
-footer p{margin:6px 0}
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--deck2);border:1px solid var(--rule);padding:10px 16px;border-radius:10px;font-size:15px;max-width:min(92vw,520px);z-index:9}
 .toast textarea{width:100%;margin-top:8px;background:var(--ink);color:var(--text);border:1px solid var(--rule);border-radius:6px;padding:6px;font-size:13px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -208,7 +237,18 @@ footer p{margin:6px 0}
   .pt{--s:38px}.plus{width:38px;height:38px}
   .slot .nm{font-size:17px}
   .slot .sub{font-size:12px}
-  .lockpill{display:none}
+  /* the lock sits on the portrait's corner so names and classes keep the full width */
+  .slot.mine{position:relative}
+  .lockpill{position:absolute;left:34px;bottom:4px;margin:0;padding:3px;border-radius:7px;background:var(--ink);border-color:rgba(231,181,60,.8)}
+  .lockpill .t{display:none}
+  .lockpill .lk{width:13px;height:13px}
+  .lockpill.on{background:var(--ink);border-color:var(--blue);padding:3px}
+  .lockpill.on .lk{width:13px;height:13px}
+  .row.duo{grid-template-rows:auto auto auto}
+  .row.duo > .lane{grid-column:1 / -1;grid-row:1;flex-direction:row;gap:8px;margin:0;border:0}
+  .row.duo > .slot.mine{grid-column:1} .row.duo > .slot.enemy{grid-column:2}
+  .seg button{min-height:44px;padding:0 16px}
+
   .lane{font-size:14px}
   .lane .full{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .lane .short{display:inline}
@@ -217,17 +257,15 @@ footer p{margin:6px 0}
   .comp{grid-template-columns:1fr}
 }
 </style>
+<link rel="stylesheet" href="../site.css">
 </head>
 <body>
 <div class="wrap">
-  <nav class="site-nav" aria-label="Site">
-    <a class="home" href="../">Lane<span>Lock</span></a>
-    <span><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span>
-  </nav>
+  <nav class="site-nav" aria-label="Site"><a class="home" href="../">Lane<span>Lock</span></a><span class="links"><a href="../play/" aria-current="page">Play</a><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span></nav>
   <header class="top">
     <div>
-      <h1 class="mark">Draft your counter</h1>
-      <p class="tag">The enemy team is locked in. Each of your lanes rolls a random champion: lock one in and the rest reroll, until your whole team is set.</p>
+      <h1 class="mark" id="title">Draft your counter</h1>
+      <p class="tag" id="intro">The enemy team is locked in. Each of your lanes rolls a random champion: lock one in and the rest reroll, until your whole team is set.</p>
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Game mode">
@@ -251,8 +289,8 @@ footer p{margin:6px 0}
 
   <div class="ad" id="ad-bottom" hidden></div>
 
-  <footer>
-    <p class="links"><a href="../">LaneLock home</a><a href="../how-it-works.html">How scoring works</a><a href="../about.html">About</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
+  <footer class="site">
+    <p class="links"><a href="../about.html">About</a><a href="../how-it-works.html">How it works</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
     <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. LaneLock isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
     <p>Lane matchups use real ranked win rates from LoLalytics (patch 26.22, Emerald+ solo queue) where there are enough games. Lane tiers follow public patch 26.22 tier lists; "niche" champions are playable in a lane but weren't ranked there. Team comps, duo fit and the play-by-play are a simplified model, so treat results as for fun, not as coaching.</p>
   </footer>
@@ -266,7 +304,7 @@ const CONFIG = {
   // Google AdSense. Leave blank until your site is approved; ad boxes stay hidden while blank.
   adsenseClient: "ca-pub-7663278305650835",
   adSlots: { top: "", results: "", bottom: "" },   // ad unit slot IDs from AdSense
-  siteUrl: "https://lanelock.net/play",
+  siteUrl: "https://lanelock.net/play/",
   // Community stats counter (Cloudflare Worker). Leave blank to hide community stats.
   statsApi: "https://lolgalaxy.dartanganj.workers.dev",
   launchDate: "2026-11-11",     // Daily #1
@@ -708,11 +746,32 @@ function pastDates(){
   return out;
 }
 function fmtDay(d){ return new Date(d+"T12:00:00Z").toLocaleDateString("en-US", {month:"short", day:"numeric", timeZone:"UTC"}); }
+function msToNextDaily(){ const now = new Date(); return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1) - now; }
+function fmtCountdown(ms){
+  const s = Math.max(0, Math.floor(ms/1000)), h = Math.floor(s/3600), m = Math.floor(s/60)%60, sec = s%60;
+  return `${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+let countdownTimer = null;
+function startCountdown(){
+  clearInterval(countdownTimer);
+  const tick = () => {
+    const el = document.getElementById("cd");
+    if (!el) { clearInterval(countdownTimer); return; }
+    const ms = msToNextDaily();
+    if (ms <= 1000 || (S.date && S.date !== todayStr())) {
+      clearInterval(countdownTimer);
+      el.closest(".next").innerHTML = `A new daily draft is ready. <a href="./">Play it now</a>`;
+    } else el.textContent = fmtCountdown(ms);
+  };
+  tick(); countdownTimer = setInterval(tick, 1000);
+}
 function untilNextDaily(){
   const now = new Date(), next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()+1);
   const mins = Math.max(1, Math.ceil((next - now)/60000)), h = Math.floor(mins/60), m = mins % 60;
   return h ? `${h}h ${m}m` : `${m}m`;
 }
+const LOCK_SVG = `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="5" y="10.5" width="14" height="10.5" rx="2.5" fill="currentColor"/></svg>`;
+function clsName(n){ return CLASS_NAME[CHAMPS[n].cls]; }
 function initials(n){ const w = n.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean); return (w.length>1 ? w[0][0]+w[1][0] : n.slice(0,2)).toUpperCase(); }
 function portrait(name, size){
   return `<span class="pt" style="--s:${size}px"><b>${esc(initials(name))}</b><img src="${esc(imgUrl(name))}" alt="" loading="lazy" onerror="this.remove()"></span>`;
@@ -721,7 +780,32 @@ function portrait(name, size){
 const store = {
   get(k, d){ try { const v = localStorage.getItem("leaguesim:"+k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
   // stats always come back as plain non-negative integers, even if storage was edited by hand
-  stats(){ const r = this.get("stats", {}) || {}, n = x => Math.max(0, Math.floor(Number(x) || 0)); return {played:n(r.played), wins:n(r.wins), streak:n(r.streak), best:n(r.best)}; },
+  // Stats are kept per mode: "daily" (today's and past dailies) and "unlimited".
+  // Values always come back as plain non-negative integers, even if storage was edited by hand.
+  stats(mode){
+    this.migrateStats();
+    const r = this.get("stats:" + (mode === "unlimited" ? "unlimited" : "daily"), {}) || {}, n = x => Math.max(0, Math.floor(Number(x) || 0));
+    return {played:n(r.played), wins:n(r.wins), streak:n(r.streak), best:n(r.best)};
+  },
+  addResult(mode, win){
+    const key = "stats:" + (mode === "unlimited" ? "unlimited" : "daily"), st = this.stats(mode);
+    st.played++; if (win) { st.wins++; st.streak++; st.best = Math.max(st.best, st.streak); } else st.streak = 0;
+    this.set(key, st);
+  },
+  // One-time split of the old all-modes stats: dailies are rebuilt from saved results, the rest is unlimited.
+  migrateStats(){
+    if (this.get("stats:v2", false)) return;
+    const n = x => Math.max(0, Math.floor(Number(x) || 0));
+    const old = this.get("stats", null) || {};
+    const a = this.get("archive", {}) || {}, d = this.get("daily", null);
+    if (d && d.date && !a[d.date]) a[d.date] = d;
+    const games = Object.keys(a).sort().map(k => a[k]).filter(g => typeof g.win === "boolean");
+    const daily = {played: games.length, wins: games.filter(g => g.win).length, streak: 0, best: 0};
+    games.forEach(g => { daily.streak = g.win ? daily.streak + 1 : 0; daily.best = Math.max(daily.best, daily.streak); });
+    const un = {played: Math.max(0, n(old.played) - daily.played), wins: Math.max(0, n(old.wins) - daily.wins), streak: 0, best: n(old.best)};
+    un.wins = Math.min(un.wins, un.played);
+    this.set("stats:daily", daily); this.set("stats:unlimited", un); this.set("stats:v2", true);
+  },
   set(k, v){ try { localStorage.setItem("leaguesim:"+k, JSON.stringify(v)); } catch(e){} },
   // Days in a row with a finished daily. It lapses if yesterday's daily was skipped.
   dayStreak(){
@@ -1077,9 +1161,7 @@ function lockLane(role){
 function finish(){
   S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
   S.fresh = new Set(); S.justRevealed = null;
-  const st = store.stats();
-  st.played++; if (S.result.win) { st.wins++; st.streak++; st.best = Math.max(st.best, st.streak); } else st.streak = 0;
-  store.set("stats", st);
+  store.addResult(S.mode, S.result.win);
   if (S.date) store.saveDaily(S.date, {mine: S.mine, seen: S.seen, order: S.order, win: S.result.win});
   if (S.mode === "daily") store.bumpDayStreak();
   render();
@@ -1144,9 +1226,11 @@ function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
    ============================================================ */
 function render(fresh){
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
-  const st = store.stats();
+  const st = store.stats(S.mode), un = S.mode === "unlimited";
   const ds = store.dayStreak();
-  $("#stats").innerHTML = `<div><b>${st.played}</b>played</div><div><b>${st.played?Math.round(st.wins/st.played*100):0}%</b>won</div><div><b>${st.streak}</b>win streak</div><div><b>${ds.cur}</b>day streak</div>`;
+  $("#stats").setAttribute("aria-label", un ? "Your unlimited stats" : "Your daily stats");
+  $("#stats").innerHTML = `<span class="who">${un ? "Unlimited" : "Daily"}</span><div><b>${st.played}</b>played</div><div><b>${st.played?Math.round(st.wins/st.played*100):0}%</b>won</div><div><b>${st.streak}</b>win streak</div>`
+    + (un ? `<div><b>${st.best}</b>best streak</div>` : `<div><b>${ds.cur}</b>day streak</div>`);
   const past = pastDates();
   $("#past-btn").hidden = !past.length;
   $("#hard-wrap").hidden = S.mode !== "unlimited";
@@ -1159,7 +1243,15 @@ function render(fresh){
   }).join("");
   $("#draft").innerHTML = boardHTML(fresh);
   S.justRevealed = null; // only animate a newly revealed enemy once
+  const n = S.date ? dailyNumber(S.date) : 0;
+  const [title, intro] = !S.result
+    ? ["Draft your counter", "The enemy team is locked in. Each of your lanes rolls a random champion: lock one in and the rest reroll, until your whole team is set."]
+    : S.mode === "daily" ? [`Daily #${n}: ${S.result.win ? "victory" : "defeat"}`, "You've played today's draft. Your result is below, and a new enemy team arrives at midnight UTC."]
+    : S.mode === "past" ? [`Daily #${n}: ${S.result.win ? "victory" : "defeat"}`, `Your result for the ${fmtDay(S.date)} daily is below. Pick another past daily or play unlimited.`]
+    : [S.result.win ? "Victory" : "Defeat", "Your result is below. Play again for a new enemy team."];
+  $("#title").textContent = title; $("#intro").textContent = intro;
   $("#results").innerHTML = S.result ? resultsHTML(S.result) : "";
+  if (S.result && S.mode === "daily") startCountdown(); else clearInterval(countdownTimer);
   if (S.result) mountAd($("#ad-results"), CONFIG.adSlots.results);
   if (!S.result && S.fresh.size) { const roles = ROLES.map(r=>r.key).filter(k => S.fresh.has(k)); S.fresh = new Set(); spinSlots(roles, 0); }
 }
@@ -1167,29 +1259,40 @@ function render(fresh){
 function boardHTML(fresh){
   const done = !!S.result;
   const shown = revealedEnemies();
-  const rows = ROLES.map((r, i) => {
+  const unit = k => S.result.units.find(u => u.key === (k === "adc" || k === "support" ? "bot" : k));
+  const chipFor = k => {
+    if (!done) return "";
+    const v = unit(k).verdict;
+    return `<span class="chip ${v}">${v==="w"?"Won":v==="l"?"Lost":"Even"}</span>`;
+  };
+  const slots = (r, i) => {
     const m = S.mine[r.key], roll = S.rolls[r.key], e = S.enemy[r.key];
-    const lane = done ? S.result.lanes.find(l=>l.role===r.key) : null;
-    const chip = lane ? `<span class="chip ${lane.verdict}">${lane.verdict==="w"?"Won":lane.verdict==="l"?"Lost":"Even"}</span>` : "";
-    let mineEl;
-    if (m) {
-      mineEl = `<div class="slot mine locked">${portrait(m,48)}<span style="min-width:0"><span class="nm">${esc(m)}</span><span class="sub">${done?esc(CLASS_NAME[CHAMPS[m].cls]):"Locked"}</span></span></div>`;
-    } else {
-      mineEl = `<button type="button" class="slot mine rolled${S.fresh.has(r.key)?" new":""}" data-lock="${r.key}" aria-label="Lock in ${esc(roll)} for ${esc(r.label)}">${portrait(roll,48)}<span style="min-width:0"><span class="nm">${esc(roll)}</span><span class="sub">Tap to lock in</span></span><span class="lockpill" aria-hidden="true">Lock in</span></button>`;
-    }
+    const mineEl = m
+      ? `<div class="slot mine locked">${portrait(m,48)}<span style="min-width:0"><span class="nm">${esc(m)}</span><span class="sub">${esc(clsName(m))}</span></span>${done ? "" : `<span class="lockpill on" title="Locked in">${LOCK_SVG}<span class="sr">Locked in</span></span>`}</div>`
+      : `<button type="button" class="slot mine rolled${S.fresh.has(r.key)?" new":""}" data-lock="${r.key}" aria-label="Lock in ${esc(roll)}, ${esc(clsName(roll))}, for ${esc(r.label)}">${portrait(roll,48)}<span style="min-width:0"><span class="nm">${esc(roll)}</span><span class="sub">${esc(clsName(roll))}</span></span><span class="lockpill" aria-hidden="true">${LOCK_SVG}<span class="t">Lock in</span></span></button>`;
     const enemyEl = shown.has(r.key)
-      ? `<div class="slot enemy${S.justRevealed===r.key?" flipin":""}" style="--i:${fresh?i:0}">${portrait(e,48)}<span style="min-width:0"><span class="nm">${esc(e)}</span><span class="sub">${esc(CLASS_NAME[CHAMPS[e].cls])}</span></span></div>`
+      ? `<div class="slot enemy${S.justRevealed===r.key?" flipin":""}" style="--i:${fresh?i:0}">${portrait(e,48)}<span style="min-width:0"><span class="nm">${esc(e)}</span><span class="sub">${esc(clsName(e))}</span></span></div>`
       : `<div class="slot enemy hidden"><span class="pt"><b>?</b></span><span style="min-width:0"><span class="nm">Hidden</span><span class="sub">Lock to reveal</span></span></div>`;
-    return `<div class="row">${mineEl}<div class="lane"><span class="full">${esc(r.label)}</span><span class="short" aria-hidden="true">${esc(SHORT[r.key])}</span>${chip}</div>${enemyEl}</div>`;
+    return [mineEl, enemyEl];
+  };
+  const rows = ROLES.filter(r => r.key !== "support").map((r, i) => {
+    if (r.key !== "adc") {
+      const [mine, enemy] = slots(r, i);
+      return `<div class="row">${mine}<div class="lane"><span class="full">${esc(r.label)}</span>${chipFor(r.key)}</div>${enemy}</div>`;
+    }
+    // ADC and support are scored as one bot lane duo, so they share one lane label and one result.
+    const sup = ROLES.find(x => x.key === "support");
+    const [mA, eA] = slots(r, 3), [mS, eS] = slots(sup, 4);
+    return `<div class="row duo">${mA}<div class="lane"><span class="full">Bot lane</span><span class="roles">ADC + Support</span>${chipFor("adc")}</div>${eA}${mS}${eS}</div>`;
   }).join("");
   const left = ROLES.filter(r=>!S.mine[r.key]).length;
   const status = done ? "" : `<p class="status">${left === 1
       ? "Last lane. Lock it in to play the match."
-      : `Lock in one lane and the other ${left-1} will reroll.`}${S.hard && shown.size < 5 ? " Hard mode: each lock reveals one more enemy." : ""}${S.mode==="past" ? ` Daily #${dailyNumber(S.date)} from ${esc(fmtDay(S.date))}.` : ""}</p>`;
+      : `Tap a champion to lock it in. The other ${left-1} lanes will reroll.`}${S.hard && shown.size < 5 ? " Hard mode: each lock reveals one more enemy." : ""}${S.mode==="past" ? ` Daily #${dailyNumber(S.date)} from ${esc(fmtDay(S.date))}.` : ""}</p>`;
   return `<div class="board${fresh?" reveal":""}"><div class="sides"><span class="you">Your team</span><span></span><span class="them">Enemy team</span></div>${rows}${status}</div>`;
 }
 
-function goldSVG(gold){
+function goldSVG(gold, events){
   const W = 600, H = 150, pad = 6;
   const maxT = gold[gold.length-1][0];
   const maxG = Math.max(2000, ...gold.map(p=>Math.abs(p[1])));
@@ -1197,11 +1300,26 @@ function goldSVG(gold){
   const line = gold.map((p,i)=>`${i?"L":"M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`).join("");
   const area = `${line}L${x(maxT)},${H/2}L${x(0)},${H/2}Z`;
   const last = gold[gold.length-1][1];
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gold lead over time, ending ${Math.abs(last).toLocaleString()} gold ${last>=0?"in your favor":"in the enemy's favor"}">
+  const goldAt = t => {
+    for (let i = 1; i < gold.length; i++) if (gold[i][0] >= t) {
+      const [t0,g0] = gold[i-1], [t1,g1] = gold[i]; return g0 + (g1-g0) * ((t-t0)/((t1-t0)||1));
+    }
+    return last;
+  };
+  const ticks = []; for (let t = 5; t < maxT - 1; t += 5) ticks.push(t);
+  const grid = ticks.map(t => `<line x1="${x(t)}" x2="${x(t)}" y1="0" y2="${H}" stroke="#2A4560" stroke-width="1" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>`).join("");
+  // ticks and markers are HTML on top of the stretched SVG, so the circles and text keep their shape
+  const pct = t => (x(t)/W*100).toFixed(2);
+  const tickEls = [0, ...ticks].map(t => `<span style="left:${pct(t)}%">${t}</span>`).join("");
+  const marks = events.map((e, i) => `<span class="mk ${e.side}" style="left:${pct(e.t)}%;top:${(y(goldAt(e.t))/H*100).toFixed(2)}%" title="${esc(fmtTime(e.t)+" "+e.text)}">${i+1}</span>`).join("");
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Gold lead over time, ending ${Math.abs(last).toLocaleString()} gold ${last>=0?"in your favor":"in the enemy's favor"}">
     <defs><clipPath id="up"><rect x="0" y="0" width="${W}" height="${H/2}"/></clipPath><clipPath id="dn"><rect x="0" y="${H/2}" width="${W}" height="${H/2}"/></clipPath></defs>
+    ${grid}
     <path d="${area}" fill="rgba(78,161,223,.28)" clip-path="url(#up)"/><path d="${area}" fill="rgba(227,91,79,.28)" clip-path="url(#dn)"/>
     <line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#2A4560" stroke-width="1"/>
-    <path d="${line}" fill="none" stroke="#E9EEF3" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+    <path d="${line}" fill="none" stroke="#E9EEF3" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="marks" aria-hidden="true">${marks}</div></div>
+    <div class="ticks" aria-hidden="true">${tickEls}<span class="unit">min</span></div>`;
 }
 
 // Link to the full head-to-head page on LoLalytics (builds, runes, win rate by game length).
@@ -1238,8 +1356,15 @@ function resultsHTML(res){
     : (res.E >= 0 ? `You won the early game, but the enemy took over later on.`
        : lost > won ? `The enemy won ${lost} of 4 lanes and never gave the lead back.`
        : `The lanes were close, but the enemy's draft came out ahead and closed out the game.`);
+  const reasonLI = r => {
+    const kind = r.v > 0.05 ? "for" : r.v < -0.05 ? "against" : "info";
+    const mark = kind === "for" ? "+" : kind === "against" ? "−" : "=";
+    const label = kind === "for" ? "For you: " : kind === "against" ? "Against you: " : "";
+    return `<li class="${kind}"><span class="mk" aria-hidden="true">${mark}</span>${label ? `<span class="sr">${label}</span>` : ""}${esc(r.t)}</li>`;
+  };
   const lanes = res.units.map(l => {
-    const rs = [...l.reasons].sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0, l.duo ? 4 : 3);
+    // biggest factors first; each is marked as helping you, hurting you, or just context
+    const rs = [...l.reasons].sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0, l.duo ? 5 : 4);
     const head = l.duo
       ? `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in bot lane</em></div>`
       : `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in ${esc(l.label.toLowerCase())}</em></div>`;
@@ -1249,10 +1374,12 @@ function resultsHTML(res){
       : `<p class="more">${lolaLink(l.p, l.e, l.role, `Full ${l.p} vs ${l.e} stats on LoLalytics`)}</p>`;
     return `<div class="lr">${head}
       <span class="chip ${l.verdict}">${l.verdict==="w"?"You won":l.verdict==="l"?"You lost":"Even"}</span>
-      ${duoLine}<ul>${rs.length?rs.map(r=>`<li>${esc(r.t)}</li>`).join(""):"<li>Close matchup with no big edge either way</li>"}</ul>${more}</div>`;
+      ${duoLine}<ul class="why">${rs.length ? rs.map(reasonLI).join("") : `<li class="info"><span class="mk" aria-hidden="true">=</span>Close matchup with no big edge either way</li>`}</ul>${more}</div>`;
   }).join("");
   const syn = (arr) => arr.length ? arr.map(s=>`<li class="good">${esc(s.t)}</li>`).join("") : `<li>No standout combos</li>`;
-  const tl = res.timeline.map(e => `<li><time>${fmtTime(e.t)}</time><span class="${e.side}">${esc(e.text)}</span></li>`).join("");
+  const tl = res.timeline.map((e, i) => `<li><time>${fmtTime(e.t)}</time><span class="${e.side}"><b class="n" aria-hidden="true">${i+1}</b>${esc(e.text)}</span></li>`).join("");
+  const sign = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(1);
+  const lanePts = 0.6*res.E, compPts = 0.55*res.L;
   const sug = ROLES.map(r => {
     const mine = S.mine[r.key]; const seen = S.seen[r.key] || [mine];
     const rolled = seen.length > 1 ? `Saw ${seen.length} rolls before locking ${esc(mine)}.` : `Locked ${esc(mine)} on the first roll.`;
@@ -1262,14 +1389,16 @@ function resultsHTML(res){
     return `<div><b>${esc(r.label)}</b><span>${rolled}${note}</span></div>`;
   }).join("");
   return `<div class="verdict ${res.win?"win":"loss"}"><div><h2>${res.win?"Victory":"Defeat"}</h2><p class="lede">${esc(lede)}</p></div>
-    <div class="kpis"><div class="kpi"><b>${pct}%</b>win chance</div><div class="kpi"><b>${fmtTime(res.dur)}</b>game length</div><div class="kpi"><b>${res.kills[0]}–${res.kills[1]}</b>kills</div></div></div>
-    ${S.mode==="daily" ? `<p class="community" id="community"${S.community ? "" : " hidden"}>${communityHTML()}</p><p class="next">Next daily draft in ${untilNextDaily()}.</p>` : ""}
+    <div class="kpis"><div class="kpi"><b>${pct}%</b>win chance</div>
+      <div class="kpi split" title="Scoring points. Positive numbers favour you; together they make your win chance."><b><span class="${lanePts>=0?"pos":"neg"}">${sign(lanePts)}</span> <small>lanes</small> <span class="${compPts>=0?"pos":"neg"}">${sign(compPts)}</span> <small>comp</small></b>where it came from</div>
+      <div class="kpi"><b>${fmtTime(res.dur)}</b>game length</div><div class="kpi"><b>${res.kills[0]}–${res.kills[1]}</b>kills</div></div></div>
+    ${S.mode==="daily" ? `<p class="community" id="community"${S.community ? "" : " hidden"}>${communityHTML()}</p><p class="next countdown">Next daily draft in <b id="cd">${fmtCountdown(msToNextDaily())}</b></p>` : ""}
     ${S.mode==="past" ? `<p class="next">This was Daily #${dailyNumber(S.date)} from ${esc(fmtDay(S.date))}. Past dailies count toward your win streak, but not your day streak.</p>` : ""}
     <div class="actions">${S.mode==="unlimited"
       ? `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`
       : `<button type="button" class="btn" data-act="share">Share result</button>${nextPast() ? `<button type="button" class="btn ghost" data-past="${nextPast()}">Play #${dailyNumber(nextPast())}</button>` : ""}<button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`}</div>
     <div class="panels">
-      <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold)}<p>Above the line, your team is ahead. Below it, the enemy is.</p></div>
+      <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold, res.timeline)}<p>Above the line, your team is ahead. Below it, the enemy is. Numbered dots match the events in "How the game went".</p></div>
       <div class="panel"><h3>How the game went</h3><ol class="tl">${tl}</ol></div>
       <div class="panel wide"><h3>Lane by lane</h3>${lanes}<p class="src">Win rates: ${esc(MATCHUP_SOURCE)} ranked solo queue. A lane with no stat line didn't have enough games between those two champions, so it uses the tier and class model. <a href="../how-it-works.html">How scoring works</a></p></div>
       <div class="panel wide"><h3>Team comps</h3><div class="comp">${compCol(res.sP,"you","Yours")}${compCol(res.sE,"them","Theirs")}</div>
@@ -1283,23 +1412,23 @@ function resultsHTML(res){
 /* ============================================================
    SHARE
    ============================================================ */
+// Wordle-style and spoiler-free: no champions, just the order you locked lanes in and how each went.
+// Rows are your locks in order; columns are Top, Jungle, Mid, Bot, Support.
 function shareText(){
   const r = S.result;
-  const LBL = {top:"Top", jungle:"Jungle", mid:"Mid", bot:"Bot"};
-  const sq = v => v==="w" ? "🟦" : v==="l" ? "🟥" : "⬜";
-  const lanes = r.units.map(u => `${sq(u.verdict)} ${LBL[u.key]}`).join("  ");
+  const sq = {w:"🟦", l:"🟥", e:"🟨"};
+  const verdict = k => r.units.find(u => u.key === (k === "adc" || k === "support" ? "bot" : k)).verdict;
+  const order = S.order.length === 5 ? S.order : ROLES.map(x => x.key);
+  const grid = order.map(locked => ROLES.map(x => x.key === locked ? sq[verdict(locked)] : "⬛").join("")).join("\n");
   const name = S.date ? `LaneLock #${dailyNumber(S.date)}` : S.hard ? "LaneLock Hard" : "LaneLock";
-  const head = `${name} ${r.win ? "🏆 Victory" : "❌ Defeat"}, ${Math.round(r.prob*100)}% win chance`;
-  const streak = store.stats().streak, days = store.dayStreak().cur;
-  const bits = [];
-  if (S.mode === "daily" && days >= 2) bits.push(`📅 ${days}-day streak`);
-  if (streak >= 2) bits.push(`🔥 ${streak} win streak`);
-  const extra = bits.length ? `\n${bits.join("  ")}` : "";
-  const t = S.community, b = S.mode === "daily" ? beatPct() : null;
-  const comm = b !== null ? `\n📊 Beat ${b}% of today's drafts`
-    : (S.mode==="daily" && t && (t.wins+t.losses)) ? `\nCommunity: ${Math.round(t.wins/(t.wins+t.losses)*100)}% won today` : "";
-  const link = S.mode === "past" ? `${CONFIG.siteUrl}/?date=${S.date}` : CONFIG.siteUrl;
-  return `${head}\n${lanes}${extra}${comm}\n${link}`;
+  const head = `${name} ${r.win ? "🏆" : "❌"} ${Math.round(r.prob*100)}%`;
+  const st = store.stats(S.mode), days = store.dayStreak().cur, bits = [];
+  if (S.mode === "daily" && days >= 2) bits.push(`📅 ${days}`);
+  if (st.streak >= 2) bits.push(`🔥 ${st.streak}`);
+  const b = S.mode === "daily" ? beatPct() : null;
+  if (b !== null) bits.push(`📊 top ${Math.max(1, 100 - b)}%`);
+  const link = S.mode === "past" ? `${CONFIG.siteUrl}?date=${S.date}` : CONFIG.siteUrl;
+  return `${head}\n${grid}${bits.length ? "\n" + bits.join("  ") : ""}\n${link}`;
 }
 function toast(html, ms=2600){
   const old = $(".toast"); if (old) old.remove();
@@ -1365,7 +1494,7 @@ function settleSlot(slot, pt, nm, sub, final){
   pt.classList.remove("spinning");
   pt.innerHTML = `<b>${esc(initials(final))}</b><img src="${esc(imgUrl(final))}" alt="" onerror="this.remove()">`;
   nm.textContent = final; slot.classList.remove("spin");
-  if (sub) sub.textContent = "Tap to lock in";
+  if (sub) sub.textContent = clsName(final);
   pt.classList.add("settle");
   S.spinning--;
   if (S.spinning <= 0) {

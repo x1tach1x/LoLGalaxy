@@ -88,7 +88,7 @@ export async function postDaily(env, now = new Date()) {
     const total = t.wins + t.losses;
     if (total) recap = `\nYesterday ${total.toLocaleString("en-US")} player${total === 1 ? "" : "s"} drafted, and ${Math.round(t.wins / total * 100)}% won.`;
   } catch {}
-  const content = `**LaneLock Daily #${dailyNumber(today)} is live.** Today's enemy team:\n${lines.join("\n")}\n\nCan you draft the counter? https://lanelock.net/play${recap}`;
+  const content = `**LaneLock Daily #${dailyNumber(today)} is live.** Today's enemy team:\n${lines.join("\n")}\n\nCan you draft the counter? https://lanelock.net/play/${recap}`;
   const res = await fetch(hook, { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content, username: "LaneLock", allowed_mentions: { parse: [] } }) });
   return res.ok ? "posted" : `Discord answered ${res.status}`;

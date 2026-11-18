@@ -62,16 +62,15 @@ a{color:var(--blue)}
     radial-gradient(1px 1px at 64% 92%, #d9ccff 99%, transparent);}
 
 .wrap{max-width:1080px;margin:0 auto;padding:0 18px}
-.top{display:flex;justify-content:space-between;align-items:center;padding:22px 0 0}
 .mark{font:700 30px/1 var(--cond);letter-spacing:.2px;margin:0;color:var(--text);text-decoration:none}
 .mark span{color:var(--mute);font-weight:500}
-.top nav a{color:var(--mute);text-decoration:none;font:600 17px var(--cond);margin-left:18px}
-.top nav a:hover{color:var(--text)}
 
 .hero{display:grid;gap:28px;padding:48px 0 56px;align-items:center}
 @media (min-width:900px){.hero{grid-template-columns:1fr 1.05fr;gap:48px;padding:72px 0 80px}}
 .hero h1{font:700 clamp(44px,7vw,76px)/.92 var(--cond);margin:0;letter-spacing:-.5px;max-width:12ch}
-.hero .lede{color:#C5D2DE;font-size:19px;margin:18px 0 26px;max-width:40ch}
+.hero .test{font:600 clamp(21px,2.4vw,25px)/1.2 var(--cond);color:var(--gold);margin:16px 0 0;max-width:30ch}
+.hero .lede{color:#C5D2DE;font-size:19px;margin:12px 0 26px;max-width:40ch}
+.sky .site-nav{padding-top:20px;margin-bottom:0}
 .ctas{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .btn{display:inline-block;border-radius:10px;padding:14px 22px;font:700 21px/1 var(--cond);text-decoration:none}
 .btn.primary{background:var(--gold);color:#1a1405}
@@ -94,9 +93,6 @@ a{color:var(--blue)}
 .pt{--s:52px;position:relative;width:var(--s);height:var(--s);border-radius:9px;overflow:hidden;background:var(--deck2);display:grid;place-items:center}
 .pt b{font:700 18px var(--cond);color:var(--mute)}
 .pt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.reveal .pt{animation:flip .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i)*120ms + 150ms)}
-@keyframes flip{from{transform:rotateY(90deg);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){.reveal .pt{animation:none}}
 .board footer{font-size:14px;color:var(--mute);padding:10px 0 4px;border-top:1px solid var(--rule)}
 .board footer p{margin:0 0 4px}.board footer b{color:var(--text);font-weight:600}
 .comm .w{color:var(--blue)}.comm .l{color:var(--red)}
@@ -111,28 +107,24 @@ a{color:var(--blue)}
 .steps h3{font:700 24px/1.1 var(--cond);margin:0 0 6px}
 .steps p{margin:0;color:#C5D2DE;max-width:36ch}
 
-footer.site{margin-top:56px;padding:18px 0 34px;border-top:1px solid var(--rule);color:var(--mute);font-size:13px}
-footer.site p{margin:6px 0;max-width:80ch}
-footer.site .links a{margin-right:16px;display:inline-block}
 .install{margin:10px 0 0;font-size:15px;color:var(--mute)}
 .install b{color:var(--text);font-weight:600}
 .install button{background:none;border:1px solid var(--rule);color:var(--text);border-radius:999px;padding:8px 16px;font:600 17px var(--cond);cursor:pointer}
 .install button:hover{border-color:var(--gold)}
 .how .more{margin:26px 0 0;font:600 19px var(--cond)}
-@media (max-width:520px){.top nav a{margin-left:12px}.lanes li{grid-template-columns:54px 1fr auto}.pt{--s:46px}.nm{font-size:21px}}
+@media (max-width:520px){.lanes li{grid-template-columns:54px 1fr auto}.pt{--s:46px}.nm{font-size:21px}}
 </style>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 <div class="sky">
   <div class="wrap">
-    <header class="top">
-      <a class="mark" href="./">Lane<span>Lock</span></a>
-      <nav><a href="play/">Play</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a></nav>
-    </header>
+    <nav class="site-nav" aria-label="Site"><a class="home" href="./">Lane<span>Lock</span></a><span class="links"><a href="play/">Play</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a></span></nav>
 
     <section class="hero">
       <div>
         <h1>Five enemies are already locked in.</h1>
+        <p class="test">A daily test of how well you know your matchups.</p>
         <p class="lede">Today's LaneLock draft is live. Roll champions for each lane, lock in your counters, and find out if your team wins.</p>
         <div class="ctas">
           <a class="btn primary" href="play/">Draft your counter</a>
@@ -144,7 +136,7 @@ footer.site .links a{margin-right:16px;display:inline-block}
 
       <section class="board" aria-labelledby="today">
         <header><h2 id="today">Today's enemy team</h2><span class="day" id="day"></span></header>
-        <ul class="lanes reveal" id="lanes"></ul>
+        <ul class="lanes" id="lanes"></ul>
         <footer><p class="comm" id="comm" hidden></p><p>Everyone in the world gets this same team. Next draft in <b id="next"></b>.</p></footer>
       </section>
     </section>
@@ -259,7 +251,7 @@ function render(version){
     return `<li><span class="lane">${label}</span><span><span class="nm">${esc(n)}</span><span class="cls">${esc(CLASS_NAME[CLASS[n]] || "")}</span></span><span class="pt" style="--i:${i}"><b>${esc(initials(n))}</b>${img}</span></li>`;
   }).join("");
 }
-// Wait briefly for Riot's current image version so the reveal shows real portraits; fall back to initials.
+// Wait briefly for Riot's current image version so the card shows real portraits; fall back to initials.
 Promise.race([
   fetch("https://ddragon.leagueoflegends.com/api/versions.json").then(r => r.json()).then(v => v[0]),
   new Promise(res => setTimeout(() => res(null), 900))
