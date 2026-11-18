@@ -1,0 +1,19 @@
+adc|Corki|Ezreal:36.36:11,Kai'Sa:36.36:11,Jhin:66.67:12
+adc|Ezreal|Corki:63.64:11,Jhin:48.78:41,Kai'Sa:52.83:53,Kalista:44.00:25,Sivir:58.33:12,Xayah:46.15:13,Yunara:40.00:10
+adc|Jhin|Ezreal:51.22:41,Kai'Sa:38.71:31,Corki:33.33:12
+adc|Kai'Sa|Corki:63.64:11,Ezreal:47.17:53,Xayah:36.36:11,Jhin:61.29:31
+adc|Kalista|Ezreal:56.00:25
+adc|Sivir|Ezreal:41.67:12
+adc|Xayah|Ezreal:53.85:13,Kai'Sa:63.64:11
+adc|Yunara|Ezreal:60.00:10
+jungle|Lee Sin|Naafiri:40.00:10,Qiyana:50.00:12,Vi:58.82:17
+jungle|Naafiri|Lee Sin:60.00:10
+jungle|Qiyana|Lee Sin:50.00:12
+jungle|Vi|Lee Sin:41.18:17
+support|Alistar|Nautilus:60.00:10
+support|Bard|Karma:50.00:12
+support|Karma|Bard:50.00:12,Nautilus:41.67:12
+support|Nautilus|Alistar:40.00:10,Rell:50.00:12,Karma:58.33:12
+support|Rell|Nautilus:50.00:12
+top|Jayce|Olaf:30.00:10
+top|Olaf|Jayce:70.00:10
