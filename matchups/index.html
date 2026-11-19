@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Who wins the lane? – LaneLock</title>
+<meta name="description" content="Two League of Legends champions, one lane: pick the one that wins the matchup more often. Ten new matchups every day, or go for an endless streak.">
+<link rel="canonical" href="https://lanelock.net/matchups/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LaneLock">
+<meta property="og:title" content="Who wins the lane?">
+<meta property="og:description" content="Two champions, one lane. Pick the one that wins the matchup more often.">
+<meta property="og:url" content="https://lanelock.net/matchups/">
+<meta property="og:image" content="https://lanelock.net/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F1D2C">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F1D2C; --deck:#16283B; --deck2:#1C3249; --rule:#2A4560;
+  --text:#E9EEF3; --soft:#C9D4DF; --mute:#97A9BC;
+  --blue:#4EA1DF; --red:#E35B4F; --red-text:#F07A6E; --gold:#E7B53C; --green:#4CC38A;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ink);color:var(--text);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+a{color:var(--blue)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.wrap{max-width:820px;margin:0 auto;padding:14px 18px 0}
+
+.intro h1{font:700 clamp(36px,6vw,54px)/1 var(--cond);margin:6px 0 6px}
+.intro p{margin:0;color:var(--soft);max-width:52ch}
+.bar-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:18px 0 14px}
+.seg{display:inline-flex;background:var(--deck);border:1px solid var(--rule);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:8px 18px;border-radius:7px;font:600 17px var(--cond);color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--deck2);color:var(--text)}
+.progress{display:flex;align-items:center;gap:6px;font:600 16px var(--cond);color:var(--mute)}
+.dots{display:flex;gap:5px}
+.dots i{width:12px;height:12px;border-radius:3px;background:var(--deck2);border:1px solid var(--rule)}
+.dots i.ok{background:var(--green);border-color:var(--green)}
+.dots i.no{background:var(--red);border-color:var(--red)}
+.dots i.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.streak b{color:var(--text);font-size:20px}
+
+/* the question */
+.card{background:var(--deck);border:1px solid var(--rule);border-radius:16px;padding:18px 18px 20px}
+.lane{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:14px}
+.lane h2{font:700 30px/1 var(--cond);margin:0}
+.lane .diff{font:600 15px var(--cond);color:var(--mute)}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:12px}
+.vs{align-self:center;font:700 22px var(--cond);color:var(--mute)}
+.champ{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px 14px;border-radius:14px;border:2px solid var(--rule);background:var(--deck2);text-align:center;min-height:100%;transition:border-color .15s, transform .15s}
+.champ:not([disabled]):hover{border-color:var(--gold);transform:translateY(-2px)}
+.champ[disabled]{cursor:default}
+.pt{position:relative;width:96px;height:96px;border-radius:14px;overflow:hidden;background:var(--ink);display:grid;place-items:center}
+.pt b{font:700 30px var(--cond);color:var(--mute)}
+.pt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.champ .nm{font:700 22px/1.1 var(--cond)}
+.champ .cl{font-size:14px;color:var(--mute)}
+.champ .wr{font:700 34px/1 var(--cond);font-variant-numeric:tabular-nums;margin-top:2px}
+.champ .tag{font:600 14px var(--cond);border-radius:999px;padding:2px 10px}
+.champ.win{border-color:var(--gold)}
+.champ.win .wr{color:var(--gold)}
+.champ.lose .wr{color:var(--mute)}
+.champ.pick .tag{background:var(--deck);border:1px solid var(--rule);color:var(--soft)}
+.champ.pick.win .tag{background:rgba(76,195,138,.16);border-color:transparent;color:var(--green)}
+.champ.pick.lose .tag{background:rgba(227,91,79,.16);border-color:transparent;color:var(--red-text)}
+
+/* the reveal: one bar splitting the lane between the two champions */
+.split{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:16px 0 8px;background:var(--rule)}
+.split i{display:block;height:100%;width:50%;transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.split .win{background:var(--gold)} .split .lose{background:#46596E}
+.verdict{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.verdict p{margin:0;color:var(--soft)}
+.verdict strong{font:700 22px var(--cond);margin-right:8px}
+.verdict .ok{color:var(--green)} .verdict .no{color:var(--red-text)}
+.verdict small{display:block;color:var(--mute);font-size:13px}
+.btn{border:0;border-radius:999px;background:var(--gold);color:#1a1405;font:700 19px/1 var(--cond);padding:13px 26px}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:none;color:var(--text);border:1px solid var(--rule)}
+
+/* end of a daily or a streak */
+.done h2{font:700 40px/1 var(--cond);margin:0 0 4px}
+.done .sub{color:var(--soft);margin:0 0 14px}
+.grid{font-size:22px;letter-spacing:2px;margin:6px 0 14px}
+.recap{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:6px}
+.recap li{display:grid;grid-template-columns:22px 66px 1fr auto;gap:8px;align-items:center;font-size:14px;color:var(--soft);padding:6px 0;border-top:1px solid var(--rule)}
+.recap .mk{font-weight:700} .recap .ok{color:var(--green)} .recap .no{color:var(--red-text)}
+.recap .ln{font:600 14px var(--cond);color:var(--mute)}
+.recap .w{color:var(--text);font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.next{color:var(--mute);margin:14px 0 0}
+.next b{font:600 18px var(--cond);color:var(--text);font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--deck2);border:1px solid var(--rule);color:var(--text);padding:10px 16px;border-radius:10px;font-size:15px;z-index:9;max-width:90vw}
+.toast[hidden]{display:none}
+.toast textarea{display:block;width:100%;margin-top:8px;background:var(--ink);color:var(--text);border:1px solid var(--rule);border-radius:6px}
+.more{margin:22px 0 0;color:var(--mute);font-size:15px}
+.loading{color:var(--mute);padding:40px 0;text-align:center}
+
+@media (max-width:520px){
+  .card{padding:14px 12px 16px}
+  .pair{gap:8px}
+  .vs{font-size:18px}
+  .pt{width:76px;height:76px}
+  .champ{padding:12px 6px}
+  .champ .nm{font-size:19px}
+  .champ .wr{font-size:28px}
+  .seg button{min-height:44px;padding:0 16px}
+  .recap li{grid-template-columns:18px 52px 1fr}
+  .recap li > span:last-child{grid-column:3}
+  .verdict .btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){ .split i,.champ{transition:none} }
+</style>
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav" aria-label="Site"><a class="home" href="../">Lane<span>Lock</span></a><span class="links"><a href="../play/">Play</a><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span></nav>
+
+  <header class="intro">
+    <h1>Who wins the lane?</h1>
+    <p>Two champions, one lane. Pick the one that wins the matchup more often in ranked games.</p>
+  </header>
+
+  <div class="bar-top">
+    <div class="seg" role="group" aria-label="Mode">
+      <button type="button" data-mode="daily">Daily 10</button>
+      <button type="button" data-mode="endless">Endless</button>
+    </div>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <main id="game"><p class="loading">Loading matchups…</p></main>
+  <p class="sr" aria-live="polite" id="live"></p>
+  <p class="more">Want to draft a whole team instead? <a href="../play/">Play today's LaneLock</a>.</p>
+
+  <footer class="site">
+    <p class="links"><a href="../about.html">About</a><a href="../how-it-works.html">How it works</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
+    <p id="source">Win rates come from Emerald+ ranked solo queue.</p>
+    <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. LaneLock isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const CONFIG = {
+  launchDate: "2026-11-20",            // Daily #1. Set this to the day the game goes live.
+  url: "https://lanelock.net/matchups/",
+  fallbackDdragonVersion: "16.22.1"
+};
+const LANE = {top:"Top lane", jungle:"Jungle", mid:"Mid lane", adc:"Bot lane (ADC)", support:"Bot lane (support)"};
+const LANE_SHORT = {top:"Top", jungle:"Jungle", mid:"Mid", adc:"ADC", support:"Support"};
+const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
+const BAND = ["Easy", "Medium", "Hard"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ---------- seeded randomness (the daily is the same for everyone) ----------
+function hashStr(s){ let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const dailyNumber = d => Math.max(1, Math.round((Date.parse(d+"T00:00:00Z") - Date.parse(CONFIG.launchDate+"T00:00:00Z")) / 864e5) + 1);
+
+// ---------- saved progress (values are checked, since storage can be edited by hand) ----------
+const store = {
+  get(k, d){ try { const v = JSON.parse(localStorage.getItem("wwl:" + k)); return v ?? d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem("wwl:" + k, JSON.stringify(v)); } catch(e){} }
+};
+const int = x => Math.max(0, Math.floor(Number(x) || 0));
+
+// ---------- portraits ----------
+let DDV = CONFIG.fallbackDdragonVersion;
+fetch("https://ddragon.leagueoflegends.com/api/versions.json").then(r => r.json()).then(v => { if (Array.isArray(v) && v[0]) DDV = v[0]; }).catch(() => {});
+const initials = n => n.replace(/[^A-Za-z ]/g, "").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || n.slice(0, 2);
+function portrait(name){
+  const id = DATA.champs[name] ? DATA.champs[name][0] : name.replace(/[^A-Za-z0-9]/g, "");
+  return `<span class="pt"><b>${esc(initials(name))}</b><img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${esc(id)}.png" alt="" onerror="this.remove()"></span>`;
+}
+const lolaUrl = (q) => {
+  const slug = n => ({"Nunu & Willump":"nunu","Renata Glasc":"renata"})[n] || n.toLowerCase().replace(/[^a-z]/g, "");
+  return `https://lolalytics.com/lol/${slug(q.a)}/vs/${slug(q.b)}/build/?lane=${LOLA_LANE[q.role]}`;
+};
+
+// ---------- questions ----------
+let DATA = null;
+// q: {role, a, b, wrA, games, band, flip}  (flip puts b on the left)
+function toQ(row, rng){ const [role, a, b, wrA, games, band] = row; return {role, a, b, wrA, games, band, flip: rng() < 0.5}; }
+
+// Daily 10: 3 easy, 4 medium, 3 hard, two per lane, no champion twice
+function dailyQuestions(date){
+  const rng = mulberry32(hashStr("matchups:" + date));
+  const lanes = ["top","jungle","mid","adc","support","top","jungle","mid","adc","support"];
+  for (let i = lanes.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [lanes[i], lanes[j]] = [lanes[j], lanes[i]]; }
+  const bands = [0,0,0,1,1,1,1,2,2,2], used = new Set(), out = [];
+  bands.forEach((band, i) => {
+    const fits = r => r[5] === band && !used.has(r[1]) && !used.has(r[2]);
+    let pool = DATA.q.filter(r => r[0] === lanes[i] && fits(r));
+    if (!pool.length) pool = DATA.q.filter(fits);
+    if (!pool.length) pool = DATA.q;
+    const row = pool[Math.floor(rng() * pool.length)];
+    used.add(row[1]); used.add(row[2]);
+    out.push(toQ(row, rng));
+  });
+  return out;
+}
+// Endless: starts easy and gets harder as the streak grows
+function endlessQuestion(streak, seen){
+  const maxBand = streak < 3 ? 0 : streak < 8 ? 1 : 2;
+  let pool = DATA.q.filter(r => r[5] <= maxBand && !seen.has(r[0] + r[1] + r[2]));
+  if (streak >= 8) pool = pool.filter(r => r[5] >= 1);
+  if (!pool.length) pool = DATA.q;
+  const row = pool[Math.floor(Math.random() * pool.length)];
+  seen.add(row[0] + row[1] + row[2]);
+  return toQ(row, Math.random);
+}
+
+// ---------- state ----------
+const S = {mode:"daily", qs:[], i:0, answers:[], answered:false, streak:0, seen:new Set(), date:todayStr()};
+
+function sides(q){ return q.flip ? [q.b, q.a] : [q.a, q.b]; }
+const wrOf = (q, name) => name === q.a ? q.wrA : Math.round((100 - q.wrA) * 10) / 10;
+const winnerOf = q => q.wrA > 50 ? q.a : q.b;
+
+function champCard(q, name, side){
+  const c = DATA.champs[name] || ["", ""];
+  if (!S.answered) return `<button type="button" class="champ" data-pick="${side}" aria-label="${esc(name)}, ${esc(c[1])}, wins this matchup">${portrait(name)}<span class="nm">${esc(name)}</span><span class="cl">${esc(c[1])}</span></button>`;
+  const picked = S.picked === name, won = winnerOf(q) === name;
+  return `<button type="button" class="champ ${won ? "win" : "lose"}${picked ? " pick" : ""}" disabled>${portrait(name)}<span class="nm">${esc(name)}</span><span class="cl">${esc(c[1])}</span>
+    <span class="wr">${wrOf(q, name).toFixed(1)}%</span>${picked ? `<span class="tag">Your pick</span>` : ""}</button>`;
+}
+
+function render(){
+  if (!DATA) return;
+  document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
+  const game = $("#game");
+  if (S.mode === "daily") {
+    $("#progress").innerHTML = `<span>#${dailyNumber(S.date)}</span><span class="dots" aria-label="${S.answers.filter(Boolean).length} correct so far">${S.qs.map((q, i) =>
+      `<i class="${i < S.answers.length ? (S.answers[i] ? "ok" : "no") : i === S.i ? "now" : ""}"></i>`).join("")}</span>`;
+    if (S.answers.length >= S.qs.length && !S.answered) { game.innerHTML = dailyDone(); startCountdown(); return; }
+  } else {
+    const best = int(store.get("best", 0));
+    $("#progress").innerHTML = `<span class="streak">Streak <b>${S.streak}</b></span><span class="streak">Best <b>${Math.max(best, S.streak)}</b></span>`;
+    if (S.over) { game.innerHTML = endlessDone(); return; }
+  }
+  const q = S.qs[S.i];
+  const [L, R] = sides(q);
+  let reveal = "";
+  if (S.answered) {
+    const ok = S.picked === winnerOf(q), lw = wrOf(q, L);
+    const last = S.mode === "daily" && S.i === S.qs.length - 1;
+    const lWins = winnerOf(q) === L;
+    reveal = `<div class="split" aria-hidden="true"><i class="l ${lWins ? "win" : "lose"}" style="width:50%"></i><i class="r ${lWins ? "lose" : "win"}" style="width:50%"></i></div>
+      <div class="verdict"><p><strong class="${ok ? "ok" : "no"}">${ok ? "Correct!" : "Not this time."}</strong>${esc(winnerOf(q))} wins ${Math.max(q.wrA, 100 - q.wrA).toFixed(1)}% of these games.
+        <small>${q.games.toLocaleString("en-US")} ranked games. <a href="${esc(lolaUrl(q))}" target="_blank" rel="noopener">Full matchup on LoLalytics</a></small></p>
+        <button type="button" class="btn" data-act="next">${S.mode === "endless" && !ok ? "See your streak" : last ? "See your score" : "Next matchup"}</button></div>`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const l = game.querySelector(".split .l"), r = game.querySelector(".split .r");
+      if (l && r) { l.style.width = lw + "%"; r.style.width = (100 - lw) + "%"; }
+    }));
+  }
+  game.innerHTML = `<section class="card" aria-label="Matchup">
+    <div class="lane"><h2>${esc(LANE[q.role])}</h2><span class="diff">${BAND[q.band]}</span></div>
+    <div class="pair">${champCard(q, L, "L")}<span class="vs" aria-hidden="true">vs</span>${champCard(q, R, "R")}</div>${reveal}</section>`;
+}
+
+function answer(side){
+  if (S.answered) return;
+  const q = S.qs[S.i], name = sides(q)[side === "L" ? 0 : 1], ok = name === winnerOf(q);
+  S.answered = true; S.picked = name;
+  if (S.mode === "daily") {
+    S.answers.push(ok);
+    store.set("daily:" + S.date, {answers: S.answers, picks: [...(store.get("daily:" + S.date, {}).picks || []), name]});
+  } else if (ok) {
+    S.streak++;
+    if (S.streak > int(store.get("best", 0))) store.set("best", S.streak);
+  }
+  $("#live").textContent = `${ok ? "Correct" : "Wrong"}. ${winnerOf(q)} wins ${Math.max(q.wrA, 100 - q.wrA).toFixed(1)} percent.`;
+  render();
+  const btn = document.querySelector('[data-act="next"]'); if (btn) btn.focus();
+}
+
+function next(){
+  if (!S.answered) return;
+  const q = S.qs[S.i], ok = S.picked === winnerOf(q);
+  S.answered = false; S.picked = null;
+  if (S.mode === "daily") { S.i = Math.min(S.i + 1, S.qs.length - 1); }
+  else if (!ok) { S.over = true; }
+  else { S.qs.push(endlessQuestion(S.streak, S.seen)); S.i++; }
+  render();
+  const first = document.querySelector("[data-pick], .done h2"); if (first) first.focus({preventScroll: true});
+  window.scrollTo({top: Math.max(0, $(".bar-top").offsetTop - 10), behavior: "smooth"});
+}
+
+function gridText(){ return S.answers.map(a => a ? "🟩" : "🟥").join(""); }
+function dailyDone(){
+  const score = S.answers.filter(Boolean).length, msg = score === 10 ? "Perfect lane knowledge." : score >= 8 ? "You know your matchups." : score >= 5 ? "Solid, with a few surprises." : "The lanes had other plans today.";
+  const recap = S.qs.map((q, i) => `<li><span class="mk ${S.answers[i] ? "ok" : "no"}">${S.answers[i] ? "✓" : "✗"}</span><span class="ln">${LANE_SHORT[q.role]}</span>
+    <span><span class="w">${esc(winnerOf(q))}</span> beats ${esc(winnerOf(q) === q.a ? q.b : q.a)}</span><span>${Math.max(q.wrA, 100 - q.wrA).toFixed(1)}%</span></li>`).join("");
+  return `<section class="card done"><h2 tabindex="-1">${score} / 10</h2><p class="sub">${msg}</p>
+    <div class="grid" aria-label="${score} of 10 correct">${gridText()}</div>
+    <div class="actions"><button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="endless">Try endless</button></div>
+    <p class="next">Next daily set in <b id="cd"></b></p>
+    <ol class="recap">${recap}</ol></section>`;
+}
+function endlessDone(){
+  const best = int(store.get("best", 0));
+  return `<section class="card done"><h2 tabindex="-1">Streak: ${S.streak}</h2><p class="sub">${S.streak >= best && S.streak > 0 ? "That's your best yet." : `Your best is ${best}.`}</p>
+    <div class="actions"><button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share streak</button></div></section>`;
+}
+
+let cdTimer = null;
+function startCountdown(){
+  clearInterval(cdTimer);
+  const tick = () => {
+    const el = $("#cd"); if (!el) return clearInterval(cdTimer);
+    const now = new Date(), ms = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now;
+    if (ms <= 1000) { clearInterval(cdTimer); el.parentNode.innerHTML = `A new daily set is ready. <a href="./">Play it</a>`; return; }
+    const s = Math.floor(ms / 1000);
+    el.textContent = `${Math.floor(s/3600)}:${String(Math.floor(s/60)%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  };
+  tick(); cdTimer = setInterval(tick, 1000);
+}
+
+function shareText(){
+  if (S.mode === "daily") return `Who wins the lane? #${dailyNumber(S.date)} ${S.answers.filter(Boolean).length}/10\n${gridText()}\n${CONFIG.url}`;
+  return `Who wins the lane? Endless streak: ${S.streak}${S.streak >= 5 ? " 🔥" : ""}\n${CONFIG.url}`;
+}
+async function share(){
+  const text = shareText();
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) { try { await navigator.share({text}); return; } catch(e){ if (e && e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(text); toast("Result copied. Paste it anywhere to share."); return; } catch(e){}
+  toast(`Copy your result:<textarea rows="4" readonly>${esc(text)}</textarea>`, 9000);
+}
+let toastTimer = null;
+function toast(html, ms = 2600){ const t = $("#toast"); t.innerHTML = html; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, ms); }
+
+function start(mode){
+  clearInterval(cdTimer);
+  S.mode = mode; S.answered = false; S.picked = null; S.over = false;
+  if (mode === "daily") {
+    S.date = todayStr(); S.qs = dailyQuestions(S.date);
+    const saved = store.get("daily:" + S.date, {});
+    S.answers = Array.isArray(saved.answers) ? saved.answers.slice(0, 10).map(Boolean) : [];
+    S.i = Math.min(S.answers.length, S.qs.length - 1);
+  } else {
+    S.streak = 0; S.seen = new Set(); S.qs = [endlessQuestion(0, S.seen)]; S.i = 0;
+  }
+  render();
+}
+
+document.addEventListener("click", e => {
+  const pick = e.target.closest("[data-pick]"); if (pick) return answer(pick.dataset.pick);
+  const m = e.target.closest("[data-mode]"); if (m) return start(m.dataset.mode);
+  const act = e.target.closest("[data-act]"); if (!act) return;
+  if (act.dataset.act === "next") next();
+  else if (act.dataset.act === "share") share();
+  else if (act.dataset.act === "again") start("endless");
+});
+// keyboard: left/right arrows pick a side, Enter moves on
+document.addEventListener("keydown", e => {
+  if (e.target.closest("textarea,input")) return;
+  if (!S.answered && (e.key === "ArrowLeft" || e.key === "ArrowRight") && document.querySelector("[data-pick]")) { e.preventDefault(); answer(e.key === "ArrowLeft" ? "L" : "R"); }
+});
+
+fetch("data.json").then(r => r.json()).then(d => {
+  DATA = d;
+  $("#source").innerHTML = `Win rates: ${esc(d.source)} ranked solo queue. Only matchups with enough games to be reliable are used.`;
+  start(new URLSearchParams(location.search).get("mode") === "endless" ? "endless" : "daily");
+}).catch(() => { $("#game").innerHTML = `<p class="loading">Couldn't load the matchups. Check your connection and refresh.</p>`; });
+
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+</script>
+</body>
+</html>
