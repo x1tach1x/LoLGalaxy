@@ -41,7 +41,9 @@ export const TIERS = {
     "U":"Ashe,Hwei"
   }
 };
-export const ENEMY_WEIGHT = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
+export const ENEMY_WEIGHT = {"S+":1.7,"S":1.6,"A":1.45,"B":1.25,"C":1,"D":0.8,"U":0.75};
+const WEIGHTS_FROM = "2026-11-20";
+const ENEMY_WEIGHT_BEFORE_2026_11_20 = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
 
 const ROLES = [["top", "Top"], ["jungle", "Jungle"], ["mid", "Mid"], ["adc", "Bot"], ["support", "Support"]];
 const POOL = {}, ROLE_TIER = {};
@@ -64,9 +66,10 @@ export function dailyNumber(date) {
 // [[label, champion], ...] for the given UTC date
 export function dailyEnemy(date) {
   const rng = mulberry32(hashStr("daily:" + date)), used = new Set();
+  const W = date < WEIGHTS_FROM ? ENEMY_WEIGHT_BEFORE_2026_11_20 : ENEMY_WEIGHT;
   return ROLES.map(([k, label]) => {
     const pool = POOL[k].filter(n => !used.has(n));
-    const pick = weightedPick(pool, n => ENEMY_WEIGHT[ROLE_TIER[k][n]] || 1, rng);
+    const pick = weightedPick(pool, n => W[ROLE_TIER[k][n]] || 1, rng);
     used.add(pick);
     return [label, pick];
   });

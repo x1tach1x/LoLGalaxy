@@ -590,7 +590,10 @@ const TIERS = {
 };
 const TIER_SCORE = {"S+":10,"S":8.5,"A":7,"B":5.5,"U":4.5,"C":4,"D":2.5,"off":2};
 const TIER_LABEL = {"S+":"S+","S":"S","A":"A","B":"B","C":"C","D":"D","U":"niche","off":"off-role"};
-const ENEMY_WEIGHT = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
+const ENEMY_WEIGHT = {"S+":1.7,"S":1.6,"A":1.45,"B":1.25,"C":1,"D":0.8,"U":0.75};
+// Dailies before this date used steeper weights; keeping them means past dailies replay exactly as they were.
+const WEIGHTS_FROM = "2026-11-20";
+const ENEMY_WEIGHT_BEFORE_2026_11_20 = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
 
 const ROLES = [
   {key:"top", label:"Top"},
@@ -1139,11 +1142,13 @@ function weightedPick(pool, weightOf, rng){
   return pool[i];
 }
 
-function pickEnemy(rng){
+// date: the daily's date (null in unlimited). avoid: champions to make less likely (recent unlimited games).
+function pickEnemy(rng, date, avoid){
   const used = new Set(); const team = {};
+  const W = date && date < WEIGHTS_FROM ? ENEMY_WEIGHT_BEFORE_2026_11_20 : ENEMY_WEIGHT;
   ROLES.forEach(r => {
     const pool = POOL[r.key].filter(n => !used.has(n) && CHAMPS[n]);
-    team[r.key] = weightedPick(pool, n => ENEMY_WEIGHT[ROLE_TIER[r.key][n]] || 1, rng);
+    team[r.key] = weightedPick(pool, n => (W[ROLE_TIER[r.key][n]] || 1) * (avoid && avoid.has(n) ? 0.3 : 1), rng);
     used.add(team[r.key]);
   });
   return team;
@@ -1157,7 +1162,9 @@ function rollOpen(){
     const prev = S.rolls[r.key];
     let pool = POOL[r.key].filter(n => CHAMPS[n] && !used.has(n) && n !== prev);
     if (!pool.length) pool = [prev];
-    const pick = weightedPick(pool, n => ROLE_TIER[r.key][n] === "U" ? 0.6 : 1, S.rollRng);
+    const niche = S.date && S.date < WEIGHTS_FROM ? 0.6 : 0.85;
+    const recent = S.date ? null : S.recentRolls;   // unlimited only: last games' rolls are less likely
+    const pick = weightedPick(pool, n => (ROLE_TIER[r.key][n] === "U" ? niche : 1) * (recent && recent.has(n) ? 0.5 : 1), S.rollRng);
     S.rolls[r.key] = pick; used.add(pick); S.fresh.add(r.key);
     (S.seen[r.key] = S.seen[r.key] || []).push(pick);
   });
@@ -1169,7 +1176,9 @@ function startGame(mode, date){
   S.date = mode === "daily" ? todayStr() : mode === "past" ? date : null;
   S.hard = mode === "unlimited" && store.get("hard", false) === true;
   S.seed = S.date ? hashStr("daily:"+S.date) : (Date.now() ^ Math.floor(Math.random()*1e9)) >>> 0;
-  S.enemy = pickEnemy(mulberry32(S.seed));
+  const recent = store.get("recent", {}) || {};
+  S.recentRolls = new Set(Array.isArray(recent.rolls) ? recent.rolls : []);
+  S.enemy = pickEnemy(mulberry32(S.seed), S.date, S.date ? null : new Set(Array.isArray(recent.enemy) ? recent.enemy : []));
   S.rollRng = mulberry32((S.seed ^ 0x5bd1e995) >>> 0);
   // hard mode reveals the enemy one lane at a time, in a random order
   const rr = mulberry32((S.seed ^ 0x9e3779b9) >>> 0);
@@ -1215,6 +1224,10 @@ function finish(){
   S.result = simulate(S.mine, S.enemy, S.seed ^ hashStr(JSON.stringify(S.mine)));
   S.fresh = new Set(); S.justRevealed = null;
   store.addResult(S.mode, S.result.win);
+  if (S.mode === "unlimited") {
+    const r = store.get("recent", {}) || {}, keep = (a, add, n) => [...(Array.isArray(a) ? a : []), ...add].slice(-n);
+    store.set("recent", {enemy: keep(r.enemy, Object.values(S.enemy), 15), rolls: keep(r.rolls, Object.values(S.seen).flat(), 40)});
+  }
   if (S.date) store.saveDaily(S.date, {mine: S.mine, seen: S.seen, order: S.order, win: S.result.win});
   if (S.mode === "daily") store.bumpDayStreak();
   render();
@@ -1705,7 +1718,9 @@ const SPIN_MS = 3000; // every lane spins for the same time and stops together
 // on a slow connection never spins through empty boxes.
 const LOADED = new Set();
 function preloadPortraits(){
+  // random order, so the reel isn't stuck showing the same early-loaded champions
   const names = [...new Set(Object.values(POOL).flat())].filter(n => CHAMPS[n]);
+  for (let j = names.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [names[j], names[k]] = [names[k], names[j]]; }
   let i = 0;
   const next = () => {
     if (i >= names.length) return;
@@ -1738,7 +1753,9 @@ function rollSequence(role, final, count){
   const taken = new Set([...Object.values(S.enemy), ...Object.values(S.mine)]);
   const others = POOL[role].filter(n => CHAMPS[n] && n !== final && !taken.has(n));
   const ready = others.filter(n => LOADED.has(n));
-  const source = ready.length >= 6 ? ready : others;
+  // Prefer downloaded portraits, but only once enough of this lane's pool has loaded; otherwise the
+  // reel would keep flashing the same few champions. Not-yet-loaded ones show initials.
+  const source = ready.length >= Math.min(24, others.length) ? ready : others;
   const seq = [];
   while (seq.length < count) {
     const n = source[Math.floor(Math.random()*source.length)];

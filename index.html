@@ -203,7 +203,9 @@ const TIERS = {
     "U":"Ashe,Hwei"
   }
 };
-const ENEMY_WEIGHT = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
+const ENEMY_WEIGHT = {"S+":1.7,"S":1.6,"A":1.45,"B":1.25,"C":1,"D":0.8,"U":0.75};
+const WEIGHTS_FROM = "2026-11-20";
+const ENEMY_WEIGHT_BEFORE_2026_11_20 = {"S+":3,"S":3,"A":2.5,"B":1.8,"C":1,"D":0.5,"U":0.6};
 
 const LAUNCH = "2026-11-11";
 // Community stats counter: same URL as statsApi in play/index.html. Leave blank to hide.
@@ -226,11 +228,12 @@ function weightedPick(pool, weightOf, rng){
   while (i < pool.length-1 && x > w[i]) { x -= w[i]; i++; }
   return pool[i];
 }
-function pickEnemy(rng){
+function pickEnemy(rng, date){
   const used = new Set(), team = {};
+  const W = date < WEIGHTS_FROM ? ENEMY_WEIGHT_BEFORE_2026_11_20 : ENEMY_WEIGHT;
   ROLES.forEach(([k]) => {
     const pool = POOL[k].filter(n => !used.has(n));
-    team[k] = weightedPick(pool, n => ENEMY_WEIGHT[ROLE_TIER[k][n]] || 1, rng);
+    team[k] = weightedPick(pool, n => W[ROLE_TIER[k][n]] || 1, rng);
     used.add(team[k]);
   });
   return team;
@@ -240,7 +243,7 @@ const initials = n => { const w = n.replace(/[^A-Za-z ]/g,"").split(" ").filter(
 const ddId = n => SPECIAL_IDS[n] || n.replace(/[^A-Za-z0-9]/g,"");
 
 const today = todayStr();
-const enemy = pickEnemy(mulberry32(hashStr("daily:" + today)));
+const enemy = pickEnemy(mulberry32(hashStr("daily:" + today)), today);
 const dayNum = Math.max(1, Math.round((Date.parse(today+"T00:00:00Z") - Date.parse(LAUNCH+"T00:00:00Z"))/864e5) + 1);
 document.getElementById("day").textContent = `Daily #${dayNum}`;
 
