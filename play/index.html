@@ -223,6 +223,58 @@ button{cursor:pointer}
 .toast textarea{width:100%;margin-top:8px;background:var(--ink);color:var(--text);border:1px solid var(--rule);border-radius:6px;padding:6px;font-size:13px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
+/* scoreboard */
+.sb{width:100%;border-collapse:collapse;font-size:14px}
+.sb thead th{font:600 13px var(--cond);color:var(--mute);text-align:left;padding:0 8px 6px;letter-spacing:.2px}
+.sb td{padding:7px 8px;border-top:1px solid var(--rule);vertical-align:middle}
+.sb tr.y td:first-child{box-shadow:inset 3px 0 0 var(--blue)} .sb tr.e td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+.sb .teamrow th{text-align:left;padding:14px 8px 6px;font:600 18px var(--cond);display:table-cell}
+.sb .teamrow .th{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px}
+.sb .teamrow .th > span{white-space:nowrap}
+.sb .teamrow.y .tn{color:var(--blue)} .sb .teamrow.e .tn{color:var(--red-text)}
+.sb .res{font-size:14px;padding:2px 8px;border-radius:999px}
+.sb .res.w{background:rgba(231,181,60,.16);color:var(--gold)} .sb .res.l{background:var(--deck2);color:var(--mute)}
+.sb .tot{font:500 14px var(--body);color:var(--soft)}
+.sb .who{display:flex;align-items:center;gap:9px;min-width:170px}
+.sb .who .pt{width:36px;height:36px;flex:none}
+.sb .who b{display:inline;font-weight:600;color:var(--text)}
+.sb small{display:block;color:var(--mute);font-size:12px;line-height:1.3}
+.sb .kda b,.sb .num b,.sb .dmg b{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sb .badge{font:700 11px/1 var(--body);font-style:normal;margin-left:6px;padding:2px 5px;border-radius:4px;vertical-align:2px}
+.sb .badge.mvp{background:var(--gold);color:#1a1405} .sb .badge.ace{background:#8F7BD8;color:#140f24}
+.sb .dmg{min-width:120px}
+.sb .bar{display:block;height:6px;border-radius:3px;background:var(--deck2);margin-top:4px;overflow:hidden}
+.sb .bar i{display:block;height:100%;border-radius:3px}
+.sb tr.y .bar i{background:var(--blue)} .sb tr.e .bar i{background:var(--red)}
+.sb .items{display:flex;gap:3px;align-items:center}
+.sb .items img,.sb .items .empty{width:28px;height:28px;border-radius:5px;flex:none;background:var(--deck2);border:1px solid var(--rule)}
+.sb .items img{border:0}
+.sb .items .trk{border-radius:50%;margin-left:4px}
+.sb .items[aria-busy] .empty{animation:pulse 1.2s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.sb .items[aria-busy] .empty{animation:none}}
+.sbnote{color:var(--mute);font-size:13px;margin:10px 0 0}
+.sb .eco{display:none}
+@media (max-width:760px){
+  /* phones: each champion becomes a two-line card instead of a wide table row */
+  .sb thead{display:none}
+  .sb,.sb tbody{display:block}
+  .sb tr{display:grid;grid-template-columns:1fr auto;grid-template-areas:"who kda" "build stats";gap:6px 10px;padding:8px 0 8px 10px;border-top:1px solid var(--rule)}
+  .sb tr.y{box-shadow:inset 3px 0 0 var(--blue)} .sb tr.e{box-shadow:inset 3px 0 0 var(--red)}
+  .sb tr.teamrow{display:block;box-shadow:none;border-top:0;padding:12px 0 2px}
+  .sb .teamrow th{display:block;padding:0}
+  .sb td{display:block;padding:0;border:0}
+  .sb tr.y td:first-child,.sb tr.e td:first-child{box-shadow:none}
+  .sb .who{grid-area:who;min-width:0}
+  .sb .kda{grid-area:kda;text-align:right}
+  .sb .build{grid-area:build;align-self:center}
+  .sb .num.cs,.sb .num.gold,.sb .ratio{display:none}
+  .sb .eco{display:block;white-space:nowrap}
+  .sb .dmg{grid-area:stats;min-width:0;text-align:right;align-self:center}
+  .sb .dmg b::after{content:" dmg";font-weight:400;color:var(--mute);font-size:12px}
+  .sb .dmg .bar{width:84px;margin-left:auto}
+  .sb .items img,.sb .items .empty{width:24px;height:24px}
+}
 @media (max-width:520px){
   .mark{font-size:34px}
   .sides{grid-template-columns:1fr 1fr}
@@ -1034,6 +1086,7 @@ function buildTimeline(res, mine, enemy, rng){
   const fb = byAbs[0]; const fbYou = fb.score >= 0;
   const kP = fb.fbP || fb.p, kE = fb.fbE || fb.e;
   add(2 + rng()*3.5, fbYou?"y":"e", `First blood: ${fbYou?kP:kE} takes down ${fbYou?kE:kP} in ${LANE_WORD[fb.role]}.`);
+  res.firstBlood = {you: fbYou, killer: fbYou ? kP : kE, victim: fbYou ? kE : kP};
   res.units.forEach(l => {
     if (l === fb || Math.abs(l.score) < 0.9) return;
     const y = l.score > 0;
@@ -1244,6 +1297,7 @@ function render(fresh){
   $("#draft").innerHTML = boardHTML(fresh);
   S.justRevealed = null; // only animate a newly revealed enemy once
   const n = S.date ? dailyNumber(S.date) : 0;
+  if (S.result && (!S.board || S.boardFor !== S.result)) { S.board = makeScoreboard(S.result); S.boardFor = S.result; loadItems(); }
   const [title, intro] = !S.result
     ? ["Draft your counter", "The enemy team is locked in. Each of your lanes rolls a random champion: lock one in and the rest reroll, until your whole team is set."]
     : S.mode === "daily" ? [`Daily #${n}: ${S.result.win ? "victory" : "defeat"}`, "You've played today's draft. Your result is below, and a new enemy team arrives at midnight UTC."]
@@ -1322,6 +1376,180 @@ function goldSVG(gold, events){
     <div class="ticks" aria-hidden="true">${tickEls}<span class="unit">min</span></div>`;
 }
 
+/* ============================================================
+   SCOREBOARD: a League-style end-of-game table for all ten champions.
+   Every number is generated from the simulated match so it agrees with
+   the kill score, the gold lead, lane results and the first blood event.
+   Builds are listed by item name and matched to Riot's current item list
+   (Data Dragon item.json), so renamed or removed items are simply skipped.
+   ============================================================ */
+const SB_ROLES = ["top","jungle","mid","adc","support"];
+const SB_ROLE_LABEL = {top:"Top", jungle:"Jungle", mid:"Mid", adc:"Bot", support:"Support"};
+const BUILDS = {
+  crit:    ["Kraken Slayer","Berserker's Greaves","Infinity Edge","Phantom Dancer","Lord Dominik's Regards","Bloodthirster","Guardian Angel"],
+  onhit:   ["Kraken Slayer","Berserker's Greaves","Nashor's Tooth","Guinsoo's Rageblade","Wit's End","Runaan's Hurricane","Guardian Angel"],
+  lethal:  ["Youmuu's Ghostblade","Ionian Boots of Lucidity","Edge of Night","Serylda's Grudge","The Collector","Guardian Angel"],
+  apass:   ["Hextech Rocketbelt","Sorcerer's Shoes","Shadowflame","Zhonya's Hourglass","Rabadon's Deathcap","Void Staff"],
+  burst:   ["Luden's Companion","Sorcerer's Shoes","Shadowflame","Rabadon's Deathcap","Void Staff","Zhonya's Hourglass"],
+  battle:  ["Liandry's Torment","Sorcerer's Shoes","Rylai's Crystal Scepter","Zhonya's Hourglass","Rabadon's Deathcap","Void Staff"],
+  control: ["Luden's Companion","Sorcerer's Shoes","Malignance","Zhonya's Hourglass","Rabadon's Deathcap","Void Staff","Banshee's Veil"],
+  bruiser: ["Black Cleaver","Plated Steelcaps","Sterak's Gage","Death's Dance","Spirit Visage","Dead Man's Plate","Force of Nature"],
+  diver:   ["Trinity Force","Plated Steelcaps","Black Cleaver","Sterak's Gage","Death's Dance","Guardian Angel"],
+  skirm:   ["Blade of The Ruined King","Mercury's Treads","Wit's End","Sterak's Gage","Death's Dance","Guardian Angel"],
+  apbruise:["Liandry's Torment","Mercury's Treads","Riftmaker","Rylai's Crystal Scepter","Spirit Visage","Zhonya's Hourglass"],
+  tank:    ["Sunfire Aegis","Plated Steelcaps","Thornmail","Spirit Visage","Randuin's Omen","Force of Nature","Jak'Sho, The Protean"],
+  suptank: ["Locket of the Iron Solari","Plated Steelcaps","Knight's Vow","Zeke's Convergence","Redemption","Thornmail"],
+  enchant: ["Moonstone Renewer","Ionian Boots of Lucidity","Ardent Censer","Redemption","Mikael's Blessing","Staff of Flowing Water","Echoes of Helia"],
+  supmage: ["Liandry's Torment","Sorcerer's Shoes","Rylai's Crystal Scepter","Zhonya's Hourglass","Morellonomicon","Rabadon's Deathcap"],
+};
+function buildFor(name, role){
+  const c = CHAMPS[name], cls = c.cls, ap = c.dmg === "M";
+  let key;
+  if (role === "support") key = (cls==="enc") ? "enchant" : (["cat","war","van"].includes(cls) ? "suptank" : (ap ? "supmage" : "lethal"));
+  else if (cls === "mrk") key = c.dmg === "X" ? "onhit" : (ap ? "burst" : "crit");
+  else if (cls === "ass") key = ap ? "apass" : "lethal";
+  else if (cls === "bur" || cls === "art") key = "burst";
+  else if (cls === "bmg") key = "battle";
+  else if (cls === "con") key = "control";
+  else if (cls === "enc") key = "enchant";
+  else if (cls === "jug") key = ap ? "apbruise" : "bruiser";
+  else if (cls === "div") key = ap ? "apass" : "diver";
+  else if (cls === "skr") key = ap || c.dmg === "X" ? "apbruise" : "skirm";
+  else if (cls === "van" || cls === "war" || cls === "cat") key = "tank";
+  else key = ap ? "battle" : "skirm";
+  // physical-damage casters (Jayce, Varus and co.) build lethality, not magic items
+  if (c.dmg === "P" && ["burst","battle","control","supmage"].includes(key)) key = "lethal";
+  const list = [...BUILDS[key]];
+  // role starters that stay in the inventory: jungle companions and support quest items
+  if (role === "jungle") list.unshift(["van","war","cat","jug"].includes(cls) ? "Mosstomper Seedling" : ap ? "Scorchclaw Pup" : "Gustwalker Hatchling");
+  if (role === "support") list.unshift(cls === "enc" ? "Dream Maker" : ["cat","war","van"].includes(cls) ? "Celestial Opposition" : ap ? "Zaz'Zak's Realmspike" : "Bloodsong");
+  return list;
+}
+function trinketFor(role, min){ return role === "support" || role === "jungle" ? "Oracle Lens" : (role === "adc" && min > 20 ? "Farsight Alteration" : "Stealth Ward"); }
+
+// Riot's item list, loaded once when a scoreboard is first shown
+const ITEMS = {state:"idle", byName:{}};
+function loadItems(){
+  if (ITEMS.state !== "idle") return;
+  ITEMS.state = "loading";
+  const ver = DD.version || CONFIG.fallbackDdragonVersion;
+  fetch(`https://ddragon.leagueoflegends.com/cdn/${ver}/data/en_US/item.json`).then(r => { if (!r.ok) throw 0; return r.json(); }).then(j => {
+    Object.entries(j.data).forEach(([id, it]) => {
+      if (!/^\d{4}$/.test(id) || !it.maps || !it.maps["11"]) return;   // Summoner's Rift versions only
+      const prev = ITEMS.byName[it.name];
+      if (!prev || (it.gold && it.gold.purchasable && !prev.purchasable)) ITEMS.byName[it.name] = {id, name:it.name, cost:(it.gold && it.gold.total) || 0, purchasable: !!(it.gold && it.gold.purchasable)};
+    });
+    ITEMS.state = "ready";
+  }).catch(() => { ITEMS.state = "failed"; }).finally(() => {
+    const el = document.getElementById("scoreboard");
+    if (el && S.result && S.board) el.innerHTML = scoreboardInner(S.board);
+  });
+}
+function itemImg(id){ return `https://ddragon.leagueoflegends.com/cdn/${DD.version||CONFIG.fallbackDdragonVersion}/img/item/${id}.png`; }
+
+// Generates the ten stat lines. Deterministic for a given draft, so a reload shows the same scoreboard.
+function makeScoreboard(res){
+  const rng = mulberry32((S.seed ^ hashStr("board:" + JSON.stringify(S.mine))) >>> 0);
+  const min = res.dur;
+  const unitOf = k => res.units.find(u => u.key === (k === "adc" || k === "support" ? "bot" : k));
+  const laneF = (k, you) => { const v = unitOf(k).verdict; const w = you ? v : (v === "w" ? "l" : v === "l" ? "w" : "e"); return w; };
+  const team = (you) => SB_ROLES.map(role => {
+    const name = (you ? S.mine : S.enemy)[role];
+    return {role, name, you, cls: CHAMPS[name].cls, lane: laneF(role, you), k:0, d:0, a:0};
+  });
+  const P = team(true), E = team(false);
+  const KILL_ROLE = {top:1, jungle:1.05, mid:1.15, adc:1.3, support:0.3};
+  const KILL_CLS = {ass:1.45, mrk:1.15, skr:1.2, div:1.05, jug:1, bur:1.2, bmg:1.05, art:1, con:0.95, spc:1, van:0.55, war:0.4, cat:0.45, enc:0.3};
+  const DIE_CLS = {ass:1.15, mrk:1.15, bur:1.1, art:1.15, con:1.05, enc:1, cat:1.05, van:0.9, war:0.85, jug:1, div:1.05, skr:1.05, bmg:1, spc:1};
+  const ASSIST = {top:0.38, jungle:0.6, mid:0.5, adc:0.5, support:0.72};
+  const LANE_K = {w:1.35, e:1, l:0.7}, LANE_D = {w:0.7, e:1, l:1.35};
+  const pick = (arr, wt) => { const w = arr.map(wt); let x = rng()*w.reduce((a,b)=>a+b,0), i = 0; while (i < arr.length-1 && x > w[i]) { x -= w[i]; i++; } return arr[i]; };
+  const fb = res.firstBlood;
+  const fight = (killers, victims, n, fbFirst) => {
+    for (let i = 0; i < n; i++) {
+      let killer = pick(killers, p => KILL_ROLE[p.role] * (KILL_CLS[p.cls]||1) * LANE_K[p.lane] * (0.7 + rng()*0.6));
+      let victim = pick(victims, p => (DIE_CLS[p.cls]||1) * LANE_D[p.lane] * (0.75 + rng()*0.5));
+      if (i === 0 && fbFirst) { killer = killers.find(p => p.name === fb.killer) || killer; victim = victims.find(p => p.name === fb.victim) || victim; }
+      killer.k++; victim.d++;
+      killers.forEach(p => { if (p !== killer && rng() < ASSIST[p.role] * (["cat","war","enc"].includes(p.cls) ? 1.15 : 1)) p.a++; });
+    }
+  };
+  fight(P, E, res.kills[0], fb && fb.you);
+  fight(E, P, res.kills[1], fb && !fb.you);
+  // CS, gold and damage
+  const CSPM = {top:7.0, jungle:6.0, mid:7.4, adc:7.9, support:1.1};
+  const DPM = {mrk:820, art:900, bur:760, bmg:720, con:660, ass:660, skr:700, div:560, jug:600, spc:650, van:300, war:250, cat:300, enc:280};
+  const all = [...P, ...E];
+  all.forEach(p => {
+    p.cs = Math.max(0, Math.round(min * (CSPM[p.role] + (p.lane==="w"?0.6:p.lane==="l"?-0.6:0) + (rng()-0.5)*0.8)));
+    p.gold = 500 + 122*Math.max(0, min-1) + p.cs*21 + p.k*300 + p.a*115 + min*(p.role==="support"?45:28) + rng()*400;
+  });
+  // match the final gold lead shown on the gold chart
+  const lead = res.gold[res.gold.length-1][1];
+  const tP = P.reduce((a,p)=>a+p.gold,0), tE = E.reduce((a,p)=>a+p.gold,0), fix = (lead - (tP - tE)) / 2;
+  P.forEach(p => p.gold = Math.max(2500, p.gold + fix * p.gold / tP));
+  E.forEach(p => p.gold = Math.max(2500, p.gold - fix * p.gold / tE));
+  all.forEach(p => {
+    p.gold = Math.round(p.gold);
+    const kp = (p.k + p.a) / Math.max(1, (p.you ? res.kills[0] : res.kills[1]));
+    const roleF = p.role === "support" && !["bur","art","bmg","con","mrk"].includes(p.cls) ? 0.8 : p.role === "jungle" ? 0.85 : 1;
+    p.dmg = Math.round(DPM[p.cls] * roleF * min * (0.7 + 0.6*Math.min(1, kp)) * Math.sqrt(p.gold / (500 + 420*min)) * (0.85 + rng()*0.3));
+    p.items = buildFor(p.name, p.role);
+    p.trinket = trinketFor(p.role, min);
+  });
+  // MVP on the winning team, ACE on the losing team (best KDA plus damage share)
+  const score = (p, team) => (p.k + 0.7*p.a) / Math.max(1, p.d) + 3 * p.dmg / team.reduce((a,q)=>a+q.dmg,0);
+  const best = team => team.reduce((b,p) => score(p,team) > score(b,team) ? p : b);
+  best(res.win ? P : E).badge = "MVP"; best(res.win ? E : P).badge = "ACE";
+  return {P, E, maxDmg: Math.max(...all.map(p=>p.dmg))};
+}
+
+// Which of a player's build items they could afford with the gold they earned
+function inventory(p){
+  if (ITEMS.state !== "ready") return null;
+  const owned = []; let budget = p.gold * 0.9 - 150;
+  for (const name of p.items) {
+    const it = ITEMS.byName[name]; if (!it) continue;   // not in this patch's item list
+    if (owned.length >= 6) break;
+    const cost = it.cost || 400;
+    if (cost > budget) break;
+    owned.push(it); budget -= cost;
+  }
+  return {owned, trinket: ITEMS.byName[p.trinket] || null};
+}
+
+function scoreboardInner(b){
+  const k = n => n >= 1000 ? (n/1000).toFixed(1) + "k" : String(n);
+  const row = p => {
+    const inv = inventory(p);
+    const slots = inv
+      ? [...inv.owned.map(it => `<img src="${esc(itemImg(it.id))}" alt="${esc(it.name)}" title="${esc(it.name)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'empty',title:this.title}))">`),
+         ...Array(6 - inv.owned.length).fill(`<span class="empty"></span>`),
+         inv.trinket ? `<img class="trk" src="${esc(itemImg(inv.trinket.id))}" alt="${esc(inv.trinket.name)}" title="${esc(inv.trinket.name)}" loading="lazy" onerror="this.remove()">` : ""].join("")
+      : Array(6).fill(`<span class="empty"></span>`).join("");
+    const kda = ((p.k + p.a) / Math.max(1, p.d)).toFixed(1);
+    return `<tr class="${p.you ? "y" : "e"}">
+      <td class="who">${portrait(p.name, 36)}<span><b>${esc(p.name)}</b>${p.badge ? `<em class="badge ${p.badge.toLowerCase()}">${p.badge}</em>` : ""}<small>${SB_ROLE_LABEL[p.role]}</small></span></td>
+      <td class="kda"><b>${p.k} / ${p.d} / ${p.a}</b><small class="ratio">${kda} KDA</small><small class="eco">${p.cs} CS, ${k(p.gold)} gold</small></td>
+      <td class="num cs"><b>${p.cs}</b><small>CS</small></td>
+      <td class="num gold"><b>${k(p.gold)}</b><small>gold</small></td>
+      <td class="dmg"><b>${p.dmg.toLocaleString("en-US")}</b><span class="bar"><i style="width:${Math.max(3, Math.round(p.dmg / b.maxDmg * 100))}%"></i></span></td>
+      <td class="build"><span class="items" ${inv ? "" : 'aria-busy="true"'}>${slots}</span></td>
+    </tr>`;
+  };
+  const head = (team, you) => {
+    const K = team.reduce((a,p)=>a+p.k,0), D = team.reduce((a,p)=>a+p.d,0), A = team.reduce((a,p)=>a+p.a,0), G = team.reduce((a,p)=>a+p.gold,0);
+    const won = you === S.result.win;
+    return `<tr class="teamrow ${you ? "y" : "e"}"><th colspan="6" scope="colgroup"><div class="th"><span class="tn">${you ? "Your team" : "Enemy team"}</span><span class="res ${won ? "w" : "l"}">${won ? "Victory" : "Defeat"}</span><span class="tot">${K} / ${D} / ${A}</span><span class="tot">${k(G)} gold</span></div></th></tr>`;
+  };
+  const note = ITEMS.state === "failed" ? `<p class="sbnote">Item icons couldn't load from Riot's servers, so builds are hidden.</p>` : "";
+  return `<table class="sb"><caption class="sr">Scoreboard: kills, deaths and assists, creep score, gold, damage to champions and items for all ten champions</caption>
+    <thead><tr><th scope="col">Champion</th><th scope="col">KDA</th><th scope="col">CS</th><th scope="col">Gold</th><th scope="col">Damage to champions</th><th scope="col">Build</th></tr></thead>
+    <tbody>${head(b.P, true)}${b.P.map(row).join("")}</tbody>
+    <tbody>${head(b.E, false)}${b.E.map(row).join("")}</tbody></table>${note}
+    <p class="sbnote">Simulated from your draft: totals match the kill score and the gold lead.</p>`;
+}
+
 // Link to the full head-to-head page on LoLalytics (builds, runes, win rate by game length).
 const LOLA_SLUG = {"Nunu & Willump":"nunu", "Renata Glasc":"renata"};
 const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
@@ -1398,7 +1626,8 @@ function resultsHTML(res){
       ? `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`
       : `<button type="button" class="btn" data-act="share">Share result</button>${nextPast() ? `<button type="button" class="btn ghost" data-past="${nextPast()}">Play #${dailyNumber(nextPast())}</button>` : ""}<button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`}</div>
     <div class="panels">
-      <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold, res.timeline)}<p>Above the line, your team is ahead. Below it, the enemy is. Numbered dots match the events in "How the game went".</p></div>
+      <div class="panel wide sbwrap"><h3>Scoreboard</h3><div id="scoreboard">${scoreboardInner(S.board)}</div></div>
+    <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold, res.timeline)}<p>Above the line, your team is ahead. Below it, the enemy is. Numbered dots match the events in "How the game went".</p></div>
       <div class="panel"><h3>How the game went</h3><ol class="tl">${tl}</ol></div>
       <div class="panel wide"><h3>Lane by lane</h3>${lanes}<p class="src">Win rates: ${esc(MATCHUP_SOURCE)} ranked solo queue. A lane with no stat line didn't have enough games between those two champions, so it uses the tier and class model. <a href="../how-it-works.html">How scoring works</a></p></div>
       <div class="panel wide"><h3>Team comps</h3><div class="comp">${compCol(res.sP,"you","Yours")}${compCol(res.sE,"them","Theirs")}</div>
