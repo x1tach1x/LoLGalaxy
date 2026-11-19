@@ -99,6 +99,8 @@ if __name__ == "__main__":
         j = g.index("\n};\n", g.index("const MATCHUP_DATA = {", i)) + 4
         GAME.write_text(g[:i] + build_matchups(a.matchups, a.source) + g[j:])
         sync_tiers()
+        import subprocess  # the "Who wins the lane?" quiz is built from the same table
+        subprocess.run([sys.executable, str(Path(__file__).with_name("build_matchups_game.py"))], check=True)
     elif a.sync_tiers:
         sync_tiers()
     sys.exit(0 if check() else 1)

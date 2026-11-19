@@ -1,8 +1,8 @@
 // LaneLock service worker: lets the site install as an app and open offline.
 // Pages are fetched from the network first, so players always get the latest version;
 // the cached copy is only used when there's no connection.
-const CACHE = "lanelock-v1";
-const SHELL = ["/", "/play/", "/how-it-works.html", "/about.html", "/pages.css", "/favicon.svg", "/icon-192.png"];
+const CACHE = "lanelock-v2";
+const SHELL = ["/", "/play/", "/matchups/", "/matchups/data.json", "/how-it-works.html", "/about.html", "/pages.css", "/favicon.svg", "/icon-192.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -76,6 +76,7 @@ a{color:var(--blue)}
 .btn.primary{background:var(--gold);color:#1a1405}
 .btn.ghost{border:1px solid var(--rule);color:var(--text)}
 .btn.ghost:hover{background:var(--deck2)}
+.also{margin:14px 0 0;color:var(--soft,#C9D4DF);font-size:15px}
 .me{margin:16px 0 0;color:var(--mute);font-size:15px;min-height:1.5em}
 .me b{color:var(--text);font-weight:600}
 
@@ -119,7 +120,7 @@ a{color:var(--blue)}
 <body>
 <div class="sky">
   <div class="wrap">
-    <nav class="site-nav" aria-label="Site"><a class="home" href="./">Lane<span>Lock</span></a><span class="links"><a href="play/">Play</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a></span></nav>
+    <nav class="site-nav" aria-label="Site"><a class="home" href="./">Lane<span>Lock</span></a><span class="links"><a href="play/">Draft</a><a href="matchups/">Who wins?</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a></span></nav>
 
     <section class="hero">
       <div>
@@ -130,6 +131,7 @@ a{color:var(--blue)}
           <a class="btn primary" href="play/">Draft your counter</a>
           <a class="btn ghost" href="play/?mode=unlimited">Play unlimited</a>
         </div>
+        <p class="also">New: <a href="matchups/">Who wins the lane?</a> Ten quick matchup calls a day.</p>
         <p class="me" id="me"></p>
         <p class="install" id="install" hidden></p>
       </div>
