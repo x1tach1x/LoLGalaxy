@@ -253,12 +253,13 @@ function render(){
   if (S.mode === "daily") {
     $("#progress").innerHTML = `<span>#${dailyNumber(S.date)}</span><span class="dots" aria-label="${S.answers.filter(Boolean).length} correct so far">${S.qs.map((q, i) =>
       `<i class="${i < S.answers.length ? (S.answers[i] ? "ok" : "no") : i === S.i ? "now" : ""}"></i>`).join("")}</span>`;
-    if (S.answers.length >= S.qs.length && !S.answered) { game.innerHTML = dailyDone(); startCountdown(); return; }
+    if (S.answers.length >= S.qs.length && !S.answered) { game.innerHTML = dailyDone(); $(".more").hidden = true; startCountdown(); return; }
   } else {
     const best = int(store.get("best", 0));
     $("#progress").innerHTML = `<span class="streak">Streak <b>${S.streak}</b></span><span class="streak">Best <b>${Math.max(best, S.streak)}</b></span>`;
-    if (S.over) { game.innerHTML = endlessDone(); return; }
+    if (S.over) { game.innerHTML = endlessDone(); $(".more").hidden = true; return; }
   }
+  $(".more").hidden = false;
   const q = S.qs[S.i];
   const [L, R] = sides(q);
   let reveal = "";
@@ -315,14 +316,23 @@ function dailyDone(){
     <span><span class="w">${esc(winnerOf(q))}</span> beats ${esc(winnerOf(q) === q.a ? q.b : q.a)}</span><span>${Math.max(q.wrA, 100 - q.wrA).toFixed(1)}%</span></li>`).join("");
   return `<section class="card done"><h2 tabindex="-1">${score} / 10</h2><p class="sub">${msg}</p>
     <div class="grid" aria-label="${score} of 10 correct">${gridText()}</div>
-    <div class="actions"><button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="endless">Try endless</button></div>
+    <div class="actions"><button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="endless">Try endless</button></div>${draftCard()}
     <p class="next">Next daily set in <b id="cd"></b></p>
     <ol class="recap">${recap}</ol></section>`;
 }
 function endlessDone(){
   const best = int(store.get("best", 0));
   return `<section class="card done"><h2 tabindex="-1">Streak: ${S.streak}</h2><p class="sub">${S.streak >= best && S.streak > 0 ? "That's your best yet." : `Your best is ${best}.`}</p>
-    <div class="actions"><button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share streak</button></div></section>`;
+    <div class="actions"><button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share streak</button></div>${draftCard()}</section>`;
+}
+
+// Card on the results screens that points to the LaneLock daily draft, with today's result there.
+function draftCard(){
+  let d = null; try { d = JSON.parse(localStorage.getItem("leaguesim:daily")); } catch(e) {}
+  const played = !!(d && d.date === todayStr() && typeof d.win === "boolean");
+  return `<a class="xgame${played ? " played" : ""}" href="../play/"><span class="xg-t">LaneLock daily draft</span>
+    <span class="xg-d">Five enemies are locked in. Roll and lock a team to beat them.</span>
+    <span class="xg-s${played ? " done" : ""}">${played ? `You ${d.win ? "won" : "lost"} today's draft` : "Today's draft is waiting"}</span><span class="xg-go">${played ? "See results" : "Play"}</span></a>`;
 }
 
 let cdTimer = null;

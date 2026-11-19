@@ -1638,6 +1638,7 @@ function resultsHTML(res){
     <div class="actions">${S.mode==="unlimited"
       ? `<button type="button" class="btn" data-act="again">Play again</button><button type="button" class="btn ghost" data-act="share">Share result</button>`
       : `<button type="button" class="btn" data-act="share">Share result</button>${nextPast() ? `<button type="button" class="btn ghost" data-past="${nextPast()}">Play #${dailyNumber(nextPast())}</button>` : ""}<button type="button" class="btn ghost" data-act="unlimited">Play unlimited</button>`}</div>
+    ${quizCard()}
     <div class="panels">
       <div class="panel wide sbwrap"><h3>Scoreboard</h3><div id="scoreboard">${scoreboardInner(S.board)}</div></div>
     <div class="panel gold"><h3>Gold lead</h3>${goldSVG(res.gold, res.timeline)}<p>Above the line, your team is ahead. Below it, the enemy is. Numbered dots match the events in "How the game went".</p></div>
@@ -1649,6 +1650,16 @@ function resultsHTML(res){
       <div class="panel wide"><h3>Your rolls</h3><div class="sug">${sug}</div></div>
     </div>
     <div class="ad" id="ad-results" hidden></div>`;
+}
+
+// Card on the results screen that points to the "Who wins the lane?" quiz, with today's progress there.
+function quizCard(){
+  let s = null; try { s = JSON.parse(localStorage.getItem("wwl:daily:" + todayStr())); } catch(e) {}
+  const n = s && Array.isArray(s.answers) ? s.answers.length : 0, score = n ? s.answers.filter(Boolean).length : 0;
+  const status = n >= 10 ? `You scored ${score}/10 today` : n ? `${n} of 10 answered today` : "Today's 10 matchups are ready";
+  return `<a class="xgame${n >= 10 ? " played" : ""}" href="../matchups/"><span class="xg-t">Who wins the lane?</span>
+    <span class="xg-d">Two champions, one lane. Pick the one that wins more often.</span>
+    <span class="xg-s${n >= 10 ? " done" : ""}">${status}</span><span class="xg-go">${n >= 10 ? "See results" : n ? "Keep going" : "Play"}</span></a>`;
 }
 
 /* ============================================================

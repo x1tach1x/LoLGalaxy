@@ -17,3 +17,13 @@ footer.site .links a{color:var(--blue,#4EA1DF);padding:6px 0;display:inline-bloc
   .site-nav .links a{display:inline-flex;align-items:center;min-height:44px;padding:0}
   footer.site .links a{min-height:44px;display:inline-flex;align-items:center;padding:0}
 }
+
+/* "Play the other game" card: links the draft and the matchup quiz to each other */
+.xgame{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 14px;margin:16px 0 0;padding:14px 16px;border:1px solid var(--rule,#2A4560);border-radius:12px;background:var(--deck,#16283B);color:var(--text,#E9EEF3);text-decoration:none;max-width:560px}
+.xgame:hover{border-color:var(--gold,#E7B53C)}
+.xgame .xg-t{font:700 21px/1.1 var(--cond,"Arial Narrow",sans-serif)}
+.xgame .xg-d{grid-column:1;color:var(--soft,#C9D4DF);font-size:15px;line-height:1.4}
+.xgame .xg-s{grid-column:1;color:var(--mute,#97A9BC);font-size:14px}
+.xgame .xg-s.done{color:var(--green,#4CC38A)}
+.xgame .xg-go{grid-column:2;grid-row:1 / span 3;background:var(--gold,#E7B53C);color:#1a1405;border-radius:999px;padding:11px 20px;font:700 18px/1 var(--cond,"Arial Narrow",sans-serif);white-space:nowrap}
+.xgame.played .xg-go{background:none;border:1px solid var(--rule,#2A4560);color:var(--text,#E9EEF3)}
