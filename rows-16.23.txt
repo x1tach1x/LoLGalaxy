@@ -1,19 +1,134 @@
-adc|Corki|Ezreal:36.36:11,Jhin:66.67:12,Kai'Sa:36.36:11
-adc|Ezreal|Corki:63.64:11,Jhin:48.78:41,Kai'Sa:52.83:53,Kalista:44.00:25,Sivir:58.33:12,Xayah:46.15:13,Yunara:40.00:10
-adc|Jhin|Corki:33.33:12,Ezreal:51.22:41,Kai'Sa:38.71:31
-adc|Kai'Sa|Corki:63.64:11,Ezreal:47.17:53,Jhin:61.29:31,Xayah:36.36:11
-adc|Kalista|Ezreal:56.00:25
-adc|Sivir|Ezreal:41.67:12
-adc|Xayah|Ezreal:53.85:13,Kai'Sa:63.64:11
-adc|Yunara|Ezreal:60.00:10
-jungle|Lee Sin|Naafiri:40.00:10,Qiyana:50.00:12,Vi:58.82:17
-jungle|Naafiri|Lee Sin:60.00:10
-jungle|Qiyana|Lee Sin:50.00:12
-jungle|Vi|Lee Sin:41.18:17
-support|Alistar|Nautilus:60.00:10
-support|Bard|Karma:50.00:12
-support|Karma|Bard:50.00:12,Nautilus:41.67:12
-support|Nautilus|Alistar:40.00:10,Karma:58.33:12,Rell:50.00:12
-support|Rell|Nautilus:50.00:12
-top|Jayce|Olaf:30.00:10
-top|Olaf|Jayce:70.00:10
+adc|Aphelios|Corki:40.00:10,Ezreal:46.94:49,Jhin:60.00:30,Jinx:42.86:14,Kai'Sa:53.57:28,Lucian:66.67:12,Miss Fortune:50.00:10,Xayah:43.75:16,Yunara:48.28:29,Zeri:15.38:13
+adc|Ashe|Ezreal:40.00:15,Jhin:42.86:21,Kai'Sa:54.55:11
+adc|Caitlyn|Corki:30.00:10,Ezreal:44.44:18,Jhin:42.42:33,Kai'Sa:41.18:17,Lucian:42.86:14,Xayah:43.75:16,Yunara:66.67:15,Kalista:40.00:10
+adc|Corki|Aphelios:60.00:10,Caitlyn:70.00:10,Ezreal:50.00:56,Jhin:55.81:43,Kai'Sa:60.00:50,Kalista:60.00:15,Lucian:65.22:23,Xayah:58.33:36,Yunara:44.44:27,Zeri:42.86:14,Tristana:57.14:14
+adc|Draven|Ezreal:48.00:25,Jhin:68.42:19,Kai'Sa:40.00:10,Xayah:27.27:11,Yunara:50.00:12
+adc|Ezreal|Aphelios:53.06:49,Ashe:60.00:15,Caitlyn:55.56:18,Corki:50.00:56,Draven:52.00:25,Jhin:45.45:154,Jinx:54.55:22,Kai'Sa:49.22:193,Kalista:43.94:66,Lucian:48.28:29,Miss Fortune:35.29:34,Sivir:46.15:39,Tristana:41.18:17,Twitch:38.46:13,Varus:62.50:16,Vel'Koz:20.00:10,Xayah:42.22:45,Yunara:42.03:69,Zeri:38.46:39,Ziggs:45.00:20,Kog'Maw:63.64:11,Vayne:27.27:11,Mel:61.54:13
+adc|Hwei|Jhin:70.00:10
+adc|Jhin|Aphelios:40.00:30,Ashe:57.14:21,Caitlyn:57.58:33,Corki:44.19:43,Draven:31.58:19,Ezreal:54.55:154,Hwei:30.00:10,Jinx:40.00:25,Kai'Sa:35.43:127,Kalista:65.22:23,Karthus:45.45:11,Lucian:64.71:34,Lux:63.64:11,Miss Fortune:72.22:18,Sivir:47.06:17,Tristana:60.71:28,Twitch:81.82:11,Varus:47.06:17,Xayah:34.29:35,Yunara:65.00:40,Zeri:52.63:38,Ziggs:35.71:14
+adc|Jinx|Aphelios:57.14:14,Ezreal:45.45:22,Jhin:60.00:25,Kai'Sa:46.15:13,Xayah:42.86:14,Yunara:55.56:18,Zeri:72.73:11
+adc|Kai'Sa|Aphelios:46.43:28,Ashe:45.45:11,Caitlyn:58.82:17,Corki:40.00:50,Draven:60.00:10,Ezreal:50.78:193,Jhin:64.57:127,Jinx:53.85:13,Kalista:52.17:23,Lucian:52.63:19,Miss Fortune:54.55:11,Sivir:75.00:12,Tristana:45.45:22,Twitch:54.55:11,Varus:46.15:13,Xayah:44.26:61,Yunara:52.00:50,Zeri:37.14:35,Ziggs:63.64:11,Kog'Maw:60.00:10
+adc|Kalista|Corki:40.00:15,Ezreal:56.06:66,Jhin:34.78:23,Kai'Sa:47.83:23,Lucian:85.71:14,Zeri:44.44:18,Yunara:50.00:14,Caitlyn:60.00:10
+adc|Karthus|Jhin:54.55:11
+adc|Kog'Maw|Ezreal:36.36:11,Kai'Sa:40.00:10
+adc|Lucian|Aphelios:33.33:12,Caitlyn:57.14:14,Corki:34.78:23,Ezreal:51.72:29,Jhin:35.29:34,Kai'Sa:47.37:19,Kalista:14.29:14,Tristana:36.36:11,Twitch:50.00:10,Yunara:36.36:22,Zeri:60.00:10
+adc|Lux|Jhin:36.36:11
+adc|Mel|Ezreal:38.46:13
+adc|Miss Fortune|Aphelios:50.00:10,Ezreal:64.71:34,Jhin:27.78:18,Kai'Sa:45.45:11,Xayah:50.00:12,Yunara:41.18:17
+adc|Sivir|Ezreal:53.85:39,Jhin:52.94:17,Kai'Sa:25.00:12,Yunara:38.46:13,Xayah:81.82:11
+adc|Tristana|Ezreal:58.82:17,Jhin:39.29:28,Kai'Sa:54.55:22,Lucian:63.64:11,Xayah:45.45:11,Corki:42.86:14
+adc|Twitch|Ezreal:61.54:13,Jhin:18.18:11,Kai'Sa:45.45:11,Lucian:50.00:10,Yunara:70.00:10
+adc|Varus|Ezreal:37.50:16,Jhin:52.94:17,Kai'Sa:53.85:13,Yunara:50.00:12
+adc|Vayne|Ezreal:72.73:11
+adc|Vel'Koz|Ezreal:80.00:10
+adc|Xayah|Aphelios:56.25:16,Caitlyn:56.25:16,Corki:41.67:36,Draven:72.73:11,Ezreal:57.78:45,Jhin:65.71:35,Jinx:57.14:14,Kai'Sa:55.74:61,Miss Fortune:50.00:12,Tristana:54.55:11,Yunara:40.74:27,Zeri:50.00:16,Sivir:18.18:11
+adc|Yunara|Aphelios:51.72:29,Caitlyn:33.33:15,Corki:55.56:27,Draven:50.00:12,Ezreal:57.97:69,Jhin:35.00:40,Jinx:44.44:18,Kai'Sa:48.00:50,Lucian:63.64:22,Miss Fortune:58.82:17,Sivir:61.54:13,Twitch:30.00:10,Varus:50.00:12,Xayah:59.26:27,Zeri:51.72:29,Kalista:50.00:14
+adc|Zeri|Corki:57.14:14,Ezreal:61.54:39,Jhin:47.37:38,Jinx:27.27:11,Kai'Sa:62.86:35,Kalista:55.56:18,Lucian:40.00:10,Xayah:50.00:16,Yunara:48.28:29,Aphelios:84.62:13
+adc|Ziggs|Ezreal:55.00:20,Jhin:64.29:14,Kai'Sa:36.36:11
+jungle|Ekko|Lee Sin:47.06:17,Nidalee:40.00:10,Qiyana:45.45:11
+jungle|Elise|Jarvan IV:40.00:10,Lee Sin:73.33:15
+jungle|Graves|Hecarim:41.67:12,Jarvan IV:42.86:14,Jayce:71.43:14,Kindred:53.85:13,Lee Sin:57.69:26,Nidalee:63.64:11,Qiyana:47.06:17,Taliyah:25.00:12,Talon:64.29:14,Sylas:60.00:10,Kha'Zix:90.00:10,Viego:70.00:10
+jungle|Hecarim|Graves:58.33:12,Jarvan IV:52.94:17,Jayce:45.45:11,Kha'Zix:33.33:12,Kindred:27.27:11,Lee Sin:61.11:18,Naafiri:50.00:16,Qiyana:70.00:10,Taliyah:40.00:10,Vi:66.67:12,Viego:75.00:12
+jungle|Jarvan IV|Elise:60.00:10,Graves:57.14:14,Hecarim:47.06:17,Jayce:54.55:11,Kha'Zix:53.33:15,Kindred:70.00:10,Lee Sin:43.33:30,Naafiri:50.00:10,Qiyana:50.00:12,Sylas:50.00:12,Taliyah:33.33:12,Talon:41.18:17,Vi:38.46:13,Viego:66.67:15,Wukong:15.38:13
+jungle|Jayce|Graves:28.57:14,Hecarim:54.55:11,Jarvan IV:45.45:11,Lee Sin:57.58:33,Qiyana:46.67:15,Taliyah:27.27:11,Talon:30.00:10,Sylas:40.00:10
+jungle|Karthus|Qiyana:60.00:10
+jungle|Kha'Zix|Hecarim:66.67:12,Jarvan IV:46.67:15,Lee Sin:45.45:22,Master Yi:30.00:10,Naafiri:36.36:11,Qiyana:46.67:15,Wukong:63.64:11,Graves:10.00:10
+jungle|Kindred|Graves:46.15:13,Hecarim:72.73:11,Jarvan IV:30.00:10,Lee Sin:48.00:25,Nidalee:58.33:12
+jungle|Lee Sin|Ekko:52.94:17,Graves:42.31:26,Hecarim:38.89:18,Jarvan IV:56.67:30,Jayce:42.42:33,Kha'Zix:54.55:22,Kindred:52.00:25,Lillia:54.55:11,Naafiri:40.62:32,Nidalee:46.43:28,Qiyana:36.36:44,Rek'Sai:66.67:12,Rengar:41.67:12,Shaco:31.25:16,Sylas:31.58:19,Taliyah:35.71:14,Talon:50.00:20,Vi:48.78:41,Viego:66.67:18,Wukong:63.16:19,Xin Zhao:50.00:18,Zyra:20.00:10,Elise:26.67:15
+jungle|Lillia|Lee Sin:45.45:11
+jungle|Master Yi|Kha'Zix:70.00:10,Nidalee:50.00:10,Qiyana:60.00:10
+jungle|Naafiri|Hecarim:50.00:16,Jarvan IV:50.00:10,Kha'Zix:63.64:11,Lee Sin:59.38:32,Nidalee:41.67:12,Qiyana:60.00:15,Sylas:33.33:12,Vi:50.00:10,Xin Zhao:50.00:10,Wukong:36.36:11
+jungle|Nidalee|Ekko:60.00:10,Graves:36.36:11,Kindred:41.67:12,Lee Sin:53.57:28,Master Yi:50.00:10,Naafiri:58.33:12,Qiyana:70.59:17,Taliyah:40.00:10,Talon:58.33:12
+jungle|Nunu & Willump|Talon:63.64:11
+jungle|Qiyana|Ekko:54.55:11,Graves:52.94:17,Hecarim:30.00:10,Jarvan IV:50.00:12,Jayce:53.33:15,Karthus:40.00:10,Kha'Zix:53.33:15,Lee Sin:63.64:44,Master Yi:40.00:10,Naafiri:40.00:15,Nidalee:29.41:17,Shaco:50.00:10,Sylas:46.15:13,Taliyah:57.14:14,Talon:72.22:18,Vi:27.27:11
+jungle|Rek'Sai|Lee Sin:33.33:12
+jungle|Rengar|Lee Sin:58.33:12
+jungle|Shaco|Lee Sin:68.75:16,Qiyana:50.00:10
+jungle|Sylas|Jarvan IV:50.00:12,Lee Sin:68.42:19,Naafiri:66.67:12,Qiyana:53.85:13,Talon:61.54:13,Viego:54.55:11,Jayce:60.00:10,Graves:40.00:10
+jungle|Taliyah|Graves:75.00:12,Hecarim:60.00:10,Jarvan IV:66.67:12,Jayce:72.73:11,Lee Sin:64.29:14,Nidalee:60.00:10,Qiyana:42.86:14,Talon:69.23:13
+jungle|Talon|Graves:35.71:14,Jarvan IV:58.82:17,Jayce:70.00:10,Lee Sin:50.00:20,Nidalee:41.67:12,Nunu & Willump:36.36:11,Qiyana:27.78:18,Sylas:38.46:13,Taliyah:30.77:13,Vi:46.15:13
+jungle|Vi|Hecarim:33.33:12,Jarvan IV:61.54:13,Lee Sin:51.22:41,Naafiri:50.00:10,Qiyana:72.73:11,Talon:53.85:13
+jungle|Viego|Hecarim:25.00:12,Jarvan IV:33.33:15,Lee Sin:33.33:18,Sylas:45.45:11,Wukong:58.33:12,Graves:30.00:10
+jungle|Wukong|Kha'Zix:36.36:11,Lee Sin:36.84:19,Viego:41.67:12,Naafiri:63.64:11,Jarvan IV:84.62:13
+jungle|Xin Zhao|Lee Sin:50.00:18,Naafiri:50.00:10
+jungle|Zyra|Lee Sin:80.00:10
+mid|Ahri|Akali:80.00:10,Akshan:80.00:10,Anivia:63.64:11,Ekko:33.33:12,Locke:45.45:11,Orianna:38.46:13,Sylas:75.00:16,Taliyah:71.43:14,Twisted Fate:36.84:19,Yone:37.50:16,Zed:41.67:12,Kassadin:60.00:10,Syndra:50.00:12
+mid|Akali|Ahri:20.00:10,Azir:18.18:11,Galio:31.25:16,Locke:58.33:12,Orianna:73.33:15,Sylas:33.33:12,Syndra:66.67:15,Twisted Fate:36.67:30,Viktor:66.67:12,Yasuo:26.32:19,Yone:23.53:17,Zed:72.73:11
+mid|Akshan|Ahri:20.00:10
+mid|Anivia|Ahri:36.36:11,Yone:58.33:12
+mid|Aurora|Viktor:70.00:10
+mid|Azir|Akali:81.82:11,Locke:63.64:11,Yone:30.00:10,Zed:40.00:10
+mid|Cassiopeia|Syndra:58.33:12
+mid|Ekko|Ahri:66.67:12,Sylas:46.67:15,Syndra:31.25:16,Yone:60.00:10,Zed:53.85:13,Viktor:40.00:10,Galio:50.00:10
+mid|Galio|Akali:68.75:16,Hwei:50.00:10,Katarina:47.06:17,LeBlanc:47.06:17,Locke:31.58:19,Orianna:38.46:13,Sylas:14.29:14,Syndra:45.00:20,Twisted Fate:18.18:11,Viktor:52.63:19,Zed:20.00:10,Ekko:50.00:10
+mid|Hwei|Galio:50.00:10
+mid|Kassadin|Ahri:40.00:10
+mid|Katarina|Galio:52.94:17,Lissandra:27.27:11,Syndra:50.00:10,Zed:70.00:10
+mid|LeBlanc|Galio:52.94:17,Yone:54.55:11
+mid|Lissandra|Katarina:72.73:11,Zed:25.00:12
+mid|Locke|Ahri:54.55:11,Akali:41.67:12,Azir:36.36:11,Galio:68.42:19,Orianna:54.55:11,Syndra:46.15:13,Twisted Fate:54.55:11
+mid|Malzahar|Twisted Fate:60.00:10
+mid|Orianna|Ahri:61.54:13,Akali:26.67:15,Galio:61.54:13,Locke:45.45:11,Sylas:18.18:11,Syndra:57.89:19,Twisted Fate:28.57:14,Viktor:60.00:25,Yone:46.67:15,Zed:25.00:12,Zoe:57.14:14
+mid|Sylas|Ahri:25.00:16,Akali:66.67:12,Ekko:53.33:15,Galio:85.71:14,Orianna:81.82:11,Twisted Fate:36.84:19,Viktor:50.00:14,Yone:45.45:11
+mid|Syndra|Akali:33.33:15,Cassiopeia:41.67:12,Ekko:68.75:16,Galio:55.00:20,Katarina:50.00:10,Locke:53.85:13,Orianna:42.11:19,Taliyah:23.08:13,Twisted Fate:42.86:21,Yasuo:27.27:11,Zed:41.67:12,Zoe:58.33:12,Viktor:53.33:15,Yone:27.78:18,Ahri:50.00:12
+mid|Taliyah|Ahri:28.57:14,Syndra:76.92:13,Twisted Fate:75.00:12,Viktor:38.46:13
+mid|Twisted Fate|Ahri:63.16:19,Akali:63.33:30,Galio:81.82:11,Locke:45.45:11,Malzahar:40.00:10,Orianna:71.43:14,Sylas:63.16:19,Syndra:57.14:21,Taliyah:25.00:12,Viktor:50.00:12,Zed:71.43:14,Yasuo:50.00:10
+mid|Viktor|Akali:33.33:12,Aurora:30.00:10,Galio:47.37:19,Orianna:40.00:25,Sylas:50.00:14,Taliyah:61.54:13,Twisted Fate:50.00:12,Yone:50.00:10,Zed:46.67:15,Ekko:60.00:10,Syndra:46.67:15
+mid|Yasuo|Akali:73.68:19,Syndra:72.73:11,Yone:30.00:10,Twisted Fate:50.00:10
+mid|Yone|Ahri:62.50:16,Akali:76.47:17,Anivia:41.67:12,Azir:70.00:10,Ekko:40.00:10,LeBlanc:45.45:11,Orianna:53.33:15,Sylas:54.55:11,Viktor:50.00:10,Yasuo:70.00:10,Zed:58.33:12,Syndra:72.22:18
+mid|Zed|Ahri:58.33:12,Akali:27.27:11,Azir:60.00:10,Ekko:46.15:13,Galio:80.00:10,Katarina:30.00:10,Lissandra:75.00:12,Orianna:75.00:12,Syndra:58.33:12,Twisted Fate:28.57:14,Viktor:53.33:15,Yone:41.67:12
+mid|Zoe|Orianna:42.86:14,Syndra:41.67:12
+support|Alistar|Bard:55.00:20,Blitzcrank:41.67:24,Braum:52.17:23,Janna:41.18:17,Karma:68.18:22,Leona:38.89:36,Lulu:44.00:25,Nami:72.73:11,Nautilus:53.03:66,Neeko:63.64:11,Poppy:50.00:16,Pyke:53.85:13,Rakan:50.00:40,Rell:46.67:30,Senna:62.50:16,Seraphine:50.00:12,Thresh:53.33:30,Pantheon:50.00:10
+support|Bard|Alistar:45.00:20,Blitzcrank:25.00:20,Camille:72.73:11,Janna:21.43:14,Karma:51.52:33,Leona:35.29:17,Lulu:38.71:31,Nautilus:58.33:36,Pyke:63.64:11,Rakan:65.00:20,Rell:63.64:11,Thresh:36.84:19,Yuumi:54.55:11,Nami:41.67:12
+support|Blitzcrank|Alistar:58.33:24,Bard:75.00:20,Karma:50.00:14,Leona:52.38:21,Lulu:65.52:29,Nautilus:61.11:18,Pyke:61.54:13,Thresh:58.62:29,Rakan:61.54:13,Rell:41.18:17
+support|Braum|Alistar:47.83:23,Leona:64.71:17,Lulu:58.33:12,Nautilus:51.06:47,Thresh:53.33:15
+support|Camille|Bard:27.27:11,Nautilus:61.54:13
+support|Janna|Alistar:58.82:17,Bard:78.57:14,Karma:63.64:11,Lulu:69.23:13,Thresh:28.57:14,Nami:50.00:18,Sona:72.73:11
+support|Karma|Alistar:31.82:22,Bard:48.48:33,Blitzcrank:50.00:14,Janna:36.36:11,Leona:55.56:18,Lulu:50.00:30,Nami:50.00:34,Nautilus:47.46:59,Rakan:26.09:23,Rell:50.00:12,Seraphine:40.00:15,Thresh:27.27:22,Sona:72.73:11
+support|Leona|Alistar:61.11:36,Bard:64.71:17,Blitzcrank:47.62:21,Braum:35.29:17,Karma:44.44:18,Lulu:75.00:20,Nautilus:48.78:41,Poppy:50.00:14,Rakan:58.33:12,Rell:33.33:21,Thresh:45.83:24,Nami:30.00:10
+support|Lulu|Alistar:56.00:25,Bard:61.29:31,Blitzcrank:34.48:29,Braum:41.67:12,Janna:30.77:13,Karma:50.00:30,Leona:25.00:20,Milio:36.36:11,Nautilus:51.11:45,Pantheon:80.00:10,Pyke:70.00:20,Rakan:40.00:15,Rell:52.63:19,Renata Glasc:50.00:14,Senna:43.75:16,Thresh:47.06:17,Yuumi:53.85:13,Nami:58.62:29,Sona:30.77:13,Soraka:50.00:10
+support|Lux|Nautilus:61.54:13
+support|Milio|Lulu:63.64:11
+support|Nami|Alistar:27.27:11,Karma:50.00:34,Nautilus:66.67:27,Thresh:33.33:21,Lulu:41.38:29,Senna:40.00:10,Janna:50.00:18,Soraka:53.85:13,Bard:58.33:12,Sona:56.25:16,Leona:70.00:10,Seraphine:71.43:14
+support|Nautilus|Alistar:46.97:66,Bard:41.67:36,Blitzcrank:38.89:18,Braum:48.94:47,Camille:38.46:13,Karma:52.54:59,Leona:51.22:41,Lulu:48.89:45,Lux:38.46:13,Nami:33.33:27,Neeko:41.67:12,Pantheon:64.29:14,Poppy:58.33:12,Pyke:41.38:29,Rakan:60.00:20,Rell:43.33:60,Seraphine:50.00:12,Sona:50.00:22,Thresh:43.75:32,Yuumi:50.00:16,Senna:45.45:11,Soraka:50.00:10
+support|Neeko|Alistar:36.36:11,Nautilus:58.33:12,Thresh:66.67:12
+support|Pantheon|Lulu:20.00:10,Nautilus:35.71:14,Rakan:30.00:10,Alistar:50.00:10
+support|Poppy|Alistar:50.00:16,Leona:50.00:14,Nautilus:41.67:12
+support|Pyke|Alistar:46.15:13,Bard:36.36:11,Blitzcrank:38.46:13,Lulu:30.00:20,Nautilus:58.62:29,Rakan:43.48:23,Rell:35.00:20,Thresh:42.86:14
+support|Rakan|Alistar:50.00:40,Bard:35.00:20,Karma:73.91:23,Leona:41.67:12,Lulu:60.00:15,Nautilus:40.00:20,Pantheon:70.00:10,Pyke:56.52:23,Rell:60.00:10,Senna:57.14:14,Thresh:47.37:19,Blitzcrank:38.46:13
+support|Rell|Alistar:53.33:30,Bard:36.36:11,Karma:50.00:12,Leona:66.67:21,Lulu:47.37:19,Nautilus:56.67:60,Pyke:65.00:20,Rakan:40.00:10,Thresh:44.44:18,Blitzcrank:58.82:17
+support|Renata Glasc|Lulu:50.00:14
+support|Senna|Alistar:37.50:16,Lulu:56.25:16,Rakan:42.86:14,Nami:60.00:10,Nautilus:54.55:11
+support|Seraphine|Alistar:50.00:12,Karma:60.00:15,Nautilus:50.00:12,Nami:28.57:14
+support|Sona|Nautilus:50.00:22,Thresh:61.54:13,Karma:27.27:11,Lulu:69.23:13,Janna:27.27:11,Nami:43.75:16
+support|Soraka|Nami:46.15:13,Nautilus:50.00:10,Lulu:50.00:10
+support|Thresh|Alistar:46.67:30,Bard:63.16:19,Blitzcrank:41.38:29,Braum:46.67:15,Karma:72.73:22,Leona:54.17:24,Lulu:52.94:17,Nami:66.67:21,Nautilus:56.25:32,Pyke:57.14:14,Rakan:52.63:19,Rell:55.56:18,Yuumi:45.45:11,Janna:71.43:14,Sona:38.46:13,Neeko:33.33:12
+support|Yuumi|Bard:45.45:11,Lulu:46.15:13,Nautilus:50.00:16,Thresh:54.55:11
+top|Aatrox|Ambessa:60.00:10,Darius:54.55:11,Fiora:60.00:10,Jayce:60.00:10,K'Sante:30.77:13,Zaahen:60.00:10
+top|Akali|Olaf:45.45:11
+top|Ambessa|Aatrox:40.00:10,Camille:36.84:19,Fiora:53.85:13,Gnar:54.55:11,Jax:72.73:11,Jayce:26.67:15,K'Sante:33.33:21,Olaf:40.00:10,Renekton:50.00:20,Rumble:53.85:13,Shen:40.00:10,Yone:35.71:14,Ornn:40.00:10
+top|Camille|Ambessa:63.16:19,Gnar:40.00:10,Jax:53.33:15,Jayce:83.33:12,Olaf:63.16:19,Renekton:40.00:10
+top|Darius|Aatrox:45.45:11,Jax:72.73:11,K'Sante:66.67:12
+top|Dr. Mundo|Jax:45.45:11,Malphite:60.00:10
+top|Fiora|Aatrox:40.00:10,Ambessa:46.15:13,Olaf:20.00:10,Yone:45.45:11
+top|Garen|Jax:61.54:13
+top|Gnar|Ambessa:45.45:11,Camille:60.00:10,Irelia:41.67:12,Jayce:46.15:13,K'Sante:40.00:15,Renekton:90.00:10
+top|Gragas|Jax:50.00:12
+top|Gwen|Ornn:45.45:11,Sion:54.55:11
+top|Irelia|Gnar:58.33:12,Jayce:60.00:20,Zaahen:9.09:11
+top|Jax|Ambessa:27.27:11,Camille:46.67:15,Darius:27.27:11,Dr. Mundo:54.55:11,Garen:38.46:13,Gragas:50.00:12,Jayce:62.50:16,Olaf:57.89:19,K'Sante:63.64:11
+top|Jayce|Aatrox:40.00:10,Ambessa:73.33:15,Camille:16.67:12,Gnar:53.85:13,Irelia:40.00:20,Jax:37.50:16,K'Sante:40.91:22,Malphite:41.67:24,Olaf:41.67:24,Pantheon:60.00:15,Sion:54.55:11,Teemo:40.00:10,Yasuo:63.64:11,Yone:30.00:10
+top|K'Sante|Aatrox:69.23:13,Ambessa:66.67:21,Darius:33.33:12,Gnar:60.00:15,Jayce:59.09:22,Olaf:40.00:10,Vayne:64.29:14,Jax:36.36:11
+top|Malphite|Jayce:58.33:24,Yone:30.00:10,Dr. Mundo:40.00:10
+top|Olaf|Akali:54.55:11,Ambessa:60.00:10,Camille:36.84:19,Fiora:80.00:10,Jax:42.11:19,Jayce:58.33:24,K'Sante:60.00:10,Renekton:50.00:10,Shen:60.00:10
+top|Ornn|Gwen:54.55:11,Renekton:70.00:10,Ambessa:60.00:10
+top|Pantheon|Jayce:40.00:15
+top|Renekton|Ambessa:50.00:20,Camille:60.00:10,Olaf:50.00:10,Ornn:30.00:10,Gnar:10.00:10
+top|Rumble|Ambessa:46.15:13
+top|Shen|Ambessa:60.00:10,Olaf:40.00:10
+top|Sion|Gwen:45.45:11,Jayce:45.45:11
+top|Teemo|Jayce:60.00:10
+top|Vayne|K'Sante:35.71:14
+top|Yasuo|Jayce:36.36:11
+top|Yone|Ambessa:64.29:14,Fiora:54.55:11,Jayce:70.00:10,Malphite:70.00:10
+top|Zaahen|Aatrox:40.00:10,Irelia:90.91:11
