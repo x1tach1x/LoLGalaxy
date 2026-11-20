@@ -1,5 +1,5 @@
-/* LaneLock's daily games, and today's progress in each one (read from this browser's saved results).
-   Used by the results screens ("More daily games") so every game links to the others. */
+/* LaneLock's daily puzzles, and today's progress in each one (read from this browser's saved results).
+   Used by the results screens ("Still to play today") so every puzzle links to the others. */
 (function(){
   const today = () => new Date().toISOString().slice(0, 10);
   const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e) { return null; } };
@@ -25,9 +25,9 @@
   // Once every game is done, a short note instead.
   function moreHTML(currentId){
     const left = GAMES.filter(g => g.id !== currentId).map(g => ({g, s: g.status()})).filter(x => !x.s.done);
-    if (!left.length) return `<section class="moregames" aria-label="More daily games"><h3>That's every game for today</h3>`
-      + `<p class="alldone">You've played all of LaneLock's daily games. New ones start at midnight UTC.</p></section>`;
-    return `<section class="moregames" aria-label="More daily games"><h3>Still to play today</h3>${left.map(({g, s}) =>
+    if (!left.length) return `<section class="moregames" aria-label="More daily puzzles"><h3>That's every puzzle for today</h3>`
+      + `<p class="alldone">You've played all of LaneLock's daily puzzles. New ones start at midnight UTC.</p></section>`;
+    return `<section class="moregames" aria-label="More daily puzzles"><h3>Still to play today</h3>${left.map(({g, s}) =>
       `<a class="xgame" href="${g.href}"><span class="xg-t">${esc(g.name)}</span><span class="xg-d">${esc(g.desc)}</span>`
       + `<span class="xg-s">${esc(s.text)}</span><span class="xg-go">${s.started ? "Keep going" : "Play"}</span></a>`).join("")}</section>`;
   }

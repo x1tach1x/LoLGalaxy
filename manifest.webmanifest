@@ -1,7 +1,7 @@
 {
   "name": "LaneLock",
   "short_name": "LaneLock",
-  "description": "The daily League of Legends counter-draft game.",
+  "description": "Daily League of Legends puzzles.",
   "id": "/",
   "start_url": "/play/",
   "scope": "/",
