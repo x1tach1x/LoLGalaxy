@@ -72,8 +72,15 @@ a{color:var(--blue)}
 .game.draft{background:linear-gradient(100deg,rgba(231,181,60,.18),rgba(22,40,59,.92) 45%,rgba(22,40,59,.92) 70%,rgba(227,91,79,.14))}
 .game.wwl{background:linear-gradient(100deg,rgba(78,161,223,.22),rgba(22,40,59,.92) 45%,rgba(22,40,59,.92) 70%,rgba(227,91,79,.18))}
 .ic{flex:none;width:64px;height:64px}
-.lockic{border-radius:50%;background:var(--gold);color:#1a1405;display:grid;place-items:center}
-.lockic svg{width:30px;height:30px}
+/* Draft icon: today's five enemies (red rings) with a gold lock badge, the partner of the quiz's VS duo */
+.team{position:relative;width:80px}
+.team .p{position:absolute;width:40%;height:50%;border-radius:50%;overflow:hidden;background:var(--deck2);display:grid;place-items:center;border:2px solid var(--red)}
+.team .p b{font:700 11px var(--cond);color:var(--mute)}
+.team .p img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.team .p:nth-child(1){left:0;top:0}.team .p:nth-child(2){left:30%;top:0}.team .p:nth-child(3){left:60%;top:0}
+.team .p:nth-child(4){left:15%;top:44%}.team .p:nth-child(5){left:45%;top:44%}
+.team .lk{position:absolute;right:-4px;bottom:-2px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#1a1405;display:grid;place-items:center;box-shadow:0 0 0 2px var(--ink)}
+.team .lk svg{width:14px;height:14px}
 .duo{position:relative;width:80px}
 .duo .p{position:absolute;top:4px;width:50px;height:50px;border-radius:50%;overflow:hidden;background:var(--deck2);display:grid;place-items:center;border:2px solid}
 .duo .p b{font:700 17px var(--cond);color:var(--mute)}
@@ -87,7 +94,7 @@ a{color:var(--blue)}
 .gx:empty{display:none}
 .gs{font:700 17px var(--cond);color:var(--mute);text-align:right;white-space:nowrap}
 .gs.good{color:#4CC38A} .gs.bad{color:#F07A6E}
-@media (max-width:420px){.game{gap:12px;padding:14px 14px 14px 12px}.ic{width:54px;height:54px}.duo{width:70px}.duo .p{width:44px;height:44px}.gn{font-size:24px}.gd{font-size:14px}}
+@media (max-width:420px){.game{gap:12px;padding:14px 14px 14px 12px}.ic{width:54px;height:54px}.duo,.team{width:70px;height:56px}.duo .p{width:44px;height:44px}.gn{font-size:24px}.gd{font-size:14px}}
 @media (prefers-reduced-motion:reduce){.game{transition:none}.game:hover{transform:none}}
 .also{margin:20px 0 0;color:var(--mute);font-size:15px}
 .next{margin:14px 0 0;color:var(--mute);font-size:15px}
@@ -112,7 +119,7 @@ a{color:var(--blue)}
 
     <nav class="games" aria-label="Games">
       <a class="game draft" href="play/">
-        <span class="ic lockic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="5" y="10.5" width="14" height="10.5" rx="2.5" fill="currentColor"/></svg></span>
+        <span class="ic team" id="team" aria-hidden="true"><span class="lk"><svg viewBox="0 0 24 24"><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><rect x="5" y="10.5" width="14" height="10.5" rx="2.5" fill="currentColor"/></svg></span></span>
         <span class="gt"><span class="gn">Draft</span><span class="gd">Counter today's five enemies.</span><span class="gx" id="draft-x"></span></span>
         <span class="gs" id="draft-s"></span>
       </a>
@@ -222,7 +229,7 @@ function pickEnemy(rng, date){
   return team;
 }
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const initials = n => { const w = n.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean); return (w.length>1 ? w[0][0]+w[1][0] : n.slice(0,2)).toUpperCase(); };
+const initials = n => { const w = n.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean); return (w.length>1 ? w[0][0]+w[1][0] : (w[0] || n).slice(0,2)).toUpperCase(); };
 const ddId = n => SPECIAL_IDS[n] || n.replace(/[^A-Za-z0-9]/g,"");
 
 const today = todayStr();
@@ -238,6 +245,16 @@ const ddv = Promise.race([
   fetch("https://ddragon.leagueoflegends.com/api/versions.json").then(r => r.json()).then(v => v[0]),
   new Promise(res => setTimeout(() => res(null), 900))
 ]).catch(() => null);
+
+// Draft: today's enemy team on its button
+ddv.then(version => {
+  const lk = document.querySelector("#team .lk");
+  lk.insertAdjacentHTML("beforebegin", ROLE_ORDER.map(k => {
+    const n = enemy[k];
+    const img = version ? `<img src="https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${ddId(n)}.png" alt="" onerror="this.remove()">` : "";
+    return `<span class="p"><b>${esc(initials(n))}</b>${img}</span>`;
+  }).join(""));
+});
 
 // "Who wins the lane?": today's first matchup on its button
 Promise.all([ddv, fetch("matchups/data.json").then(r => r.json())]).then(([version, data]) => {
