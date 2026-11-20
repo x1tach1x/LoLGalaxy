@@ -95,6 +95,7 @@
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a class="home" href="../">Lane<span>Lock</span></a><span class="links"><a href="../">Puzzles</a><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span></nav>
+  <nav class="puzzlebar" data-puzzles="counter" aria-label="Puzzles"></nav>
 
   <header class="intro">
     <h1>Counter pick</h1>
@@ -167,6 +168,7 @@ function progressHTML(){
 
 function render(){
   if (!DATA || !S.rounds.length) return;
+  if (window.LaneLockGames) LaneLockGames.refreshSwitcher();
   document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
   $("#progress").innerHTML = progressHTML();
   if (finished()) { $("#game").innerHTML = doneHTML(); if (S.mode === "daily") startCountdown(); return; }

@@ -31,5 +31,20 @@
       `<a class="xgame" href="${g.href}"><span class="xg-t">${esc(g.name)}</span><span class="xg-d">${esc(g.desc)}</span>`
       + `<span class="xg-s">${esc(s.text)}</span><span class="xg-go">${s.started ? "Keep going" : "Play"}</span></a>`).join("")}</section>`;
   }
-  window.LaneLockGames = {GAMES, moreHTML, status: id => GAMES.find(g => g.id === id).status()};
+  // A row of all four puzzles at the top of each puzzle page, so you can switch at any point.
+  const SHORT = {draft: "Draft", matchups: "Who wins the lane?", teams: "Who wins the game?", counter: "Counter pick"};
+  function switcherHTML(currentId){
+    return GAMES.map(g => {
+      const s = g.status(), cur = g.id === currentId;
+      const mark = s.done ? `<span class="pz-done" aria-label="done today">✓</span>` : s.started ? `<span class="pz-dot" aria-label="in progress"></span>` : "";
+      return `<a href="${g.href}"${cur ? ' aria-current="page"' : ""}>${esc(SHORT[g.id])}${mark}</a>`;
+    }).join("");
+  }
+  function mountSwitcher(){
+    document.querySelectorAll("[data-puzzles]").forEach(el => { el.innerHTML = switcherHTML(el.dataset.puzzles); });
+  }
+  mountSwitcher();
+  // keep the ticks current when a puzzle is finished on this page or in another tab
+  addEventListener("storage", mountSwitcher);
+  window.LaneLockGames = {GAMES, moreHTML, switcherHTML, refreshSwitcher: mountSwitcher, status: id => GAMES.find(g => g.id === id).status()};
 })();

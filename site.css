@@ -31,3 +31,15 @@ footer.site .links a{color:var(--blue,#4EA1DF);padding:6px 0;display:inline-bloc
 .moregames h3{font:700 22px/1.1 var(--cond,"Arial Narrow",sans-serif);margin:0 0 4px;color:var(--text,#E9EEF3)}
 .moregames .xgame{margin-top:10px}
 .moregames .alldone{margin:6px 0 0;color:var(--mute,#97A9BC);font-size:15px}
+
+/* puzzle switcher: all four puzzles at the top of each puzzle page */
+.puzzlebar{display:flex;gap:6px;margin:-6px 0 14px;padding:4px;background:var(--deck,#16283B);border:1px solid var(--rule,#2A4560);border-radius:12px}
+.puzzlebar a{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:6px 10px;border-radius:9px;
+  color:var(--mute,#97A9BC);text-decoration:none;font:600 16px/1.1 var(--cond,"Arial Narrow",sans-serif);text-align:center}
+.puzzlebar a:hover{color:var(--text,#E9EEF3);background:var(--deck2,#1C3249)}
+.puzzlebar a[aria-current="page"]{color:#1a1405;background:var(--gold,#E7B53C)}
+.puzzlebar .pz-done{color:var(--green,#4CC38A);font-weight:700}
+.puzzlebar a[aria-current="page"] .pz-done{color:#1a1405}
+.puzzlebar .pz-dot{width:7px;height:7px;border-radius:50%;background:var(--gold,#E7B53C)}
+.puzzlebar a[aria-current="page"] .pz-dot{background:#1a1405}
+@media (max-width:560px){.puzzlebar{display:grid;grid-template-columns:1fr 1fr}.puzzlebar a{min-height:44px;font-size:15px}}

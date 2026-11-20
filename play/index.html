@@ -314,6 +314,7 @@ button{cursor:pointer}
 <body>
 <div class="wrap">
   <nav class="site-nav" aria-label="Site"><a class="home" href="../">Lane<span>Lock</span></a><span class="links"><a href="../">Puzzles</a><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span></nav>
+  <nav class="puzzlebar" data-puzzles="draft" aria-label="Puzzles"></nav>
   <header class="top">
     <div>
       <h1 class="mark" id="title">Draft your counter</h1>
@@ -1292,6 +1293,7 @@ function announce(t){ const l = $("#live"); if (l) l.textContent = t; }
    RENDER
    ============================================================ */
 function render(fresh){
+  if (window.LaneLockGames) LaneLockGames.refreshSwitcher();
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
   const st = store.stats(S.mode), un = S.mode === "unlimited";
   const ds = store.dayStreak();
