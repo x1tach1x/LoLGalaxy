@@ -41,7 +41,8 @@
 .guess input{width:100%;font:500 18px var(--body);color:var(--text);background:var(--ink);border:2px solid var(--rule);border-radius:12px;padding:13px 14px;min-height:50px}
 .guess input:focus{outline:none;border-color:var(--gold)}
 .guess input::placeholder{color:var(--mute)}
-.sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;margin:0;padding:6px;list-style:none;max-height:300px;overflow:auto;background:var(--deck2);border:1px solid var(--rule);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.guess input{scroll-margin-top:10px}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;margin:0;padding:6px;list-style:none;max-height:min(300px,40vh);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;background:var(--deck2);border:1px solid var(--rule);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
 .sug[hidden]{display:none}
 .sug li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;cursor:pointer;min-height:44px}
 .sug li[aria-selected="true"],.sug li:hover{background:var(--deck)}
@@ -256,7 +257,12 @@ function showSug(){
 }
 function hideSug(){ const ul = $("#sug"), q = $("#q"); if (ul) ul.hidden = true; if (q) q.setAttribute("aria-expanded", "false"); }
 document.addEventListener("input", e => { if (e.target.id === "q") { S.sel = 0; showSug(); } });
-document.addEventListener("focusin", e => { if (e.target.id === "q") { S.sel = -1; showSug(); } });
+document.addEventListener("focusin", e => {
+  if (e.target.id !== "q") return;
+  S.sel = -1; showSug();
+  // on phones, bring the box to the top so the list has room above the keyboard
+  if (matchMedia("(max-width: 700px)").matches) setTimeout(() => e.target.scrollIntoView({block: "start", behavior: "smooth"}), 50);
+});
 document.addEventListener("keydown", e => {
   if (e.target.id !== "q") return;
   const list = suggestions(e.target.value);
@@ -265,11 +271,14 @@ document.addEventListener("keydown", e => {
   else if (e.key === "Enter") { e.preventDefault(); const n = list[S.sel >= 0 ? S.sel : 0]; if (n && (list.length === 1 || S.sel >= 0 || norm(n) === norm(e.target.value))) pick(n); }
   else if (e.key === "Escape") hideSug();
 });
-document.addEventListener("pointerdown", e => {
+// Pick on a finished tap or click (not on touch start), so swiping the list scrolls it instead of picking.
+document.addEventListener("click", e => {
   const li = e.target.closest("#sug li[data-name]");
-  if (li) { e.preventDefault(); pick(li.dataset.name); return; }
-  if (!e.target.closest(".guess")) hideSug();
+  if (li) pick(li.dataset.name);
 });
+// Keep the input focused when a mouse presses an option, and close the list on a tap elsewhere.
+document.addEventListener("mousedown", e => { if (e.target.closest("#sug")) e.preventDefault(); });
+document.addEventListener("pointerdown", e => { if (!e.target.closest(".guess")) hideSug(); });
 
 // ---------- end of game ----------
 let cdTimer = null;
