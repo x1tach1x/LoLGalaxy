@@ -190,6 +190,7 @@ button{cursor:pointer}
 .panel h3{font:600 22px/1.1 var(--cond);margin:0 0 10px}
 .panel.wide{grid-column:1/-1}
 .lr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--rule)}
+.lr > .chip{align-self:start;white-space:nowrap;margin-top:1px} /* stays pill-sized when the matchup title wraps */
 .lr:first-of-type{border-top:0;padding-top:0}
 .lr .mu{font:600 18px/1.2 var(--cond)}
 .lr .mu em{font-style:normal;color:var(--mute);font-weight:500}
@@ -1027,7 +1028,8 @@ function botDuo(mine, enemy, lanes){
   const dP = duoInfo(mine.adc, mine.support), dE = duoInfo(enemy.adc, enemy.support);
   const reasons = [];
   let score = 0.55*A.score + 0.45*Sp.score;
-  [...A.reasons, ...Sp.reasons].forEach(r => reasons.push({v:r.v*0.5, t:r.t}));
+  const seenWhy = new Set(); // the same note can come from both the ADC and support matchups; show it once
+  [...A.reasons, ...Sp.reasons].forEach(r => { if (!seenWhy.has(r.t)) { seenWhy.add(r.t); reasons.push({v:r.v*0.5, t:r.t}); } });
   score += dP.fit - dE.fit;
   dP.notes.forEach(n => reasons.push({v:n.v*1.5, t:"Your duo: "+n.t}));
   dE.notes.forEach(n => reasons.push({v:-n.v*1.5, t:"Their duo: "+n.t}));
