@@ -100,7 +100,7 @@ console.log(`Who wins the game?: ${games.length} games (${bands.map(b => b.lengt
 // For each lane and enemy: every champion played in that lane with enough games against the enemy,
 // ranked by win rate. The daily answer is the #1 counter.
 names.length = 0; index.clear();
-const MIN_GAMES = 800, MIN_OPTIONS = 12;   // 800+ games keeps each win rate within about ±1.8 points
+const MIN_GAMES = 800, MIN_OPTIONS = 10;   // 800+ games keeps each win rate within about ±1.8 points
 const counters = {};
 let pairs = 0;
 for (const role of ROLE_KEYS) {

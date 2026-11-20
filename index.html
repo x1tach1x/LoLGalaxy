@@ -148,7 +148,7 @@ a{color:var(--blue)}
       </a>
       <a class="game counter" href="counter/">
         <span class="ic target" aria-hidden="true"><span class="p" id="cpe"><b>?</b></span><span class="aim"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></span>
-        <span class="gt"><span class="gn">Counter pick</span><span class="gd">Find the best counter in six guesses.</span><span class="gx" id="counter-x"></span></span>
+        <span class="gt"><span class="gn">Counter pick</span><span class="gd">Counter five enemies, one per lane.</span><span class="gx" id="counter-x"></span></span>
         <span class="gs" id="counter-s"></span>
       </a>
     </nav>
@@ -311,10 +311,10 @@ if (STATS_API) fetch(`${STATS_API.replace(/\/$/,"")}/stats?date=${today}`).then(
 // Counter pick: today's enemy on its button
 const LANE_SHORT = {top:"top lane", jungle:"jungle", mid:"mid lane", adc:"bot lane", support:"support"};
 Promise.all([ddv, fetch("counter/data.json").then(r => r.json())]).then(([version, data]) => {
-  const pz = CounterDaily.daily(data, today), n = pz.enemy;
+  const pz = CounterDaily.daily(data, today)[0], n = pz.enemy;
   const img = version && data.champs[n] ? `<img src="https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${encodeURIComponent(data.champs[n][0])}.png" alt="" onerror="this.remove()">` : "";
   document.getElementById("cpe").innerHTML = `<b>${esc(initials(n))}</b>${img}`;
-  document.getElementById("counter-x").textContent = `Today: ${n}, ${LANE_SHORT[pz.role]}`;
+  document.getElementById("counter-x").textContent = `First up: ${n}, ${LANE_SHORT[pz.role]}`;
 }).catch(() => {});
 
 // Today's progress on each button, and the draft streak (same storage as the games)
@@ -336,10 +336,9 @@ try {
   else if (tn) set("teams-s", `${tn}/5`);
   else set("teams-s", `#${newNum}`);
   let c = null; try { c = JSON.parse(localStorage.getItem("cp:daily:" + today)); } catch(e) {}
-  const cn = c && Array.isArray(c.guesses) ? c.guesses.length : 0;
-  if (c && c.solved) set("counter-s", `${cn}/6 ✓`, "good");
-  else if (cn >= 6) set("counter-s", "X/6", "bad");
-  else if (cn) set("counter-s", `${cn}/6`);
+  const cn = c && Array.isArray(c.picks) ? c.picks.length : 0;
+  if (cn >= 5) set("counter-s", `${Math.max(0, Math.floor(Number(c.score) || 0))} ✓`, "good");
+  else if (cn) set("counter-s", `${cn}/5`);
   else set("counter-s", `#${newNum}`);
   const ds = JSON.parse(localStorage.getItem("leaguesim:dstreak") || "null") || {};
   const yesterday = new Date(Date.parse(today+"T00:00:00Z") - 864e5).toISOString().slice(0,10);

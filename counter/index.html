@@ -6,12 +6,12 @@
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Counter pick – LaneLock</title>
-<meta name="description" content="A League of Legends champion is locked in. Find the champion that counters it best in that lane, in six guesses. A new enemy every day.">
+<meta name="description" content="Five League of Legends enemies, one per lane. Pick the best counter to each and score points for how close you get to #1. New enemies every day.">
 <link rel="canonical" href="https://lanelock.net/counter/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LaneLock">
 <meta property="og:title" content="Counter pick">
-<meta property="og:description" content="The enemy is locked in. Find the best counter in six guesses.">
+<meta property="og:description" content="Five enemies, one per lane. Pick the best counters and score up to 500.">
 <meta property="og:url" content="https://lanelock.net/counter/">
 <meta property="og:image" content="https://lanelock.net/og.png">
 <meta property="og:image:width" content="1200">
@@ -52,39 +52,43 @@
 .mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .left{margin:10px 0 0;color:var(--mute);font-size:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .left b{color:var(--text)}
-/* guesses, newest first */
-.guesses{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
-.guesses li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 12px 8px 8px;border-radius:12px;background:var(--deck2);border:2px solid transparent}
-.guesses .who{display:flex;flex-direction:column;min-width:0}
-.guesses .gn{font:700 19px/1.1 var(--cond)}
-.guesses .gw{color:var(--soft);font-size:14px}
-.guesses .rk{text-align:right}
-.guesses .rk b{display:block;font:700 22px/1 var(--cond);font-variant-numeric:tabular-nums}
-.guesses .rk span{font:600 13px var(--cond);color:var(--mute)}
-.h1{border-color:var(--green)!important} .h1 .rk b{color:var(--green)}
-.h2{border-color:var(--gold)!important} .h2 .rk b{color:var(--gold)}
-.h3{border-color:#E8893A!important} .h3 .rk b{color:#F0A060}
-.h4 .rk b{color:var(--blue)}
-.h5 .rk b{color:var(--mute)}
-.guesses li.new{animation:pop .35s ease-out}
+/* the reveal after a pick */
+.pick{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin:14px 0 0;padding:10px 12px 10px 10px;border-radius:12px;background:var(--deck2);border:2px solid var(--rule)}
+.pick .who{display:flex;flex-direction:column;min-width:0}
+.pick .gn{font:700 21px/1.1 var(--cond)}
+.pick .gw{color:var(--soft);font-size:14px}
+.pick .pts{text-align:right}
+.pick .pts b{display:block;font:700 30px/1 var(--cond);font-variant-numeric:tabular-nums}
+.pick .pts span{font:600 13px var(--cond);color:var(--mute)}
+.p100{border-color:var(--green)} .p100 .pts b{color:var(--green)}
+.p75{border-color:var(--gold)} .p75 .pts b{color:var(--gold)}
+.p50{border-color:#E8893A} .p50 .pts b{color:#F0A060}
+.p25 .pts b{color:var(--blue)}
+.p0 .pts b{color:var(--mute)}
+.pick.new{animation:pop .35s ease-out}
 @keyframes pop{from{transform:scale(.96);opacity:.4}to{transform:none;opacity:1}}
-.legend{margin:12px 0 0;color:var(--mute);font-size:13px;line-height:1.6}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px}
-.legend i:first-child{margin-left:0}
-/* result */
-.top5{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
-.top5 li{display:grid;grid-template-columns:28px auto 1fr auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--rule);font-size:15px}
+.say{margin:10px 0 0;color:var(--soft)}
+.top5{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
+.top5 li{display:grid;grid-template-columns:30px auto 1fr auto;gap:10px;align-items:center;padding:5px 0;border-top:1px solid var(--rule);font-size:15px}
 .top5 .n{font:700 17px var(--cond);color:var(--mute)}
 .top5 .w{font:700 18px var(--cond)}
 .top5 .g{color:var(--mute);font-size:13px;text-align:right}
 .top5 li.you .w{color:var(--gold)}
+.top5 h3{font:700 18px var(--cond);margin:0}
+.rnext{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+@media (max-width:520px){.rnext .btn{width:100%}}
+.score b{color:var(--text);font-size:20px}
+.dots i.mid{background:#E8893A;border-color:#E8893A}
+/* final score */
+.recap li{grid-template-columns:60px 1fr auto}
+.recap .en{color:var(--text);font-weight:600}
+.recap .pt2{font:700 18px var(--cond);font-variant-numeric:tabular-nums;text-align:right}
 .src2{margin:10px 0 0;font-size:14px;color:var(--mute)}
 @media (max-width:520px){
   .enemy .pt{width:72px;height:72px}
   .enemy .nm{font-size:30px}
-  .guesses li{gap:10px}
 }
-@media (prefers-reduced-motion:reduce){.guesses li.new{animation:none}}
+@media (prefers-reduced-motion:reduce){.pick.new{animation:none}}
 </style>
 </head>
 <body>
@@ -93,12 +97,12 @@
 
   <header class="intro">
     <h1>Counter pick</h1>
-    <p>The enemy is locked in. Find the champion that beats them most often in this lane, in six guesses.</p>
+    <p>Five enemies, one per lane. Pick the champion you think counters each one best. The closer you are to the #1 counter, the more points you score.</p>
   </header>
 
   <div class="bar-top">
     <div class="seg" role="group" aria-label="Mode">
-      <button type="button" data-mode="daily">Daily</button>
+      <button type="button" data-mode="daily">Daily 5</button>
       <button type="button" data-mode="practice">Practice</button>
     </div>
     <div class="progress" id="progress"></div>
@@ -121,20 +125,15 @@
 "use strict";
 const CONFIG = {
   url: "https://lanelock.net/counter/",
-  fallbackDdragonVersion: "16.22.1",
-  maxGuesses: 6
+  fallbackDdragonVersion: "16.22.1"
 };
 const LANE = {top:"Top lane", jungle:"Jungle", mid:"Mid lane", adc:"Bot lane (ADC)", support:"Bot lane (support)"};
+const LANE_SHORT = {top:"Top", jungle:"Jungle", mid:"Mid", adc:"ADC", support:"Support"};
 const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
-// how close a guess is, by its rank among all counters
-const HEAT = [
-  {max: 1,  cls: "h1", word: "Best counter!", sq: "🟩"},
-  {max: 3,  cls: "h2", word: "Very close",    sq: "🟨"},
-  {max: 10, cls: "h3", word: "Warm",          sq: "🟧"},
-  {max: 20, cls: "h4", word: "Cool",          sq: "🟦"},
-  {max: 1e9,cls: "h5", word: "Cold",          sq: "⬛"}
-];
-const heatOf = rank => HEAT.find(h => rank <= h.max);
+const ROUNDS = CounterDaily.ROUNDS;
+// colour and share square by points
+const band = pts => pts >= 100 ? {cls:"p100", sq:"🟩", word:"Best counter!"} : pts >= 75 ? {cls:"p75", sq:"🟨", word:"Very close"}
+  : pts >= 50 ? {cls:"p50", sq:"🟧", word:"Good pick"} : pts >= 25 ? {cls:"p25", sq:"🟦", word:"Not bad"} : {cls:"p0", sq:"⬛", word:"Long way off"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -153,89 +152,104 @@ const clsOf = n => DATA.champs[n] ? DATA.champs[n][1] : "";
 const fmt = n => n.toLocaleString("en-US");
 const lolaSlug = n => ({"Nunu & Willump":"nunu","Renata Glasc":"renata"})[n] || n.toLowerCase().replace(/[^a-z]/g, "");
 
-// ---------- puzzles (the daily rotation lives in daily.js, shared with the homepage) ----------
+// ---------- state (the daily rounds live in daily.js, shared with the homepage) ----------
 let DATA = null;
-const dailyPuzzle = date => CounterDaily.daily(DATA, date);
-const practicePuzzle = () => CounterDaily.random(DATA);
+const S = {mode: "daily", date: todayStr(), rounds: [], picks: [], i: 0, revealed: false, sel: -1};
+const pointsOf = i => CounterDaily.points(S.rounds[i], S.picks[i]);
+const total = () => S.picks.reduce((t, n, i) => t + pointsOf(i), 0);
+const finished = () => S.picks.length >= ROUNDS && !S.revealed;
 
-// ---------- state ----------
-const S = {mode: "daily", date: todayStr(), pz: null, guesses: [], justAdded: null, sel: -1};
-const solved = () => S.guesses.some(n => S.pz.opts[0].name === n);
-const over = () => solved() || S.guesses.length >= CONFIG.maxGuesses;
-const optOf = n => S.pz.opts.find(o => o.name === n);
+function progressHTML(){
+  const dots = S.rounds.map((r, i) => `<i class="${i < S.picks.length ? (pointsOf(i) >= 75 ? "ok" : pointsOf(i) >= 50 ? "mid" : "no") : i === S.i ? "now" : ""}"></i>`).join("");
+  return `${S.mode === "daily" ? `<span>#${dailyNumber(S.date)}</span>` : ""}<span class="dots" aria-hidden="true">${dots}</span><span class="score">Score <b>${total()}</b></span>`;
+}
 
 function render(){
-  if (!DATA || !S.pz) return;
+  if (!DATA || !S.rounds.length) return;
   document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
-  const pz = S.pz, used = S.guesses.length;
-  $("#progress").innerHTML = S.mode === "daily" ? `<span>#${dailyNumber(S.date)}</span>` : `<button type="button" class="btn ghost" data-act="newenemy" style="padding:9px 16px;font-size:17px">New enemy</button>`;
-  const rows = S.guesses.slice().reverse().map(n => {
-    const o = optOf(n), h = heatOf(o.rank);
-    return `<li class="${h.cls}${n === S.justAdded ? " new" : ""}">${mini(n)}<span class="who"><span class="gn">${esc(n)}</span><span class="gw">${o.wr.toFixed(1)}% win rate vs ${esc(pz.enemy)}</span></span>
-      <span class="rk"><b>#${o.rank}</b><span>${h.word}</span></span></li>`;
-  }).join("");
-  const input = over() ? "" : `<div class="guess">
-      <label class="sr" for="q">Guess a counter</label>
-      <input id="q" type="text" autocomplete="off" spellcheck="false" placeholder="Type a champion…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sug">
-      <ul class="sug" id="sug" role="listbox" hidden></ul>
-    </div>
-    <p class="left"><span><b>${CONFIG.maxGuesses - used}</b> ${CONFIG.maxGuesses - used === 1 ? "guess" : "guesses"} left</span><span>${pz.opts.length} champions to choose from</span></p>`;
-  const legend = used ? `<p class="legend" aria-hidden="true"><i style="background:var(--green)"></i>#1 <i style="background:var(--gold)"></i>#2–3 <i style="background:#E8893A"></i>#4–10 <i style="background:var(--blue)"></i>#11–20 <i style="background:#46596E"></i>lower</p>` : "";
-  $("#game").innerHTML = `<section class="card" aria-label="Counter pick">
+  $("#progress").innerHTML = progressHTML();
+  if (finished()) { $("#game").innerHTML = doneHTML(); if (S.mode === "daily") startCountdown(); return; }
+  const pz = S.rounds[S.i], picked = S.revealed ? S.picks[S.i] : null;
+  let body;
+  if (!picked) {
+    body = `<p class="ask">Which champion has the <b>best win rate against ${esc(pz.enemy)}</b> in this lane?</p>
+      <div class="guess">
+        <label class="sr" for="q">Pick a counter</label>
+        <input id="q" type="text" autocomplete="off" spellcheck="false" placeholder="Type a champion…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sug">
+        <ul class="sug" id="sug" role="listbox" hidden></ul>
+      </div>
+      <p class="left"><span>One pick. Up to <b>100</b> points.</span><span>${pz.opts.length} champions to choose from</span></p>`;
+  } else {
+    const o = pz.opts.find(x => x.name === picked), best = pz.opts[0], pts = pointsOf(S.i), bd = band(pts), last = S.i === ROUNDS - 1;
+    const behind = o.rank === 1 ? `the best counter to ${pz.enemy}` : `the #${o.rank} counter, ${(best.wr - o.wr).toFixed(1)} points of win rate behind ${best.name}`;
+    const top = pz.opts.slice(0, 5).map(x => `<li class="${x.name === picked ? "you" : ""}"><span class="n">#${x.rank}</span>${mini(x.name)}<span class="w">${esc(x.name)}</span><span class="g">${x.wr.toFixed(1)}%<br>${fmt(x.games)} games</span></li>`).join("");
+    const lola = `https://lolalytics.com/lol/${lolaSlug(pz.enemy)}/counters/?lane=${LOLA_LANE[pz.role]}`;
+    body = `<div class="pick ${bd.cls} new">${mini(picked)}<span class="who"><span class="gn">${esc(picked)}</span><span class="gw">${o.wr.toFixed(1)}% vs ${esc(pz.enemy)}, #${o.rank} of ${pz.opts.length}</span></span>
+        <span class="pts"><b>+${pts}</b><span>${bd.word}</span></span></div>
+      <div class="rnext"><p class="say" style="margin:0">${esc(picked)} is ${esc(behind)}.</p>
+        <button type="button" class="btn" data-act="next">${last ? "See your score" : "Next round"}</button></div>
+      <ol class="top5" aria-label="Top 5 counters"><li style="grid-template-columns:1fr;border-top:0;padding-top:12px"><h3>Top 5 counters to ${esc(pz.enemy)}</h3></li>${top}</ol>
+      <p class="src2"><a href="${esc(lola)}" target="_blank" rel="noopener">All counters to ${esc(pz.enemy)} on LoLalytics</a></p>`;
+  }
+  $("#game").innerHTML = `<section class="card" aria-label="Round ${S.i + 1}">
+    <div class="lane"><h2>Round ${S.i + 1} of ${ROUNDS}</h2><span class="diff">${esc(LANE_SHORT[pz.role])}</span></div>
     <div class="enemy"><span class="pt"><b>${esc(initials(pz.enemy))}</b>${img(pz.enemy)}</span>
       <div><div class="lbl">${esc(LANE[pz.role])} enemy</div><div class="nm">${esc(pz.enemy)}</div><div class="cl">${esc(clsOf(pz.enemy))}</div></div></div>
-    <p class="ask">Which champion has the <b>best win rate against ${esc(pz.enemy)}</b> in this lane?</p>
-    ${input}<ol class="guesses" aria-label="Your guesses">${rows}</ol>${legend}</section>${over() ? resultHTML() : ""}`;
-  S.justAdded = null;
-  if (S.mode === "daily" && over()) startCountdown();
+    ${body}</section>`;
 }
 
-function resultHTML(){
-  const pz = S.pz, best = pz.opts[0], won = solved(), n = S.guesses.length;
-  const top = pz.opts.slice(0, 5).map(o => `<li class="${S.guesses.includes(o.name) ? "you" : ""}"><span class="n">#${o.rank}</span>${mini(o.name)}<span class="w">${esc(o.name)}</span>
-    <span class="g">${o.wr.toFixed(1)}%<br>${fmt(o.games)} games</span></li>`).join("");
-  const head = won ? `Found it in ${n}!` : "Out of guesses";
-  const sub = won ? `${best.name} is the best counter to ${pz.enemy}, winning ${best.wr.toFixed(1)}% of their games in this lane.`
-                  : `The best counter was ${best.name}, winning ${best.wr.toFixed(1)}% of their games against ${pz.enemy}.`;
-  const lola = `https://lolalytics.com/lol/${lolaSlug(pz.enemy)}/counters/?lane=${LOLA_LANE[pz.role]}`;
+function pick(name){
+  const pz = S.rounds[S.i];
+  if (S.revealed || S.picks.length > S.i || !pz.opts.some(o => o.name === name)) return;
+  S.picks.push(name); S.revealed = true;
+  if (S.mode === "daily") store.set("daily:" + S.date, {enemies: S.rounds.map(r => r.role + ":" + r.enemy), picks: S.picks, score: total()});
+  const pts = pointsOf(S.i), o = pz.opts.find(x => x.name === name);
+  $("#live").textContent = `${name}: number ${o.rank} of ${pz.opts.length}. ${pts} points. Best counter: ${pz.opts[0].name}.`;
+  render();
+  const btn = document.querySelector('[data-act="next"]'); if (btn) btn.focus({preventScroll: true});
+}
+function next(){
+  if (!S.revealed) return;
+  S.revealed = false;
+  if (S.picks.length < ROUNDS) S.i = S.picks.length;
+  render();
+  const f = document.querySelector("#q, .done h2"); if (f) f.focus({preventScroll: true});
+  window.scrollTo({top: Math.max(0, $(".bar-top").offsetTop - 10), behavior: "smooth"});
+}
+
+function doneHTML(){
+  const score = total(), max = ROUNDS * 100;
+  const msg = score >= 450 ? "Counter-pick master." : score >= 350 ? "You know your counters." : score >= 250 ? "Solid picks, with a few surprises." : "The counters had other plans today.";
+  const recap = S.rounds.map((r, i) => {
+    const n = S.picks[i], o = r.opts.find(x => x.name === n), pts = pointsOf(i);
+    return `<li><span class="ln">${esc(LANE_SHORT[r.role])}</span><span>vs <span class="en">${esc(r.enemy)}</span>: you picked ${esc(n)} (#${o.rank})${o.rank > 1 ? `, best was ${esc(r.opts[0].name)}` : ""}</span><span class="pt2">${pts}</span></li>`;
+  }).join("");
   const actions = S.mode === "daily"
     ? `<button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="practice">Practice</button>`
-    : `<button type="button" class="btn" data-act="newenemy">New enemy</button>`;
-  return `<section class="card done" style="margin-top:14px"><h2 tabindex="-1">${head}</h2><p class="sub">${esc(sub)}</p>
-    ${S.mode === "daily" ? `<div class="grid" aria-hidden="true">${gridText()}</div>` : ""}
+    : `<button type="button" class="btn" data-mode="practice">Play again</button>`;
+  return `<section class="card done"><h2 tabindex="-1">${score} / ${max}</h2><p class="sub">${msg}</p>
+    <div class="grid" aria-label="${score} of ${max} points">${gridText()}</div>
     <div class="actions">${actions}</div>
-    ${S.mode === "daily" ? `<p class="next">Next enemy in <b id="cd"></b></p>` : ""}
-    <h3 style="font:700 20px var(--cond);margin:18px 0 0">Top 5 counters to ${esc(pz.enemy)}</h3><ol class="top5">${top}</ol>
-    <p class="src2">${fmt(pz.opts.length)} champions with ${fmt(DATA.minGames)}+ ranked games against ${esc(pz.enemy)}. <a href="${esc(lola)}" target="_blank" rel="noopener">All counters on LoLalytics</a></p>
+    ${S.mode === "daily" ? `<p class="next">Next enemies in <b id="cd"></b></p>` : ""}
+    <ol class="recap">${recap}</ol>
+    <p class="src2">Points: 100 for the best counter. Below that you get 10 fewer per place, or 20 fewer per point of win rate behind #1, whichever is better. Counters need ${fmt(DATA.minGames)}+ ranked games against the enemy.</p>
     ${S.mode === "daily" ? LaneLockGames.moreHTML("counter") : ""}</section>`;
 }
-const gridText = () => S.guesses.map(n => heatOf(optOf(n).rank).sq).join("");
+const gridText = () => S.picks.map((n, i) => band(pointsOf(i)).sq).join("");
 
-function guess(name){
-  if (over() || !optOf(name) || S.guesses.includes(name)) return;
-  S.guesses.push(name); S.justAdded = name;
-  if (S.mode === "daily") store.set("daily:" + S.date, {enemy: S.pz.enemy, role: S.pz.role, guesses: S.guesses, solved: solved()});
-  const o = optOf(name);
-  $("#live").textContent = `${name}: number ${o.rank} of ${S.pz.opts.length}, ${o.wr.toFixed(1)} percent. ${heatOf(o.rank).word}`;
-  render();
-  if (over()) { const h = document.querySelector(".done h2"); if (h) { h.focus({preventScroll: true}); h.scrollIntoView({behavior: "smooth", block: "start"}); } }
-  else { const q = $("#q"); if (q) q.focus(); }
-}
-
-// ---------- the guess box (combobox with suggestions) ----------
+// ---------- the pick box (combobox with suggestions) ----------
 const norm = s => s.toLowerCase().replace(/[^a-z]/g, "");
 function suggestions(text){
-  const t = norm(text);
-  return S.pz.opts.map(o => o.name).filter(n => !S.guesses.includes(n))
-    .filter(n => !t || norm(n).includes(t))
+  const t = norm(text), pz = S.rounds[S.i];
+  return pz.opts.map(o => o.name).filter(n => !t || norm(n).includes(t))
     .sort((a, b) => (t ? (norm(b).startsWith(t) - norm(a).startsWith(t)) : 0) || a.localeCompare(b));
 }
 function showSug(){
   const q = $("#q"), ul = $("#sug"); if (!q) return;
   const list = suggestions(q.value);
-  S.sel = list.length ? Math.max(0, Math.min(S.sel, list.length - 1)) : -1;
+  S.sel = list.length ? Math.max(-1, Math.min(S.sel, list.length - 1)) : -1;
   ul.innerHTML = list.length ? list.map((n, i) => `<li role="option" id="opt-${i}" data-name="${esc(n)}" aria-selected="${i === S.sel}">${mini(n)}<span>${esc(n)}</span><span class="cl">${esc(clsOf(n))}</span></li>`).join("")
-    : `<li class="none" role="option" aria-disabled="true">No match among the ${S.pz.opts.length} champions with enough games.</li>`;
+    : `<li class="none" role="option" aria-disabled="true">No match among the ${S.rounds[S.i].opts.length} champions with enough games.</li>`;
   ul.hidden = false; q.setAttribute("aria-expanded", "true");
   if (S.sel >= 0) q.setAttribute("aria-activedescendant", "opt-" + S.sel); else q.removeAttribute("aria-activedescendant");
   const cur = ul.querySelector('[aria-selected="true"]'); if (cur) cur.scrollIntoView({block: "nearest"});
@@ -248,12 +262,12 @@ document.addEventListener("keydown", e => {
   const list = suggestions(e.target.value);
   if (e.key === "ArrowDown") { e.preventDefault(); S.sel = Math.min(S.sel + 1, list.length - 1); showSug(); }
   else if (e.key === "ArrowUp") { e.preventDefault(); S.sel = Math.max(S.sel - 1, 0); showSug(); }
-  else if (e.key === "Enter") { e.preventDefault(); const n = list[S.sel >= 0 ? S.sel : 0]; if (n && (list.length === 1 || S.sel >= 0 || norm(n) === norm(e.target.value))) guess(n); }
+  else if (e.key === "Enter") { e.preventDefault(); const n = list[S.sel >= 0 ? S.sel : 0]; if (n && (list.length === 1 || S.sel >= 0 || norm(n) === norm(e.target.value))) pick(n); }
   else if (e.key === "Escape") hideSug();
 });
 document.addEventListener("pointerdown", e => {
   const li = e.target.closest("#sug li[data-name]");
-  if (li) { e.preventDefault(); guess(li.dataset.name); return; }
+  if (li) { e.preventDefault(); pick(li.dataset.name); return; }
   if (!e.target.closest(".guess")) hideSug();
 });
 
@@ -264,16 +278,13 @@ function startCountdown(){
   const tick = () => {
     const el = $("#cd"); if (!el) return clearInterval(cdTimer);
     const now = new Date(), ms = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now;
-    if (ms <= 1000) { clearInterval(cdTimer); el.parentNode.innerHTML = `A new enemy is ready. <a href="./">Play it</a>`; return; }
+    if (ms <= 1000) { clearInterval(cdTimer); el.parentNode.innerHTML = `New enemies are ready. <a href="./">Play</a>`; return; }
     const s = Math.floor(ms / 1000);
     el.textContent = `${Math.floor(s/3600)}:${String(Math.floor(s/60)%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
   };
   tick(); cdTimer = setInterval(tick, 1000);
 }
-function shareText(){
-  const n = solved() ? S.guesses.length : "X";
-  return `Counter pick #${dailyNumber(S.date)} ${n}/${CONFIG.maxGuesses}\n${gridText()}\n${CONFIG.url}`;
-}
+const shareText = () => `Counter pick #${dailyNumber(S.date)} ${total()}/${ROUNDS * 100}\n${gridText()}\n${CONFIG.url}`;
 async function share(){
   const text = shareText();
   if (navigator.share && matchMedia("(pointer: coarse)").matches) { try { await navigator.share({text}); return; } catch(e){ if (e && e.name === "AbortError") return; } }
@@ -285,21 +296,23 @@ function toast(html, ms = 2600){ const t = $("#toast"); t.innerHTML = html; t.hi
 
 function start(mode){
   clearInterval(cdTimer);
-  S.mode = mode; S.sel = -1;
+  S.mode = mode; S.sel = -1; S.revealed = false;
   if (mode === "daily") {
-    S.date = todayStr(); S.pz = dailyPuzzle(S.date);
-    const saved = store.get("daily:" + S.date, {});
-    S.guesses = saved.enemy === S.pz.enemy && Array.isArray(saved.guesses) ? saved.guesses.filter(n => optOf(n)).slice(0, CONFIG.maxGuesses) : [];
+    S.date = todayStr(); S.rounds = CounterDaily.daily(DATA, S.date);
+    const saved = store.get("daily:" + S.date, {}), key = S.rounds.map(r => r.role + ":" + r.enemy).join();
+    const ok = Array.isArray(saved.picks) && Array.isArray(saved.enemies) && saved.enemies.join() === key;
+    S.picks = ok ? saved.picks.filter((n, i) => S.rounds[i] && S.rounds[i].opts.some(o => o.name === n)).slice(0, ROUNDS) : [];
   } else {
-    S.pz = practicePuzzle(); S.guesses = [];
+    S.rounds = CounterDaily.random(DATA); S.picks = [];
   }
+  S.i = Math.min(S.picks.length, ROUNDS - 1);
   render();
 }
 document.addEventListener("click", e => {
   const m = e.target.closest("[data-mode]"); if (m) return start(m.dataset.mode);
   const act = e.target.closest("[data-act]"); if (!act) return;
   if (act.dataset.act === "share") share();
-  else if (act.dataset.act === "newenemy") start("practice");
+  else if (act.dataset.act === "next") next();
 });
 
 fetch("data.json").then(r => r.json()).then(d => {
