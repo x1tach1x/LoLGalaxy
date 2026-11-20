@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LaneLock">
 <meta property="og:title" content="LaneLock: daily League of Legends puzzles">
-<meta property="og:description" content="Counter-draft today's enemy team, and call the winners of ten lane matchups. New puzzles every day.">
+<meta property="og:description" content="Counter-draft today's enemy team, and call the winners of five lane matchups. New puzzles every day.">
 <meta property="og:url" content="https://lanelock.net/">
 <meta property="og:image" content="https://lanelock.net/og.png">
 <meta property="og:image:width" content="1200">
@@ -138,7 +138,7 @@ a{color:var(--blue)}
       </a>
       <a class="game wwl" href="matchups/">
         <span class="ic duo" aria-hidden="true"><span class="p l" id="qa"><b>?</b></span><span class="p r" id="qb"><b>?</b></span><span class="vs">VS</span></span>
-        <span class="gt"><span class="gn">Who wins the lane?</span><span class="gd">Pick the winner of ten matchups.</span><span class="gx" id="quiz-x"></span></span>
+        <span class="gt"><span class="gn">Who wins the lane?</span><span class="gd">Pick the winner in all five lanes.</span><span class="gx" id="quiz-x"></span></span>
         <span class="gs" id="quiz-s"></span>
       </a>
       <a class="game teams" href="teams/">
@@ -325,9 +325,9 @@ try {
   if (daily && daily.date === today && typeof daily.win === "boolean") set("draft-s", daily.win ? "Won ✓" : "Lost", daily.win ? "good" : "bad");
   else set("draft-s", `#${dayNum}`);
   let q = null; try { q = JSON.parse(localStorage.getItem("wwl:daily:" + today)); } catch(e) {}
-  const answered = q && Array.isArray(q.answers) ? q.answers.length : 0;
-  if (answered >= 10) set("quiz-s", `${q.answers.filter(Boolean).length}/10 ✓`, "good");
-  else if (answered) set("quiz-s", `${answered}/10`);
+  const answered = q && q.n === 5 && Array.isArray(q.answers) ? q.answers.length : 0;
+  if (answered >= 5) set("quiz-s", `${q.answers.filter(Boolean).length}/5 ✓`, "good");
+  else if (answered) set("quiz-s", `${answered}/5`);
   else set("quiz-s", `#${quizNum}`);
   const newNum = CounterDaily.dailyNumber(today); // both new games launched the same day
   let t = null; try { t = JSON.parse(localStorage.getItem("wwg:daily:" + today)); } catch(e) {}

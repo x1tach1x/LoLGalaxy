@@ -5,12 +5,12 @@
   function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   // q: {role, a, b, wrA, games, band, flip}  (flip puts b on the left)
   function toQ(row, rng){ const [role, a, b, wrA, games, band] = row; return {role, a, b, wrA, games, band, flip: rng() < 0.5}; }
-  // 10 questions: 3 easy, 4 medium, 3 hard, two per lane, no champion twice
+  // 5 questions, one per lane (lane order shuffled daily): 2 easy, 2 medium, 1 hard, no champion twice
   function dailyQuestions(data, date){
     const rng = mulberry32(hashStr("matchups:" + date));
-    const lanes = ["top","jungle","mid","adc","support","top","jungle","mid","adc","support"];
+    const lanes = ["top","jungle","mid","adc","support"];
     for (let i = lanes.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [lanes[i], lanes[j]] = [lanes[j], lanes[i]]; }
-    const bands = [0,0,0,1,1,1,1,2,2,2], used = new Set(), out = [];
+    const bands = [0,0,1,1,2], used = new Set(), out = [];
     bands.forEach((band, i) => {
       const fits = r => r[5] === band && !used.has(r[1]) && !used.has(r[2]);
       let pool = data.q.filter(r => r[0] === lanes[i] && fits(r));
@@ -22,5 +22,6 @@
     });
     return out;
   }
-  window.WWL = {dailyQuestions, toQ};
+  // saved results record how many questions the set had, so older 10-question results aren't mixed in
+  window.WWL = {dailyQuestions, toQ, COUNT: 5};
 })();

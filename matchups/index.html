@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Who wins the lane? – LaneLock</title>
-<meta name="description" content="Two League of Legends champions, one lane: pick the one that wins the matchup more often. Ten new matchups every day, or go for an endless streak.">
+<meta name="description" content="Two League of Legends champions, one lane: pick the one that wins the matchup more often. Five new matchups every day, one per lane, or go for an endless streak.">
 <link rel="canonical" href="https://lanelock.net/matchups/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LaneLock">
@@ -41,7 +41,7 @@
 
   <div class="bar-top">
     <div class="seg" role="group" aria-label="Mode">
-      <button type="button" data-mode="daily">Daily 10</button>
+      <button type="button" data-mode="daily">Daily 5</button>
       <button type="button" data-mode="endless">Endless</button>
     </div>
     <div class="progress" id="progress"></div>
@@ -169,7 +169,8 @@ function answer(side){
   S.answered = true; S.picked = name;
   if (S.mode === "daily") {
     S.answers.push(ok);
-    store.set("daily:" + S.date, {answers: S.answers, picks: [...(store.get("daily:" + S.date, {}).picks || []), name]});
+    const prev = store.get("daily:" + S.date, {});
+    store.set("daily:" + S.date, {n: WWL.COUNT, answers: S.answers, picks: [...(prev.n === WWL.COUNT && Array.isArray(prev.picks) ? prev.picks : []), name]});
   } else if (ok) {
     S.streak++;
     if (S.streak > int(store.get("best", 0))) store.set("best", S.streak);
@@ -193,11 +194,11 @@ function next(){
 
 function gridText(){ return S.answers.map(a => a ? "🟩" : "🟥").join(""); }
 function dailyDone(){
-  const score = S.answers.filter(Boolean).length, msg = score === 10 ? "Perfect lane knowledge." : score >= 8 ? "You know your matchups." : score >= 5 ? "Solid, with a few surprises." : "The lanes had other plans today.";
+  const score = S.answers.filter(Boolean).length, msg = score === 5 ? "Perfect lane knowledge." : score === 4 ? "You know your matchups." : score === 3 ? "Solid, with a surprise or two." : "The lanes had other plans today.";
   const recap = S.qs.map((q, i) => `<li><span class="mk ${S.answers[i] ? "ok" : "no"}">${S.answers[i] ? "✓" : "✗"}</span><span class="ln">${LANE_SHORT[q.role]}</span>
     <span><span class="w">${esc(winnerOf(q))}</span> beats ${esc(winnerOf(q) === q.a ? q.b : q.a)}</span><span>${Math.max(q.wrA, 100 - q.wrA).toFixed(1)}%</span></li>`).join("");
-  return `<section class="card done"><h2 tabindex="-1">${score} / 10</h2><p class="sub">${msg}</p>
-    <div class="grid" aria-label="${score} of 10 correct">${gridText()}</div>
+  return `<section class="card done"><h2 tabindex="-1">${score} / ${S.qs.length}</h2><p class="sub">${msg}</p>
+    <div class="grid" aria-label="${score} of ${S.qs.length} correct">${gridText()}</div>
     <div class="actions"><button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="endless">Try endless</button></div>${LaneLockGames.moreHTML("matchups")}
     <p class="next">Next daily set in <b id="cd"></b></p>
     <ol class="recap">${recap}</ol></section>`;
@@ -222,7 +223,7 @@ function startCountdown(){
 }
 
 function shareText(){
-  if (S.mode === "daily") return `Who wins the lane? #${dailyNumber(S.date)} ${S.answers.filter(Boolean).length}/10\n${gridText()}\n${CONFIG.url}`;
+  if (S.mode === "daily") return `Who wins the lane? #${dailyNumber(S.date)} ${S.answers.filter(Boolean).length}/${S.qs.length}\n${gridText()}\n${CONFIG.url}`;
   return `Who wins the lane? Endless streak: ${S.streak}${S.streak >= 5 ? " 🔥" : ""}\n${CONFIG.url}`;
 }
 async function share(){
@@ -240,7 +241,7 @@ function start(mode){
   if (mode === "daily") {
     S.date = todayStr(); S.qs = WWL.dailyQuestions(DATA, S.date);
     const saved = store.get("daily:" + S.date, {});
-    S.answers = Array.isArray(saved.answers) ? saved.answers.slice(0, 10).map(Boolean) : [];
+    S.answers = saved.n === WWL.COUNT && Array.isArray(saved.answers) ? saved.answers.slice(0, S.qs.length).map(Boolean) : [];
     S.i = Math.min(S.answers.length, S.qs.length - 1);
   } else {
     S.streak = 0; S.seen = new Set(); S.qs = [endlessQuestion(0, S.seen)]; S.i = 0;
