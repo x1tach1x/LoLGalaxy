@@ -28,16 +28,24 @@
     if (!left.length) return `<section class="moregames" aria-label="More daily puzzles"><h3>That's every puzzle for today</h3>`
       + `<p class="alldone">You've played all of LaneLock's daily puzzles. New ones start at midnight UTC.</p></section>`;
     return `<section class="moregames" aria-label="More daily puzzles"><h3>Still to play today</h3>${left.map(({g, s}) =>
-      `<a class="xgame" href="${g.href}"><span class="xg-t">${esc(g.name)}</span><span class="xg-d">${esc(g.desc)}</span>`
+      `<a class="xgame" href="${g.href}"><span class="xg-t">${ICON[g.id]}${esc(g.name)}</span><span class="xg-d">${esc(g.desc)}</span>`
       + `<span class="xg-s">${esc(s.text)}</span><span class="xg-go">${s.started ? "Keep going" : "Play"}</span></a>`).join("")}</section>`;
   }
+  // Small icons matching the homepage buttons (each has a dark outline so it reads on gold too).
+  const ICON = {
+    draft: `<svg class="pz-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E7B53C" stroke="#0F1D2C" stroke-width="1.5"/><path d="M9 11V9.2a3 3 0 0 1 6 0V11" fill="none" stroke="#1a1405" stroke-width="1.8" stroke-linecap="round"/><rect x="7.6" y="10.6" width="8.8" height="6.6" rx="1.6" fill="#1a1405"/></svg>`,
+    matchups: `<svg class="pz-ic" viewBox="0 0 30 24" aria-hidden="true"><circle cx="9.5" cy="12" r="8" fill="#1C3249" stroke="#4EA1DF" stroke-width="2.4"/><circle cx="20.5" cy="12" r="8" fill="#1C3249" stroke="#E35B4F" stroke-width="2.4"/></svg>`,
+    teams: `<svg class="pz-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a11 11 0 0 0 0 22z" fill="#4EA1DF"/><path d="M12 1a11 11 0 0 1 0 22z" fill="#E35B4F"/><circle cx="12" cy="12" r="11" fill="none" stroke="#0F1D2C" stroke-width="1.5"/></svg>`,
+    counter: `<svg class="pz-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E7B53C" stroke="#0F1D2C" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="none" stroke="#1a1405" stroke-width="2"/><path d="M12 4.5v4M12 15.5v4M4.5 12h4M15.5 12h4" stroke="#1a1405" stroke-width="2" stroke-linecap="round"/></svg>`
+  };
+
   // A row of all four puzzles at the top of each puzzle page, so you can switch at any point.
   const SHORT = {draft: "Draft", matchups: "Who wins the lane?", teams: "Who wins the game?", counter: "Counter pick"};
   function switcherHTML(currentId){
     return GAMES.map(g => {
       const s = g.status(), cur = g.id === currentId;
       const mark = s.done ? `<span class="pz-done" aria-label="done today">✓</span>` : s.started ? `<span class="pz-dot" aria-label="in progress"></span>` : "";
-      return `<a href="${g.href}"${cur ? ' aria-current="page"' : ""}>${esc(SHORT[g.id])}${mark}</a>`;
+      return `<a href="${g.href}"${cur ? ' aria-current="page"' : ""}>${ICON[g.id]}<span>${esc(SHORT[g.id])}</span>${mark}</a>`;
     }).join("");
   }
   function mountSwitcher(){
@@ -46,5 +54,5 @@
   mountSwitcher();
   // keep the ticks current when a puzzle is finished on this page or in another tab
   addEventListener("storage", mountSwitcher);
-  window.LaneLockGames = {GAMES, moreHTML, switcherHTML, refreshSwitcher: mountSwitcher, status: id => GAMES.find(g => g.id === id).status()};
+  window.LaneLockGames = {GAMES, ICON, moreHTML, switcherHTML, refreshSwitcher: mountSwitcher, status: id => GAMES.find(g => g.id === id).status()};
 })();
