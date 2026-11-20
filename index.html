@@ -87,6 +87,19 @@ a{color:var(--blue)}
 .duo .p img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .duo .l{left:0;border-color:var(--blue)} .duo .r{right:0;border-color:var(--red)}
 .duo .vs{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);background:var(--gold);color:#1a1405;font:700 12px/1 var(--cond);padding:3px 6px;border-radius:999px;letter-spacing:.5px}
+.game.teams{background:linear-gradient(100deg,rgba(78,161,223,.18),rgba(22,40,59,.92) 40%,rgba(22,40,59,.92) 60%,rgba(227,91,79,.22))}
+.game.counter{background:linear-gradient(100deg,rgba(227,91,79,.20),rgba(22,40,59,.92) 45%,rgba(22,40,59,.92) 70%,rgba(231,181,60,.14))}
+/* Who wins the game?: a blue-and-red 5v5 badge */
+.vs5{width:80px;display:grid;place-items:center}
+.vs5 span{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font:700 21px/1 var(--cond);color:#fff;letter-spacing:.3px;
+  background:linear-gradient(90deg,var(--blue) 50%,var(--red) 50%);box-shadow:inset 0 0 0 3px rgba(15,29,44,.35)}
+/* Counter pick: today's enemy in the crosshair */
+.target{position:relative;width:80px}
+.target .p{position:absolute;left:8px;top:2px;width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--deck2);display:grid;place-items:center;border:3px solid var(--red)}
+.target .p b{font:700 18px var(--cond);color:var(--mute)}
+.target .p img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.target .aim{position:absolute;right:2px;bottom:0;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#1a1405;display:grid;place-items:center;box-shadow:0 0 0 2px var(--ink)}
+.target .aim svg{width:18px;height:18px}
 .gt{display:flex;flex-direction:column;min-width:0}
 .gn{font:700 27px/1.05 var(--cond)}
 .gd{color:#C9D4DF;font-size:15px;line-height:1.35;margin-top:3px}
@@ -94,7 +107,7 @@ a{color:var(--blue)}
 .gx:empty{display:none}
 .gs{font:700 17px var(--cond);color:var(--mute);text-align:right;white-space:nowrap}
 .gs.good{color:#4CC38A} .gs.bad{color:#F07A6E}
-@media (max-width:420px){.game{gap:12px;padding:14px 14px 14px 12px}.ic{width:54px;height:54px}.duo,.team{width:70px;height:56px}.duo .p{width:44px;height:44px}.gn{font-size:24px}.gd{font-size:14px}}
+@media (max-width:420px){.game{gap:12px;padding:14px 14px 14px 12px}.ic{width:54px;height:54px}.duo,.team,.vs5,.target{width:70px;height:56px}.vs5 span{width:52px;height:52px;font-size:18px}.target .p{width:48px;height:48px;left:6px}.duo .p{width:44px;height:44px}.gn{font-size:24px}.gd{font-size:14px}}
 @media (prefers-reduced-motion:reduce){.game{transition:none}.game:hover{transform:none}}
 .also{margin:20px 0 0;color:var(--mute);font-size:15px}
 .next{margin:14px 0 0;color:var(--mute);font-size:15px}
@@ -128,9 +141,19 @@ a{color:var(--blue)}
         <span class="gt"><span class="gn">Who wins the lane?</span><span class="gd">Pick the winner of ten matchups.</span><span class="gx" id="quiz-x"></span></span>
         <span class="gs" id="quiz-s"></span>
       </a>
+      <a class="game teams" href="teams/">
+        <span class="ic vs5" aria-hidden="true"><span>5v5</span></span>
+        <span class="gt"><span class="gn">Who wins the game?</span><span class="gd">Two full teams. Pick the winner.</span><span class="gx">Five games, easy to hard</span></span>
+        <span class="gs" id="teams-s"></span>
+      </a>
+      <a class="game counter" href="counter/">
+        <span class="ic target" aria-hidden="true"><span class="p" id="cpe"><b>?</b></span><span class="aim"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></span>
+        <span class="gt"><span class="gn">Counter pick</span><span class="gd">Find the best counter in six guesses.</span><span class="gx" id="counter-x"></span></span>
+        <span class="gs" id="counter-s"></span>
+      </a>
     </nav>
 
-    <p class="also">Still want more? Play an <a href="play/?mode=unlimited">unlimited draft</a> or an <a href="matchups/?mode=endless">endless matchup streak</a>.</p>
+    <p class="also">Played them all? Each game has an unlimited mode for more.</p>
     <p class="next">New games in <b id="next"></b></p>
     <p class="me" id="me"></p>
     <p class="comm" id="comm" hidden></p>
@@ -150,6 +173,7 @@ a{color:var(--blue)}
 </main>
 
 <script src="matchups/daily.js"></script>
+<script src="counter/daily.js"></script>
 <script>
 /* Today's daily enemy team. This must match LaneLock exactly, so the tiers,
    weights, seed and pick order below are copied from play/index.html.
@@ -284,6 +308,15 @@ if (STATS_API) fetch(`${STATS_API.replace(/\/$/,"")}/stats?date=${today}`).then(
   el.hidden = false;
 }).catch(() => {});
 
+// Counter pick: today's enemy on its button
+const LANE_SHORT = {top:"top lane", jungle:"jungle", mid:"mid lane", adc:"bot lane", support:"support"};
+Promise.all([ddv, fetch("counter/data.json").then(r => r.json())]).then(([version, data]) => {
+  const pz = CounterDaily.daily(data, today), n = pz.enemy;
+  const img = version && data.champs[n] ? `<img src="https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${encodeURIComponent(data.champs[n][0])}.png" alt="" onerror="this.remove()">` : "";
+  document.getElementById("cpe").innerHTML = `<b>${esc(initials(n))}</b>${img}`;
+  document.getElementById("counter-x").textContent = `Today: ${n}, ${LANE_SHORT[pz.role]}`;
+}).catch(() => {});
+
 // Today's progress on each button, and the draft streak (same storage as the games)
 try {
   const n = x => Math.max(0, Math.floor(Number(x) || 0));
@@ -296,6 +329,18 @@ try {
   if (answered >= 10) set("quiz-s", `${q.answers.filter(Boolean).length}/10 ✓`, "good");
   else if (answered) set("quiz-s", `${answered}/10`);
   else set("quiz-s", `#${quizNum}`);
+  const newNum = CounterDaily.dailyNumber(today); // both new games launched the same day
+  let t = null; try { t = JSON.parse(localStorage.getItem("wwg:daily:" + today)); } catch(e) {}
+  const tn = t && Array.isArray(t.answers) ? t.answers.length : 0;
+  if (tn >= 5) set("teams-s", `${t.answers.filter(Boolean).length}/5 ✓`, "good");
+  else if (tn) set("teams-s", `${tn}/5`);
+  else set("teams-s", `#${newNum}`);
+  let c = null; try { c = JSON.parse(localStorage.getItem("cp:daily:" + today)); } catch(e) {}
+  const cn = c && Array.isArray(c.guesses) ? c.guesses.length : 0;
+  if (c && c.solved) set("counter-s", `${cn}/6 ✓`, "good");
+  else if (cn >= 6) set("counter-s", "X/6", "bad");
+  else if (cn) set("counter-s", `${cn}/6`);
+  else set("counter-s", `#${newNum}`);
   const ds = JSON.parse(localStorage.getItem("leaguesim:dstreak") || "null") || {};
   const yesterday = new Date(Date.parse(today+"T00:00:00Z") - 864e5).toISOString().slice(0,10);
   const days = (ds.last === today || ds.last === yesterday) ? n(ds.cur) : 0;

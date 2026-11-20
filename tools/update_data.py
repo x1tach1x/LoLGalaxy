@@ -101,6 +101,8 @@ if __name__ == "__main__":
         sync_tiers()
         import subprocess  # the "Who wins the lane?" quiz is built from the same table
         subprocess.run([sys.executable, str(Path(__file__).with_name("build_matchups_game.py"))], check=True)
+        # "Who wins the game?" and "Counter pick" use the Draft's model and the same table (needs Node)
+        subprocess.run(["node", str(Path(__file__).with_name("build_new_games.mjs"))], check=True)
     elif a.sync_tiers:
         sync_tiers()
     sys.exit(0 if check() else 1)

@@ -27,3 +27,6 @@ footer.site .links a{color:var(--blue,#4EA1DF);padding:6px 0;display:inline-bloc
 .xgame .xg-s.done{color:var(--green,#4CC38A)}
 .xgame .xg-go{grid-column:2;grid-row:1 / span 3;background:var(--gold,#E7B53C);color:#1a1405;border-radius:999px;padding:11px 20px;font:700 18px/1 var(--cond,"Arial Narrow",sans-serif);white-space:nowrap}
 .xgame.played .xg-go{background:none;border:1px solid var(--rule,#2A4560);color:var(--text,#E9EEF3)}
+.moregames{margin:22px 0 0;max-width:560px}
+.moregames h3{font:700 22px/1.1 var(--cond,"Arial Narrow",sans-serif);margin:0 0 4px;color:var(--text,#E9EEF3)}
+.moregames .xgame{margin-top:10px}

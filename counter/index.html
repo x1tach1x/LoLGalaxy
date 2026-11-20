@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Counter pick – LaneLock</title>
+<meta name="description" content="A League of Legends champion is locked in. Find the champion that counters it best in that lane, in six guesses. A new enemy every day.">
+<link rel="canonical" href="https://lanelock.net/counter/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LaneLock">
+<meta property="og:title" content="Counter pick">
+<meta property="og:description" content="The enemy is locked in. Find the best counter in six guesses.">
+<meta property="og:url" content="https://lanelock.net/counter/">
+<meta property="og:image" content="https://lanelock.net/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F1D2C">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663278305650835" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../quiz.css">
+<link rel="stylesheet" href="../site.css">
+<style>
+.enemy{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.enemy .pt{width:88px;height:88px;border-radius:50%;border:3px solid var(--red)}
+.enemy .lbl{font:600 15px var(--cond);color:var(--red-text)}
+.enemy .nm{font:700 34px/1 var(--cond);margin:2px 0}
+.enemy .cl{color:var(--mute);font-size:14px}
+.ask{margin:14px 0 12px;color:var(--soft)}
+.ask b{color:var(--text)}
+/* guess box */
+.guess{position:relative}
+.guess input{width:100%;font:500 18px var(--body);color:var(--text);background:var(--ink);border:2px solid var(--rule);border-radius:12px;padding:13px 14px;min-height:50px}
+.guess input:focus{outline:none;border-color:var(--gold)}
+.guess input::placeholder{color:var(--mute)}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;margin:0;padding:6px;list-style:none;max-height:300px;overflow:auto;background:var(--deck2);border:1px solid var(--rule);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.sug[hidden]{display:none}
+.sug li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;cursor:pointer;min-height:44px}
+.sug li[aria-selected="true"],.sug li:hover{background:var(--deck)}
+.sug .cl{margin-left:auto;color:var(--mute);font-size:13px}
+.sug .none{color:var(--mute);cursor:default}
+.mini{position:relative;flex:none;width:34px;height:34px;border-radius:8px;overflow:hidden;background:var(--ink);display:grid;place-items:center}
+.mini b{font:700 13px var(--cond);color:var(--mute)}
+.mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.left{margin:10px 0 0;color:var(--mute);font-size:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.left b{color:var(--text)}
+/* guesses, newest first */
+.guesses{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.guesses li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 12px 8px 8px;border-radius:12px;background:var(--deck2);border:2px solid transparent}
+.guesses .who{display:flex;flex-direction:column;min-width:0}
+.guesses .gn{font:700 19px/1.1 var(--cond)}
+.guesses .gw{color:var(--soft);font-size:14px}
+.guesses .rk{text-align:right}
+.guesses .rk b{display:block;font:700 22px/1 var(--cond);font-variant-numeric:tabular-nums}
+.guesses .rk span{font:600 13px var(--cond);color:var(--mute)}
+.h1{border-color:var(--green)!important} .h1 .rk b{color:var(--green)}
+.h2{border-color:var(--gold)!important} .h2 .rk b{color:var(--gold)}
+.h3{border-color:#E8893A!important} .h3 .rk b{color:#F0A060}
+.h4 .rk b{color:var(--blue)}
+.h5 .rk b{color:var(--mute)}
+.guesses li.new{animation:pop .35s ease-out}
+@keyframes pop{from{transform:scale(.96);opacity:.4}to{transform:none;opacity:1}}
+.legend{margin:12px 0 0;color:var(--mute);font-size:13px;line-height:1.6}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px}
+.legend i:first-child{margin-left:0}
+/* result */
+.top5{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.top5 li{display:grid;grid-template-columns:28px auto 1fr auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--rule);font-size:15px}
+.top5 .n{font:700 17px var(--cond);color:var(--mute)}
+.top5 .w{font:700 18px var(--cond)}
+.top5 .g{color:var(--mute);font-size:13px;text-align:right}
+.top5 li.you .w{color:var(--gold)}
+.src2{margin:10px 0 0;font-size:14px;color:var(--mute)}
+@media (max-width:520px){
+  .enemy .pt{width:72px;height:72px}
+  .enemy .nm{font-size:30px}
+  .guesses li{gap:10px}
+}
+@media (prefers-reduced-motion:reduce){.guesses li.new{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav" aria-label="Site"><a class="home" href="../">Lane<span>Lock</span></a><span class="links"><a href="../">Games</a><a href="../how-it-works.html">How it works</a><a href="../about.html">About</a></span></nav>
+
+  <header class="intro">
+    <h1>Counter pick</h1>
+    <p>The enemy is locked in. Find the champion that beats them most often in this lane, in six guesses.</p>
+  </header>
+
+  <div class="bar-top">
+    <div class="seg" role="group" aria-label="Mode">
+      <button type="button" data-mode="daily">Daily</button>
+      <button type="button" data-mode="practice">Practice</button>
+    </div>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <main id="game"><p class="loading">Loading…</p></main>
+  <p class="sr" aria-live="polite" id="live"></p>
+
+  <footer class="site">
+    <p class="links"><a href="../about.html">About</a><a href="../how-it-works.html">How it works</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
+    <p id="source">Win rates come from Emerald+ ranked solo queue.</p>
+    <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. LaneLock isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="../games.js"></script>
+<script src="daily.js"></script>
+<script>
+"use strict";
+const CONFIG = {
+  url: "https://lanelock.net/counter/",
+  fallbackDdragonVersion: "16.22.1",
+  maxGuesses: 6
+};
+const LANE = {top:"Top lane", jungle:"Jungle", mid:"Mid lane", adc:"Bot lane (ADC)", support:"Bot lane (support)"};
+const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
+// how close a guess is, by its rank among all counters
+const HEAT = [
+  {max: 1,  cls: "h1", word: "Best counter!", sq: "🟩"},
+  {max: 3,  cls: "h2", word: "Very close",    sq: "🟨"},
+  {max: 10, cls: "h3", word: "Warm",          sq: "🟧"},
+  {max: 20, cls: "h4", word: "Cool",          sq: "🟦"},
+  {max: 1e9,cls: "h5", word: "Cold",          sq: "⬛"}
+];
+const heatOf = rank => HEAT.find(h => rank <= h.max);
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const dailyNumber = d => CounterDaily.dailyNumber(d);
+const store = {
+  get(k, d){ try { const v = JSON.parse(localStorage.getItem("cp:" + k)); return v ?? d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem("cp:" + k, JSON.stringify(v)); } catch(e){} }
+};
+
+let DDV = CONFIG.fallbackDdragonVersion;
+fetch("https://ddragon.leagueoflegends.com/api/versions.json").then(r => r.json()).then(v => { if (Array.isArray(v) && v[0]) { DDV = v[0]; render(); } }).catch(() => {});
+const initials = n => { const w = n.replace(/[^A-Za-z ]/g, "").split(" ").filter(Boolean); return (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || n).slice(0, 2)).toUpperCase(); };
+const img = n => DATA.champs[n] ? `<img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${esc(DATA.champs[n][0])}.png" alt="" onerror="this.remove()">` : "";
+const mini = n => `<span class="mini"><b>${esc(initials(n))}</b>${img(n)}</span>`;
+const clsOf = n => DATA.champs[n] ? DATA.champs[n][1] : "";
+const fmt = n => n.toLocaleString("en-US");
+const lolaSlug = n => ({"Nunu & Willump":"nunu","Renata Glasc":"renata"})[n] || n.toLowerCase().replace(/[^a-z]/g, "");
+
+// ---------- puzzles (the daily rotation lives in daily.js, shared with the homepage) ----------
+let DATA = null;
+const dailyPuzzle = date => CounterDaily.daily(DATA, date);
+const practicePuzzle = () => CounterDaily.random(DATA);
+
+// ---------- state ----------
+const S = {mode: "daily", date: todayStr(), pz: null, guesses: [], justAdded: null, sel: -1};
+const solved = () => S.guesses.some(n => S.pz.opts[0].name === n);
+const over = () => solved() || S.guesses.length >= CONFIG.maxGuesses;
+const optOf = n => S.pz.opts.find(o => o.name === n);
+
+function render(){
+  if (!DATA || !S.pz) return;
+  document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode)));
+  const pz = S.pz, used = S.guesses.length;
+  $("#progress").innerHTML = S.mode === "daily" ? `<span>#${dailyNumber(S.date)}</span>` : `<button type="button" class="btn ghost" data-act="newenemy" style="padding:9px 16px;font-size:17px">New enemy</button>`;
+  const rows = S.guesses.slice().reverse().map(n => {
+    const o = optOf(n), h = heatOf(o.rank);
+    return `<li class="${h.cls}${n === S.justAdded ? " new" : ""}">${mini(n)}<span class="who"><span class="gn">${esc(n)}</span><span class="gw">${o.wr.toFixed(1)}% win rate vs ${esc(pz.enemy)}</span></span>
+      <span class="rk"><b>#${o.rank}</b><span>${h.word}</span></span></li>`;
+  }).join("");
+  const input = over() ? "" : `<div class="guess">
+      <label class="sr" for="q">Guess a counter</label>
+      <input id="q" type="text" autocomplete="off" spellcheck="false" placeholder="Type a champion…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sug">
+      <ul class="sug" id="sug" role="listbox" hidden></ul>
+    </div>
+    <p class="left"><span><b>${CONFIG.maxGuesses - used}</b> ${CONFIG.maxGuesses - used === 1 ? "guess" : "guesses"} left</span><span>${pz.opts.length} champions to choose from</span></p>`;
+  const legend = used ? `<p class="legend" aria-hidden="true"><i style="background:var(--green)"></i>#1 <i style="background:var(--gold)"></i>#2–3 <i style="background:#E8893A"></i>#4–10 <i style="background:var(--blue)"></i>#11–20 <i style="background:#46596E"></i>lower</p>` : "";
+  $("#game").innerHTML = `<section class="card" aria-label="Counter pick">
+    <div class="enemy"><span class="pt"><b>${esc(initials(pz.enemy))}</b>${img(pz.enemy)}</span>
+      <div><div class="lbl">${esc(LANE[pz.role])} enemy</div><div class="nm">${esc(pz.enemy)}</div><div class="cl">${esc(clsOf(pz.enemy))}</div></div></div>
+    <p class="ask">Which champion has the <b>best win rate against ${esc(pz.enemy)}</b> in this lane?</p>
+    ${input}<ol class="guesses" aria-label="Your guesses">${rows}</ol>${legend}</section>${over() ? resultHTML() : ""}`;
+  S.justAdded = null;
+  if (S.mode === "daily" && over()) startCountdown();
+}
+
+function resultHTML(){
+  const pz = S.pz, best = pz.opts[0], won = solved(), n = S.guesses.length;
+  const top = pz.opts.slice(0, 5).map(o => `<li class="${S.guesses.includes(o.name) ? "you" : ""}"><span class="n">#${o.rank}</span>${mini(o.name)}<span class="w">${esc(o.name)}</span>
+    <span class="g">${o.wr.toFixed(1)}%<br>${fmt(o.games)} games</span></li>`).join("");
+  const head = won ? `Found it in ${n}!` : "Out of guesses";
+  const sub = won ? `${best.name} is the best counter to ${pz.enemy}, winning ${best.wr.toFixed(1)}% of their games in this lane.`
+                  : `The best counter was ${best.name}, winning ${best.wr.toFixed(1)}% of their games against ${pz.enemy}.`;
+  const lola = `https://lolalytics.com/lol/${lolaSlug(pz.enemy)}/counters/?lane=${LOLA_LANE[pz.role]}`;
+  const actions = S.mode === "daily"
+    ? `<button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="practice">Practice</button>`
+    : `<button type="button" class="btn" data-act="newenemy">New enemy</button>`;
+  return `<section class="card done" style="margin-top:14px"><h2 tabindex="-1">${head}</h2><p class="sub">${esc(sub)}</p>
+    ${S.mode === "daily" ? `<div class="grid" aria-hidden="true">${gridText()}</div>` : ""}
+    <div class="actions">${actions}</div>
+    ${S.mode === "daily" ? `<p class="next">Next enemy in <b id="cd"></b></p>` : ""}
+    <h3 style="font:700 20px var(--cond);margin:18px 0 0">Top 5 counters to ${esc(pz.enemy)}</h3><ol class="top5">${top}</ol>
+    <p class="src2">${fmt(pz.opts.length)} champions with ${fmt(DATA.minGames)}+ ranked games against ${esc(pz.enemy)}. <a href="${esc(lola)}" target="_blank" rel="noopener">All counters on LoLalytics</a></p>
+    ${S.mode === "daily" ? LaneLockGames.moreHTML("counter") : ""}</section>`;
+}
+const gridText = () => S.guesses.map(n => heatOf(optOf(n).rank).sq).join("");
+
+function guess(name){
+  if (over() || !optOf(name) || S.guesses.includes(name)) return;
+  S.guesses.push(name); S.justAdded = name;
+  if (S.mode === "daily") store.set("daily:" + S.date, {enemy: S.pz.enemy, role: S.pz.role, guesses: S.guesses, solved: solved()});
+  const o = optOf(name);
+  $("#live").textContent = `${name}: number ${o.rank} of ${S.pz.opts.length}, ${o.wr.toFixed(1)} percent. ${heatOf(o.rank).word}`;
+  render();
+  if (over()) { const h = document.querySelector(".done h2"); if (h) { h.focus({preventScroll: true}); h.scrollIntoView({behavior: "smooth", block: "start"}); } }
+  else { const q = $("#q"); if (q) q.focus(); }
+}
+
+// ---------- the guess box (combobox with suggestions) ----------
+const norm = s => s.toLowerCase().replace(/[^a-z]/g, "");
+function suggestions(text){
+  const t = norm(text);
+  return S.pz.opts.map(o => o.name).filter(n => !S.guesses.includes(n))
+    .filter(n => !t || norm(n).includes(t))
+    .sort((a, b) => (t ? (norm(b).startsWith(t) - norm(a).startsWith(t)) : 0) || a.localeCompare(b));
+}
+function showSug(){
+  const q = $("#q"), ul = $("#sug"); if (!q) return;
+  const list = suggestions(q.value);
+  S.sel = list.length ? Math.max(0, Math.min(S.sel, list.length - 1)) : -1;
+  ul.innerHTML = list.length ? list.map((n, i) => `<li role="option" id="opt-${i}" data-name="${esc(n)}" aria-selected="${i === S.sel}">${mini(n)}<span>${esc(n)}</span><span class="cl">${esc(clsOf(n))}</span></li>`).join("")
+    : `<li class="none" role="option" aria-disabled="true">No match among the ${S.pz.opts.length} champions with enough games.</li>`;
+  ul.hidden = false; q.setAttribute("aria-expanded", "true");
+  if (S.sel >= 0) q.setAttribute("aria-activedescendant", "opt-" + S.sel); else q.removeAttribute("aria-activedescendant");
+  const cur = ul.querySelector('[aria-selected="true"]'); if (cur) cur.scrollIntoView({block: "nearest"});
+}
+function hideSug(){ const ul = $("#sug"), q = $("#q"); if (ul) ul.hidden = true; if (q) q.setAttribute("aria-expanded", "false"); }
+document.addEventListener("input", e => { if (e.target.id === "q") { S.sel = 0; showSug(); } });
+document.addEventListener("focusin", e => { if (e.target.id === "q") { S.sel = -1; showSug(); } });
+document.addEventListener("keydown", e => {
+  if (e.target.id !== "q") return;
+  const list = suggestions(e.target.value);
+  if (e.key === "ArrowDown") { e.preventDefault(); S.sel = Math.min(S.sel + 1, list.length - 1); showSug(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); S.sel = Math.max(S.sel - 1, 0); showSug(); }
+  else if (e.key === "Enter") { e.preventDefault(); const n = list[S.sel >= 0 ? S.sel : 0]; if (n && (list.length === 1 || S.sel >= 0 || norm(n) === norm(e.target.value))) guess(n); }
+  else if (e.key === "Escape") hideSug();
+});
+document.addEventListener("pointerdown", e => {
+  const li = e.target.closest("#sug li[data-name]");
+  if (li) { e.preventDefault(); guess(li.dataset.name); return; }
+  if (!e.target.closest(".guess")) hideSug();
+});
+
+// ---------- end of game ----------
+let cdTimer = null;
+function startCountdown(){
+  clearInterval(cdTimer);
+  const tick = () => {
+    const el = $("#cd"); if (!el) return clearInterval(cdTimer);
+    const now = new Date(), ms = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1) - now;
+    if (ms <= 1000) { clearInterval(cdTimer); el.parentNode.innerHTML = `A new enemy is ready. <a href="./">Play it</a>`; return; }
+    const s = Math.floor(ms / 1000);
+    el.textContent = `${Math.floor(s/3600)}:${String(Math.floor(s/60)%60).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  };
+  tick(); cdTimer = setInterval(tick, 1000);
+}
+function shareText(){
+  const n = solved() ? S.guesses.length : "X";
+  return `Counter pick #${dailyNumber(S.date)} ${n}/${CONFIG.maxGuesses}\n${gridText()}\n${CONFIG.url}`;
+}
+async function share(){
+  const text = shareText();
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) { try { await navigator.share({text}); return; } catch(e){ if (e && e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(text); toast("Result copied. Paste it anywhere to share."); return; } catch(e){}
+  toast(`Copy your result:<textarea rows="4" readonly>${esc(text)}</textarea>`, 9000);
+}
+let toastTimer = null;
+function toast(html, ms = 2600){ const t = $("#toast"); t.innerHTML = html; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, ms); }
+
+function start(mode){
+  clearInterval(cdTimer);
+  S.mode = mode; S.sel = -1;
+  if (mode === "daily") {
+    S.date = todayStr(); S.pz = dailyPuzzle(S.date);
+    const saved = store.get("daily:" + S.date, {});
+    S.guesses = saved.enemy === S.pz.enemy && Array.isArray(saved.guesses) ? saved.guesses.filter(n => optOf(n)).slice(0, CONFIG.maxGuesses) : [];
+  } else {
+    S.pz = practicePuzzle(); S.guesses = [];
+  }
+  render();
+}
+document.addEventListener("click", e => {
+  const m = e.target.closest("[data-mode]"); if (m) return start(m.dataset.mode);
+  const act = e.target.closest("[data-act]"); if (!act) return;
+  if (act.dataset.act === "share") share();
+  else if (act.dataset.act === "newenemy") start("practice");
+});
+
+fetch("data.json").then(r => r.json()).then(d => {
+  DATA = d;
+  $("#source").innerHTML = `Win rates: ${esc(d.source)} ranked solo queue. Only champions with ${fmt(d.minGames)}+ games against the enemy count.`;
+  start(new URLSearchParams(location.search).get("mode") === "practice" ? "practice" : "daily");
+}).catch(() => { $("#game").innerHTML = `<p class="loading">Couldn't load the game. Check your connection and refresh.</p>`; });
+
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+</script>
+</body>
+</html>
