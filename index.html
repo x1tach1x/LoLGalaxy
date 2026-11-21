@@ -143,7 +143,7 @@ a{color:var(--blue)}
       </a>
       <a class="game teams" href="teams/">
         <span class="ic vs5" aria-hidden="true"><span>5v5</span></span>
-        <span class="gt"><span class="gn">Who wins the game?</span><span class="gd">Two full teams. Pick the winner.</span><span class="gx">Five games, easy to hard</span></span>
+        <span class="gt"><span class="gn">Who wins the game?</span><span class="gd">Two full teams. Pick the winner.</span><span class="gx">Three games, easy to hard</span></span>
         <span class="gs" id="teams-s"></span>
       </a>
       <a class="game counter" href="counter/">
@@ -331,9 +331,9 @@ try {
   else set("quiz-s", `#${quizNum}`);
   const newNum = CounterDaily.dailyNumber(today); // both new games launched the same day
   let t = null; try { t = JSON.parse(localStorage.getItem("wwg:daily:" + today)); } catch(e) {}
-  const tn = t && Array.isArray(t.answers) ? t.answers.length : 0;
-  if (tn >= 5) set("teams-s", `${t.answers.filter(Boolean).length}/5 ✓`, "good");
-  else if (tn) set("teams-s", `${tn}/5`);
+  const tn = t && t.n === 3 && Array.isArray(t.answers) ? t.answers.length : 0;
+  if (tn >= 3) set("teams-s", `${t.answers.filter(Boolean).length}/3 ✓`, "good");
+  else if (tn) set("teams-s", `${tn}/3`);
   else set("teams-s", `#${newNum}`);
   let c = null; try { c = JSON.parse(localStorage.getItem("cp:daily:" + today)); } catch(e) {}
   const cn = c && Array.isArray(c.picks) ? c.picks.length : 0;
