@@ -1,16 +1,16 @@
 # LaneLock data collector
 
-Games counted so far, by game version: 16.21: 3,412, 16.22: 162,103, 16.23: 63,920.
+Games counted so far, by game version: 16.21: 3,412, 16.22: 162,536, 16.23: 71,269.
 
 ## Version 16.23
 
-- 63,920 games (euw1: 21,531, kr: 25,115, na1: 17,274)
-- 18,348 lane matchups seen: 1,635 with 50+ games, 188 with 200+, 4 with 1,000+
+- 71,269 games (euw1: 24,751, kr: 27,931, na1: 18,587)
+- 18,994 lane matchups seen: 1,831 with 50+ games, 225 with 200+, 5 with 1,000+
 
 ## Version 16.22
 
-- 162,103 games (euw1: 56,656, kr: 57,386, na1: 48,061)
-- 24,321 lane matchups seen: 3,486 with 50+ games, 907 with 200+, 53 with 1,000+
+- 162,536 games (euw1: 56,807, kr: 57,559, na1: 48,170)
+- 24,334 lane matchups seen: 3,495 with 50+ games, 908 with 200+, 53 with 1,000+
 
 ## Version 16.21
 
@@ -19,34 +19,34 @@ Games counted so far, by game version: 16.21: 3,412, 16.22: 162,103, 16.23: 63,9
 
 ## Compared with the game's current numbers (LoLalytics, patch 26.22, Emerald+)
 
-Matchups with 100+ of our games that the game also has: 596.
+Matchups with 100+ of our games that the game also has: 676.
 
 - Correlation: 0.44 (1.00 would be identical)
-- Average difference: 3.49 win-rate points
-- Same favourite in 69% of matchups that aren't close to even
+- Average difference: 3.47 win-rate points
+- Same favourite in 70% of matchups that aren't close to even
 
 Biggest disagreements among matchups with 400+ of our games (smaller samples are mostly noise):
 
 | Lane | Matchup | Ours | Current | Our games |
 |---|---|---|---|---|
-| adc | Ezreal vs Jinx | 55.0% | 46.1% | 400 |
-| adc | Yunara vs Zeri | 50.8% | 42.3% | 400 |
-| support | Alistar vs Thresh | 57.1% | 50.8% | 452 |
-| jungle | Jarvan IV vs Lee Sin | 45.9% | 51.8% | 516 |
-| support | Bard vs Nautilus | 54.8% | 49.1% | 418 |
-| adc | Jhin vs Lucian | 56.7% | 51.2% | 543 |
-| adc | Ezreal vs Xayah | 50.6% | 45.2% | 646 |
-| adc | Jhin vs Zeri | 52.5% | 47.3% | 493 |
-| adc | Corki vs Yunara | 48.9% | 52.8% | 452 |
-| support | Leona vs Nautilus | 50.7% | 53.9% | 503 |
+| adc | Yunara vs Zeri | 51.6% | 42.3% | 438 |
+| adc | Ezreal vs Jinx | 54.5% | 46.1% | 442 |
+| adc | Ezreal vs Xayah | 51.3% | 45.2% | 706 |
+| support | Alistar vs Thresh | 56.6% | 50.8% | 518 |
+| support | Bard vs Nautilus | 54.6% | 49.1% | 454 |
+| adc | Jhin vs Lucian | 56.1% | 51.2% | 606 |
+| adc | Jhin vs Zeri | 52.0% | 47.3% | 542 |
+| jungle | Jarvan IV vs Lee Sin | 47.1% | 51.8% | 560 |
+| jungle | Lee Sin vs Naafiri | 50.2% | 46.2% | 470 |
+| adc | Corki vs Yunara | 49.0% | 52.8% | 516 |
 
 ## Best champions by role (16.23, regularly played picks only)
 
-- **top:** Poppy 54.2% (679), Quinn 53.2% (665), Cho'Gath 52.7% (1,619), Sylas 52.4% (787), Cassiopeia 52.3% (656)
-- **jungle:** Zaahen 54.5% (778), Nidalee 53.6% (3,295), Ivern 52.9% (1,107), Sejuani 52.9% (905), Zac 52.7% (1,614)
-- **mid:** Vel'Koz 54.1% (798), Pantheon 53.5% (796), Riven 53.2% (656), Zoe 53.1% (2,073), Qiyana 52.7% (1,427)
-- **adc:** Hwei 56.1% (904), Vel'Koz 54.4% (1,086), Aurelion Sol 53.8% (703), Xerath 53.4% (657), Kog'Maw 53.2% (1,401)
-- **support:** Morgana 52.9% (1,052), Janna 52.7% (3,352), Zilean 52.7% (1,931), Poppy 52.6% (1,582), Alistar 52.4% (7,255)
+- **top:** Poppy 53.4% (766), Quinn 52.9% (762), Cho'Gath 52.8% (1,810), Kayle 52.6% (1,428), Warwick 52.6% (1,058)
+- **jungle:** Zaahen 54.5% (865), Nidalee 53.3% (3,704), Ivern 53.2% (1,230), Zac 52.9% (1,835), Udyr 52.7% (1,316)
+- **mid:** Vel'Koz 54.2% (899), Pantheon 53.8% (894), Riven 53.5% (761), Zoe 52.8% (2,322), Qiyana 52.2% (1,578)
+- **adc:** Hwei 55.3% (1,015), Vel'Koz 54.4% (1,205), Aurelion Sol 54.1% (789), Yasuo 53.2% (1,458), Xerath 52.7% (719)
+- **support:** Morgana 53.0% (1,179), Galio 52.9% (1,015), Zilean 52.7% (2,144), Elise 52.4% (1,206), Janna 52.4% (3,728)
 
 To use this data in the game: `python3 tools/update_data.py --matchups <state>/rows-16.23.txt --source "Riot API, patch 26.23, Emerald+"`
 Only do this once LaneLock has an approved production API key.
