@@ -181,13 +181,15 @@ function render(){
         <input id="q" type="text" autocomplete="off" spellcheck="false" placeholder="Type a champion…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sug">
         <ul class="sug" id="sug" role="listbox" hidden></ul>
       </div>
-      <p class="left"><span>One pick. Up to <b>100</b> points.</span><span>${pz.opts.length} champions to choose from</span></p>`;
+      <p class="left"><span>One pick. Up to <b>100</b> points.</span><span>Any of the ${pz.lane.length} champions who play this lane</span></p>`;
   } else {
     const o = pz.opts.find(x => x.name === picked), best = pz.opts[0], pts = pointsOf(S.i), bd = band(pts), last = S.i === ROUNDS - 1;
-    const behind = o.rank === 1 ? `the best counter to ${pz.enemy}` : `the #${o.rank} counter, ${(best.wr - o.wr).toFixed(1)} points of win rate behind ${best.name}`;
+    const behind = !o ? `not in the win-rate data against ${pz.enemy} (too few ranked games), so this pick counts as an even matchup: 50%, ${(best.wr - 50).toFixed(1)} points behind ${best.name}`
+      : o.rank === 1 ? `the best counter to ${pz.enemy}` : `the #${o.rank} counter, ${(best.wr - o.wr).toFixed(1)} points of win rate behind ${best.name}`;
     const top = pz.opts.slice(0, 5).map(x => `<li class="${x.name === picked ? "you" : ""}"><span class="n">#${x.rank}</span>${mini(x.name)}<span class="w">${esc(x.name)}</span><span class="g">${x.wr.toFixed(1)}%<br>${fmt(x.games)} games</span></li>`).join("");
     const lola = `https://lolalytics.com/lol/${lolaSlug(pz.enemy)}/counters/?lane=${LOLA_LANE[pz.role]}`;
-    body = `<div class="pick ${bd.cls} new">${mini(picked)}<span class="who"><span class="gn">${esc(picked)}</span><span class="gw">${o.wr.toFixed(1)}% vs ${esc(pz.enemy)}, #${o.rank} of ${pz.opts.length}</span></span>
+    const detail = o ? `${o.wr.toFixed(1)}% vs ${esc(pz.enemy)}, #${o.rank} of ${pz.opts.length}` : `No ranked data vs ${esc(pz.enemy)}`;
+    body = `<div class="pick ${bd.cls} new">${mini(picked)}<span class="who"><span class="gn">${esc(picked)}</span><span class="gw">${detail}</span></span>
         <span class="pts"><b>+${pts}</b><span>${bd.word}</span></span></div>
       <div class="rnext"><p class="say" style="margin:0">${esc(picked)} is ${esc(behind)}.</p>
         <button type="button" class="btn" data-act="next">${last ? "See your score" : "Next round"}</button></div>
@@ -203,11 +205,11 @@ function render(){
 
 function pick(name){
   const pz = S.rounds[S.i];
-  if (S.revealed || S.picks.length > S.i || !pz.opts.some(o => o.name === name)) return;
+  if (S.revealed || S.picks.length > S.i || !pz.lane.includes(name)) return;
   S.picks.push(name); S.revealed = true;
   if (S.mode === "daily") store.set("daily:" + S.date, {enemies: S.rounds.map(r => r.role + ":" + r.enemy), picks: S.picks, score: total()});
   const pts = pointsOf(S.i), o = pz.opts.find(x => x.name === name);
-  $("#live").textContent = `${name}: number ${o.rank} of ${pz.opts.length}. ${pts} points. Best counter: ${pz.opts[0].name}.`;
+  $("#live").textContent = `${name}: ${o ? `number ${o.rank} of ${pz.opts.length}` : "no win-rate data, counted as an even matchup"}. ${pts} points. Best counter: ${pz.opts[0].name}.`;
   render();
   const btn = document.querySelector('[data-act="next"]'); if (btn) btn.focus({preventScroll: true});
 }
@@ -225,7 +227,7 @@ function doneHTML(){
   const msg = score >= 450 ? "Counter-pick master." : score >= 350 ? "You know your counters." : score >= 250 ? "Solid picks, with a few surprises." : "The counters had other plans today.";
   const recap = S.rounds.map((r, i) => {
     const n = S.picks[i], o = r.opts.find(x => x.name === n), pts = pointsOf(i);
-    return `<li><span class="ln">${esc(LANE_SHORT[r.role])}</span><span>vs <span class="en">${esc(r.enemy)}</span>: you picked ${esc(n)} (#${o.rank})${o.rank > 1 ? `, best was ${esc(r.opts[0].name)}` : ""}</span><span class="pt2">${pts}</span></li>`;
+    return `<li><span class="ln">${esc(LANE_SHORT[r.role])}</span><span>vs <span class="en">${esc(r.enemy)}</span>: you picked ${esc(n)} (${o ? "#" + o.rank : "no data"})${!o || o.rank > 1 ? `, best was ${esc(r.opts[0].name)}` : ""}</span><span class="pt2">${pts}</span></li>`;
   }).join("");
   const actions = S.mode === "daily"
     ? `<button type="button" class="btn" data-act="share">Share result</button><button type="button" class="btn ghost" data-mode="practice">Practice</button>`
@@ -235,7 +237,7 @@ function doneHTML(){
     <div class="actions">${actions}</div>
     ${S.mode === "daily" ? `<p class="next">Next enemies in <b id="cd"></b></p>` : ""}
     <ol class="recap">${recap}</ol>
-    <p class="src2">Points: 100 for the best counter. Below that you get 10 fewer per place, or 20 fewer per point of win rate behind #1, whichever is better. Counters need ${fmt(DATA.minGames)}+ ranked games against the enemy.</p>
+    <p class="src2">Points: 100 for the best counter. Below that you get 10 fewer per place, or 20 fewer per point of win rate behind #1, whichever is better. Ranked counters have ${fmt(DATA.minGames)}+ games against the enemy; a pick without enough games counts as an even matchup, worth up to 50.</p>
     ${S.mode === "daily" ? LaneLockGames.moreHTML("counter") : ""}</section>`;
 }
 const gridText = () => S.picks.map((n, i) => band(pointsOf(i)).sq).join("");
@@ -244,7 +246,7 @@ const gridText = () => S.picks.map((n, i) => band(pointsOf(i)).sq).join("");
 const norm = s => s.toLowerCase().replace(/[^a-z]/g, "");
 function suggestions(text){
   const t = norm(text), pz = S.rounds[S.i];
-  return pz.opts.map(o => o.name).filter(n => !t || norm(n).includes(t))
+  return pz.lane.filter(n => !t || norm(n).includes(t))
     .sort((a, b) => (t ? (norm(b).startsWith(t) - norm(a).startsWith(t)) : 0) || a.localeCompare(b));
 }
 function showSug(){
@@ -252,7 +254,7 @@ function showSug(){
   const list = suggestions(q.value);
   S.sel = list.length ? Math.max(-1, Math.min(S.sel, list.length - 1)) : -1;
   ul.innerHTML = list.length ? list.map((n, i) => `<li role="option" id="opt-${i}" data-name="${esc(n)}" aria-selected="${i === S.sel}">${mini(n)}<span>${esc(n)}</span><span class="cl">${esc(clsOf(n))}</span></li>`).join("")
-    : `<li class="none" role="option" aria-disabled="true">No match among the ${S.rounds[S.i].opts.length} champions with enough games.</li>`;
+    : `<li class="none" role="option" aria-disabled="true">No ${esc(LANE_SHORT[S.rounds[S.i].role].toLowerCase())} champion matches that name.</li>`;
   ul.hidden = false; q.setAttribute("aria-expanded", "true");
   if (S.sel >= 0) q.setAttribute("aria-activedescendant", "opt-" + S.sel); else q.removeAttribute("aria-activedescendant");
   const cur = ul.querySelector('[aria-selected="true"]'); if (cur) cur.scrollIntoView({block: "nearest"});
@@ -312,7 +314,7 @@ function start(mode){
     S.date = todayStr(); S.rounds = CounterDaily.daily(DATA, S.date);
     const saved = store.get("daily:" + S.date, {}), key = S.rounds.map(r => r.role + ":" + r.enemy).join();
     const ok = Array.isArray(saved.picks) && Array.isArray(saved.enemies) && saved.enemies.join() === key;
-    S.picks = ok ? saved.picks.filter((n, i) => S.rounds[i] && S.rounds[i].opts.some(o => o.name === n)).slice(0, ROUNDS) : [];
+    S.picks = ok ? saved.picks.filter((n, i) => S.rounds[i] && S.rounds[i].lane.includes(n)).slice(0, ROUNDS) : [];
   } else {
     S.rounds = CounterDaily.random(DATA); S.picks = [];
   }
@@ -328,7 +330,7 @@ document.addEventListener("click", e => {
 
 fetch("data.json").then(r => r.json()).then(d => {
   DATA = d;
-  $("#source").innerHTML = `Win rates: ${esc(d.source)} ranked solo queue. Only champions with ${fmt(d.minGames)}+ games against the enemy count.`;
+  $("#source").innerHTML = `Win rates: ${esc(d.source)} ranked solo queue. Counters are ranked when they have ${fmt(d.minGames)}+ games against the enemy.`;
   start(new URLSearchParams(location.search).get("mode") === "practice" ? "practice" : "daily");
 }).catch(() => { $("#game").innerHTML = `<p class="loading">Couldn't load the game. Check your connection and refresh.</p>`; });
 

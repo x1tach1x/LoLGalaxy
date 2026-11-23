@@ -119,5 +119,8 @@ for (const role of ROLE_KEYS) {
     pairs++;
   }
 }
+// Every champion played in each lane can be picked, not only those with win-rate data against the enemy.
+// (Added after the counters so champion numbering, and with it the daily rotation, doesn't change.)
+const lanes = Object.fromEntries(ROLE_KEYS.map(role => [role, E.POOL[role].filter(usable).map(idx)]));
 console.log(`Counter pick: ${pairs} lane/enemy pairs with ${MIN_OPTIONS}+ counters (${MIN_GAMES}+ games each)`
-  + ` -> counter/data.json (${write("counter/data.json", {source: E.MATCHUP_SOURCE, built: today, minGames: MIN_GAMES, names, champs: champsJson(), c: counters})})`);
+  + ` -> counter/data.json (${write("counter/data.json", {source: E.MATCHUP_SOURCE, built: today, minGames: MIN_GAMES, names, champs: champsJson(), c: counters, lanes})})`);
