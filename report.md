@@ -1,16 +1,16 @@
 # LaneLock data collector
 
-Games counted so far, by game version: 16.21: 3,412, 16.22: 163,179, 16.23: 95,162.
+Games counted so far, by game version: 16.21: 3,412, 16.22: 163,415, 16.23: 112,613.
 
 ## Version 16.23
 
-- 95,162 games (euw1: 32,791, kr: 36,418, na1: 25,953)
-- 20,759 lane matchups seen: 2,383 with 50+ games, 406 with 200+, 9 with 1,000+
+- 112,613 games (euw1: 39,421, kr: 42,897, na1: 30,295)
+- 21,842 lane matchups seen: 2,735 with 50+ games, 537 with 200+, 16 with 1,000+
 
 ## Version 16.22
 
-- 163,179 games (euw1: 57,040, kr: 57,770, na1: 48,369)
-- 24,357 lane matchups seen: 3,502 with 50+ games, 911 with 200+, 53 with 1,000+
+- 163,415 games (euw1: 57,117, kr: 57,833, na1: 48,465)
+- 24,364 lane matchups seen: 3,504 with 50+ games, 912 with 200+, 54 with 1,000+
 
 ## Version 16.21
 
@@ -19,34 +19,34 @@ Games counted so far, by game version: 16.21: 3,412, 16.22: 163,179, 16.23: 95,1
 
 ## Compared with the game's current numbers (LoLalytics, patch 26.22, Emerald+)
 
-Matchups with 100+ of our games that the game also has: 928.
+Matchups with 100+ of our games that the game also has: 1,098.
 
-- Correlation: 0.46 (1.00 would be identical)
-- Average difference: 3.24 win-rate points
-- Same favourite in 71% of matchups that aren't close to even
+- Correlation: 0.43 (1.00 would be identical)
+- Average difference: 3.21 win-rate points
+- Same favourite in 69% of matchups that aren't close to even
 
 Biggest disagreements among matchups with 400+ of our games (smaller samples are mostly noise):
 
 | Lane | Matchup | Ours | Current | Our games |
 |---|---|---|---|---|
-| adc | Yunara vs Zeri | 50.9% | 42.3% | 570 |
-| support | Karma vs Thresh | 40.7% | 48.4% | 469 |
-| mid | Ahri vs Syndra | 58.0% | 51.2% | 471 |
-| adc | Ezreal vs Jinx | 52.8% | 46.1% | 574 |
-| support | Rakan vs Thresh | 57.7% | 51.1% | 414 |
-| support | Alistar vs Thresh | 56.9% | 50.8% | 671 |
-| adc | Corki vs Xayah | 51.6% | 45.9% | 498 |
-| adc | Draven vs Jhin | 55.7% | 50.0% | 449 |
-| support | Blitzcrank vs Leona | 52.5% | 46.9% | 421 |
-| adc | Jhin vs Zeri | 52.8% | 47.3% | 721 |
+| adc | Yunara vs Zeri | 51.3% | 42.3% | 674 |
+| support | Karma vs Thresh | 41.1% | 48.4% | 584 |
+| adc | Ezreal vs Jinx | 52.9% | 46.1% | 647 |
+| mid | Twisted Fate vs Viktor | 47.7% | 54.2% | 428 |
+| adc | Corki vs Xayah | 52.4% | 45.9% | 590 |
+| mid | Ahri vs Syndra | 57.3% | 51.2% | 562 |
+| top | Jax vs Olaf | 54.2% | 48.6% | 415 |
+| support | Rakan vs Thresh | 56.5% | 51.1% | 494 |
+| support | Blitzcrank vs Leona | 52.2% | 46.9% | 487 |
+| support | Alistar vs Thresh | 56.0% | 50.8% | 780 |
 
 ## Best champions by role (16.23, regularly played picks only)
 
-- **top:** Quinn 53.4% (997), Poppy 53.2% (1,093), Darius 52.3% (4,881), Kled 52.1% (1,960), Fiora 52.0% (4,874)
-- **jungle:** Nidalee 53.4% (5,029), Udyr 53.2% (1,713), Zac 52.9% (2,455), Shaco 52.7% (3,498), Zaahen 52.6% (1,229)
-- **mid:** Riven 53.7% (955), Vel'Koz 53.3% (1,204), Zoe 53.0% (3,181), Annie 52.3% (2,419), Ekko 52.3% (5,234)
-- **adc:** Vel'Koz 56.6% (1,595), Aurelion Sol 54.4% (1,052), Hwei 53.9% (1,393), Yasuo 53.3% (1,995), Lux 52.7% (979)
-- **support:** Elise 53.1% (1,587), Zilean 52.7% (2,909), Galio 52.6% (1,438), Rell 52.4% (6,626), Alistar 52.2% (10,884)
+- **top:** Poppy 53.2% (1,328), Quinn 53.2% (1,170), Warwick 52.8% (1,592), Darius 52.2% (5,816), Fiora 52.0% (5,817)
+- **jungle:** Udyr 53.7% (2,034), Nidalee 53.2% (6,033), Shaco 52.7% (4,155), Zyra 52.7% (3,680), Zac 52.3% (2,894)
+- **mid:** Vel'Koz 53.4% (1,405), Zoe 52.9% (3,730), Annie 52.7% (2,925), Riven 52.7% (1,129), Ekko 52.4% (6,227)
+- **adc:** Vel'Koz 55.8% (1,950), Aurelion Sol 54.8% (1,251), Hwei 53.1% (1,712), Yasuo 53.1% (2,390), Karthus 52.7% (1,682)
+- **support:** Elise 52.6% (1,909), Maokai 52.3% (2,182), Alistar 52.3% (12,931), Rell 52.3% (7,795), Zilean 52.2% (3,440)
 
 To use this data in the game: `python3 tools/update_data.py --matchups <state>/rows-16.23.txt --source "Riot API, patch 26.23, Emerald+"`
 Only do this once LaneLock has an approved production API key.
