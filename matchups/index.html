@@ -55,7 +55,7 @@
     <h2 id="howto-h">How to play Who wins the lane?</h2>
     <p>You get five matchups a day, one in each lane. Each shows two champions who face each other in that lane. Pick the one that wins the matchup more often in ranked games. After each pick you see both win rates and how many games they're based on.</p>
     <h3>Where the answers come from</h3>
-    <p>Every matchup uses real ranked solo queue results from Emerald rank and above on the current patch. Only matchups with enough games to be reliable are used, and close-to-even matchups are left out so every question has a real answer. In easy matchups the winner takes 54% or more of games, in medium 52 to 54%, and in hard 51 to 52%.</p>
+    <p>Every matchup uses real ranked solo queue results from Emerald rank and above, from the patch named at the bottom of this page. Only matchups with enough games to be reliable are used, and close-to-even matchups are left out so every question has a real answer. In easy matchups the winner takes 54% or more of games, in medium 52 to 54%, and in hard 51 to 52%.</p>
     <h3>Tips</h3>
     <ul>
       <li>Ranged champions often beat melee champions in lane, because they can trade without taking damage back.</li>
@@ -84,7 +84,6 @@ const CONFIG = {
 };
 const LANE = {top:"Top lane", jungle:"Jungle", mid:"Mid lane", adc:"Bot lane (ADC)", support:"Bot lane (support)"};
 const LANE_SHORT = {top:"Top", jungle:"Jungle", mid:"Mid", adc:"ADC", support:"Support"};
-const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
 const BAND = ["Easy", "Medium", "Hard"];
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -107,10 +106,6 @@ function portrait(name){
   const id = DATA.champs[name] ? DATA.champs[name][0] : name.replace(/[^A-Za-z0-9]/g, "");
   return `<span class="pt"><b>${esc(initials(name))}</b><img src="https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${esc(id)}.png" alt="" onerror="this.remove()"></span>`;
 }
-const lolaUrl = (q) => {
-  const slug = n => ({"Nunu & Willump":"nunu","Renata Glasc":"renata"})[n] || n.toLowerCase().replace(/[^a-z]/g, "");
-  return `https://lolalytics.com/lol/${slug(q.a)}/vs/${slug(q.b)}/build/?lane=${LOLA_LANE[q.role]}`;
-};
 
 // ---------- questions ----------
 let DATA = null;
@@ -165,7 +160,7 @@ function render(){
     const lWins = winnerOf(q) === L;
     reveal = `<div class="split" aria-hidden="true"><i class="l ${lWins ? "win" : "lose"}" style="width:50%"></i><i class="r ${lWins ? "lose" : "win"}" style="width:50%"></i></div>
       <div class="verdict"><p><strong class="${ok ? "ok" : "no"}">${ok ? "Correct!" : "Not this time."}</strong>${esc(winnerOf(q))} wins ${Math.max(q.wrA, 100 - q.wrA).toFixed(1)}% of these games.
-        <small>${q.games.toLocaleString("en-US")} ranked games. <a href="${esc(lolaUrl(q))}" target="_blank" rel="noopener">Full matchup on LoLalytics</a></small></p>
+        <small>${q.games.toLocaleString("en-US")} ranked games.</small></p>
         <button type="button" class="btn" data-act="next">${S.mode === "endless" && !ok ? "See your streak" : last ? "See your score" : "Next matchup"}</button></div>`;
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const l = game.querySelector(".split .l"), r = game.querySelector(".split .r");

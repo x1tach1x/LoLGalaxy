@@ -145,7 +145,6 @@ const CONFIG = {
 };
 const LANE = {top:"Top lane", jungle:"Jungle", mid:"Mid lane", adc:"Bot lane (ADC)", support:"Bot lane (support)"};
 const LANE_SHORT = {top:"Top", jungle:"Jungle", mid:"Mid", adc:"ADC", support:"Support"};
-const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
 const ROUNDS = CounterDaily.ROUNDS;
 // colour and share square by points
 const band = pts => pts >= 100 ? {cls:"p100", sq:"🟩", word:"Best counter!"} : pts >= 75 ? {cls:"p75", sq:"🟨", word:"Very close"}
@@ -166,7 +165,6 @@ const img = n => DATA.champs[n] ? `<img src="https://ddragon.leagueoflegends.com
 const mini = n => `<span class="mini"><b>${esc(initials(n))}</b>${img(n)}</span>`;
 const clsOf = n => DATA.champs[n] ? DATA.champs[n][1] : "";
 const fmt = n => n.toLocaleString("en-US");
-const lolaSlug = n => ({"Nunu & Willump":"nunu","Renata Glasc":"renata"})[n] || n.toLowerCase().replace(/[^a-z]/g, "");
 
 // ---------- state (the daily rounds live in daily.js, shared with the homepage) ----------
 let DATA = null;
@@ -201,14 +199,12 @@ function render(){
     const behind = !o ? `not in the win-rate data against ${pz.enemy} (too few ranked games), so this pick counts as an even matchup: 50%, ${(best.wr - 50).toFixed(1)} points behind ${best.name}`
       : o.rank === 1 ? `the best counter to ${pz.enemy}` : `the #${o.rank} counter, ${(best.wr - o.wr).toFixed(1)} points of win rate behind ${best.name}`;
     const top = pz.opts.slice(0, 5).map(x => `<li class="${x.name === picked ? "you" : ""}"><span class="n">#${x.rank}</span>${mini(x.name)}<span class="w">${esc(x.name)}</span><span class="g">${x.wr.toFixed(1)}%<br>${fmt(x.games)} games</span></li>`).join("");
-    const lola = `https://lolalytics.com/lol/${lolaSlug(pz.enemy)}/counters/?lane=${LOLA_LANE[pz.role]}`;
     const detail = o ? `${o.wr.toFixed(1)}% vs ${esc(pz.enemy)}, #${o.rank} of ${pz.opts.length}` : `No ranked data vs ${esc(pz.enemy)}`;
     body = `<div class="pick ${bd.cls} new">${mini(picked)}<span class="who"><span class="gn">${esc(picked)}</span><span class="gw">${detail}</span></span>
         <span class="pts"><b>+${pts}</b><span>${bd.word}</span></span></div>
       <div class="rnext"><p class="say" style="margin:0">${esc(picked)} is ${esc(behind)}.</p>
         <button type="button" class="btn" data-act="next">${last ? "See your score" : "Next round"}</button></div>
-      <ol class="top5" aria-label="Top 5 counters"><li style="grid-template-columns:1fr;border-top:0;padding-top:12px"><h3>Top 5 counters to ${esc(pz.enemy)}</h3></li>${top}</ol>
-      <p class="src2"><a href="${esc(lola)}" target="_blank" rel="noopener">All counters to ${esc(pz.enemy)} on LoLalytics</a></p>`;
+      <ol class="top5" aria-label="Top 5 counters"><li style="grid-template-columns:1fr;border-top:0;padding-top:12px"><h3>Top 5 counters to ${esc(pz.enemy)}</h3></li>${top}</ol>`;
   }
   $("#game").innerHTML = `<section class="card" aria-label="Round ${S.i + 1}">
     <div class="lane"><h2>Round ${S.i + 1} of ${ROUNDS}</h2><span class="diff">${esc(LANE_SHORT[pz.role])}</span></div>

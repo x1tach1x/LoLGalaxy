@@ -197,7 +197,6 @@ button{cursor:pointer}
 .src{font-size:13px;color:var(--mute);margin:10px 0 0}
 .lr .duo{grid-column:1/-1;margin:2px 0 0;font-size:14px;color:var(--text)}
 .lr ul{grid-column:1/-1;margin:2px 0 0;padding-left:18px;color:var(--mute);font-size:14px}
-.lr .more{grid-column:1/-1;margin:4px 0 0;font-size:13px;color:var(--mute)}
 .comp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .comp h4{margin:0 0 6px;font:600 18px var(--cond)}
 .comp .you h4{color:var(--blue)} .comp .them h4{color:var(--red-text)}
@@ -966,15 +965,15 @@ function laneScore(p, e, role){
       reasons.push({v:0.01, data:true, t:`Dead even in real games: ${p} wins ${wr.toFixed(1)}% against ${e} (${fmtGames(m.g)} games)`});
     } else {
       const [w, l, pct] = m.e > 0 ? [p, e, wr] : [e, p, 100 - wr];
-      reasons.push({v:(m.e>0?1:-1)*(Math.abs(m.e)+10), data:true, t:`${w} wins ${pct.toFixed(1)}% of games against ${l} in ${laneName} (${fmtGames(m.g)} games this patch)`});
+      reasons.push({v:(m.e>0?1:-1)*(Math.abs(m.e)+10), data:true, t:`${w} wins ${pct.toFixed(1)}% of games against ${l} in ${laneName} (${fmtGames(m.g)} games)`});
       // explain the stat with the class matchup, but only when the two agree
       if (Math.abs(classEdge) >= 0.5 && Math.sign(classEdge) === Math.sign(m.e)) reasons.push({v:classEdge*0.5, t:"Why: " + classWhy()});
     }
-    if (ta !== tb) reasons.push({v:tierDiff*0.3, t:`${p} is ${TIER_LABEL[ta]} tier in ${laneName} this patch, ${e} is ${TIER_LABEL[tb]}`});
+    if (ta !== tb) reasons.push({v:tierDiff*0.3, t:`${p} is ${TIER_LABEL[ta]} tier in ${laneName}, ${e} is ${TIER_LABEL[tb]}`});
   } else {
     // No data for this pair: fall back to the tier + class model
     s = tierDiff * 0.38;
-    if (ta !== tb) reasons.push({v:tierDiff, t:`${p} is ${TIER_LABEL[ta]} tier in ${laneName} this patch, ${e} is ${TIER_LABEL[tb]}`});
+    if (ta !== tb) reasons.push({v:tierDiff, t:`${p} is ${TIER_LABEL[ta]} tier in ${laneName}, ${e} is ${TIER_LABEL[tb]}`});
     const w = role === "jungle" ? 0.25 : 0.5;
     s += classEdge * w;
     if (Math.abs(classEdge) >= 0.5) reasons.push({v:classEdge, t:classWhy()});
@@ -1286,7 +1285,7 @@ async function communityPost(win, prob){
 }
 function communityHTML(){
   const t = S.community; if (!t) return "";
-  const total = t.wins + t.losses; if (!total) return "";
+  const total = t.wins + t.losses; if (total < 25) return "";   // too few players to be meaningful (or flattering)
   const pct = Math.round(t.wins / total * 100);
   const b = beatPct();
   const rank = b === null ? "" : ` Your draft's ${Math.round(S.result.prob*100)}% win chance beat <b>${b}%</b> of them.`;
@@ -1583,16 +1582,6 @@ function scoreboardInner(b){
     <p class="sbnote">Simulated from your draft: totals match the kill score and the gold lead.</p>`;
 }
 
-// Link to the full head-to-head page on LoLalytics (builds, runes, win rate by game length).
-const LOLA_SLUG = {"Nunu & Willump":"nunu", "Renata Glasc":"renata"};
-const LOLA_LANE = {top:"top", jungle:"jungle", mid:"middle", adc:"bottom", support:"support"};
-function lolaUrl(p, e, role){
-  const slug = n => LOLA_SLUG[n] || n.toLowerCase().replace(/[^a-z]/g, "");
-  return `https://lolalytics.com/lol/${slug(p)}/vs/${slug(e)}/build/?lane=${LOLA_LANE[role]}`;
-}
-function lolaLink(p, e, role, label){
-  return `<a class="lola" href="${esc(lolaUrl(p, e, role))}" target="_blank" rel="noopener">${esc(label)}</a>`;
-}
 
 // the most recent past daily you haven't played yet
 function nextPast(){ return pastDates().find(d => d !== S.date && !store.savedDaily(d)) || null; }
@@ -1630,12 +1619,9 @@ function resultsHTML(res){
       ? `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in bot lane</em></div>`
       : `<div class="mu">${esc(l.p)} <em>vs</em> ${esc(l.e)} <em>in ${esc(l.label.toLowerCase())}</em></div>`;
     const duoLine = l.duo ? `<p class="duo">Your duo: ${esc(l.dP.label)}. Theirs: ${esc(l.dE.label)}.</p>` : "";
-    const more = l.duo
-      ? `<p class="more">Full stats on LoLalytics: ${lolaLink(S.mine.adc, S.enemy.adc, "adc", `${S.mine.adc} vs ${S.enemy.adc}`)}, ${lolaLink(S.mine.support, S.enemy.support, "support", `${S.mine.support} vs ${S.enemy.support}`)}</p>`
-      : `<p class="more">${lolaLink(l.p, l.e, l.role, `Full ${l.p} vs ${l.e} stats on LoLalytics`)}</p>`;
     return `<div class="lr">${head}
       <span class="chip ${l.verdict}">${l.verdict==="w"?"You won":l.verdict==="l"?"You lost":"Even"}</span>
-      ${duoLine}<ul class="why">${rs.length ? rs.map(reasonLI).join("") : `<li class="info"><span class="mk" aria-hidden="true">=</span>Close matchup with no big edge either way</li>`}</ul>${more}</div>`;
+      ${duoLine}<ul class="why">${rs.length ? rs.map(reasonLI).join("") : `<li class="info"><span class="mk" aria-hidden="true">=</span>Close matchup with no big edge either way</li>`}</ul></div>`;
   }).join("");
   const syn = (arr) => arr.length ? arr.map(s=>`<li class="good">${esc(s.t)}</li>`).join("") : `<li>No standout combos</li>`;
   const tl = res.timeline.map((e, i) => `<li><time>${fmtTime(e.t)}</time><span class="${e.side}"><b class="n" aria-hidden="true">${i+1}</b>${esc(e.text)}</span></li>`).join("");

@@ -47,7 +47,7 @@ const STYLES = ["Engage", "Poke", "Protect", "Pick", "Split"];
 const LANE_WORD = {top: "top", jungle: "the jungle", mid: "mid", bot: "bot lane"};
 const short = t => t.replace(/ of games against /, " vs ").replace(/ against /, " vs ")
   .replace(/ in (top|jungle|mid|bot|support|bot lane) \(/, " (").replace(/ games this patch\)/, " games)")
-  .replace(/ in (top|jungle|mid|bot|support) this patch/, "");
+  .replace(/ in (top|jungle|mid|bot|support)(?: this patch)?(?=, )/, "");
 const BAND_SIZE = 250, bands = [[], [], []];
 let tries = 0;
 while (bands.some(b => b.length < BAND_SIZE) && tries < 400000) {
