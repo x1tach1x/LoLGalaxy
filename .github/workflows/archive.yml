@@ -1,0 +1,44 @@
+# Adds yesterday's page to the daily answer archive (lanelock.net/archive/) just after midnight UTC.
+# Each day's page is written once and never changed. Runs on its own every day, whenever the
+# archive builder changes, and can be started from the Actions tab: "Build answer archive" > Run workflow.
+name: Build answer archive
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 0 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/build_archive.mjs
+      - .github/workflows/archive.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archive
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build missing days
+        run: node tools/build_archive.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish
+        run: |
+          git add archive sitemap.xml
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Answer archive: add $(date -u -d yesterday +%Y-%m-%d)"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main

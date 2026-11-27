@@ -50,3 +50,12 @@ footer.site .links a{color:var(--blue,#4EA1DF);padding:6px 0;display:inline-bloc
 .xgame .pz-ic[viewBox="0 0 30 24"]{width:27px}
 @media (max-width:560px){.puzzlebar a{gap:5px}.puzzlebar .pz-ic{width:18px;height:18px}.puzzlebar .pz-ic[viewBox="0 0 30 24"]{width:22px}}
 @media (min-width:721px){.puzzlebar a{white-space:nowrap;padding:6px 8px}}
+
+/* how-to-play text under each puzzle */
+.howto{max-width:720px;margin:44px 0 0;padding-top:26px;border-top:1px solid var(--rule,#2A4560);color:var(--soft,#C9D4DF)}
+.howto h2{font:700 30px/1.1 var(--cond,"Arial Narrow",sans-serif);color:var(--text,#E9EEF3);margin:0 0 10px}
+.howto h3{font:700 21px/1.2 var(--cond,"Arial Narrow",sans-serif);color:var(--text,#E9EEF3);margin:22px 0 6px}
+.howto p,.howto li{font-size:16px;line-height:1.6}
+.howto p{margin:0 0 12px;max-width:68ch}
+.howto ul{margin:0 0 12px;padding-left:20px;max-width:66ch}
+.howto li{margin:5px 0}

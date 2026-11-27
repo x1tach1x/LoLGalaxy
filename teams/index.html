@@ -98,8 +98,22 @@
   <main id="game"><p class="loading">Loading games…</p></main>
   <p class="sr" aria-live="polite" id="live"></p>
 
+  <section class="howto" aria-labelledby="howto-h">
+    <h2 id="howto-h">How to play Who wins the game?</h2>
+    <p>Each game shows two full teams, Blue and Red, with every lane already locked in. Pick the team you think wins. There are three games a day, from easy to hard, and an endless mode that runs until you get one wrong.</p>
+    <h3>How the winner is decided</h3>
+    <p>Every game is simulated with LaneLock's match model, the same one that scores the Draft. It weighs each lane matchup using real ranked win rates, then compares the teams: frontline, damage type, engage against poke, scaling into the late game, and combos between champions. Only clear-cut games are used, where one side wins at least 62% of the time, and the reveal shows the biggest reasons the favourite wins.</p>
+    <h3>Tips</h3>
+    <ul>
+      <li>Look at each lane first, then at the whole team. A team that wins three lanes usually wins the game.</li>
+      <li>Check the damage mix. A team that deals almost only magic or only physical damage is easy to counter with items.</li>
+      <li>Engage teams beat poke teams, poke beats protect teams, and protect teams beat engage, much like rock, paper, scissors.</li>
+    </ul>
+    <p>Past games and their explanations are in the <a href="../archive/">answer archive</a>.</p>
+  </section>
+
   <footer class="site">
-    <p class="links"><a href="../about.html">About</a><a href="../how-it-works.html">How it works</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
+    <p class="links"><a href="../about.html">About</a><a href="../how-it-works.html">How it works</a><a href="../archive/">Answer archive</a><a href="../privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
     <p id="source">Win chances come from LaneLock's match model, the same one that scores the Draft.</p>
     <p>LaneLock was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project. LaneLock isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
   </footer>
@@ -107,6 +121,7 @@
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="../games.js"></script>
+<script src="daily.js"></script>
 <script>
 "use strict";
 const CONFIG = {
@@ -139,17 +154,8 @@ function mini(name){
 // ---------- games ----------
 // row: [10 champion indexes (blue top..sup, red top..sup), blue win %, lane scores x10 (top jg mid bot), why[], [blue style, red style], band]
 let DATA = null;
-const toG = (row, i) => ({i, blue: row[0].slice(0, 5).map(n => DATA.names[n]), red: row[0].slice(5).map(n => DATA.names[n]),
-  p: row[1], lanes: row[2], why: row[3], styles: row[4].map(s => DATA.styles[s]), band: row[5]});
-function dailyGames(date){
-  const rng = mulberry32(hashStr("teams:" + date)), out = [], used = new Set();
-  [0, 1, 2].forEach(band => {   // three games a day: easy, medium, hard
-    const pool = DATA.g.map((r, i) => [r, i]).filter(([r, i]) => r[5] === band && !used.has(i));
-    const [row, i] = pool[Math.floor(rng() * pool.length)];
-    used.add(i); out.push(toG(row, i));
-  });
-  return out;
-}
+const toG = (row, i) => TeamsDaily.toG(DATA, row, i);
+const dailyGames = date => TeamsDaily.daily(DATA, date);   // the daily set lives in daily.js, shared with the archive
 function endlessGame(streak, seen){
   const ok = b => streak < 3 ? b === 0 : streak < 7 ? b <= 1 : b >= 1;
   let pool = DATA.g.map((r, i) => [r, i]).filter(([r, i]) => ok(r[5]) && !seen.has(i));
