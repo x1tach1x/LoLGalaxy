@@ -97,7 +97,7 @@ async function dayPage(d, prev, next){
     <h2>Draft #${draftNumber(d)}</h2>
     <p>The enemy team was ${ROLES.map(r => `${esc(enemy[r])} (${LANE_WORD[r]})`).join(", ")}. These were the strongest picks against each enemy in ranked games, by win rate:</p>
     <table><thead><tr><th>Lane</th><th>Enemy</th><th>Best picks against them</th></tr></thead><tbody>${draftRows}</tbody></table>
-    ${played ? `<p>${fmt(played)} ${played === 1 ? "player" : "players"} finished this draft and ${Math.round(100 * (Number(stats.wins) || 0) / played)}% won.</p>` : ""}
+    ${played >= 25 ? `<p>${fmt(played)} ${played === 1 ? "player" : "players"} finished this draft and ${Math.round(100 * (Number(stats.wins) || 0) / played)}% won.</p>` : ""}
     <p class="muted">A draft is scored lane by lane, then on team composition. <a href="/how-it-works.html">How a draft is scored</a>.</p>
 
     <h2>Who wins the lane? #${quizNumber(d)}</h2>

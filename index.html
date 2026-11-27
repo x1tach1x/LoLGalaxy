@@ -164,7 +164,7 @@ a{color:var(--blue)}
 <main class="blurb">
   <h2>About LaneLock</h2>
   <p>LaneLock is a set of free daily puzzles for League of Legends players. In the Draft, five enemy champions are already locked in and you roll and lock a team to counter them. In Who wins the lane?, you see two champions in the same lane and pick the one that wins that matchup more often in ranked games.</p>
-  <p>Everyone gets the same puzzles each day, and they reset at midnight UTC. Results use real ranked win rates from the current patch. <a href="how-it-works.html">See how a draft is scored</a>.</p>
+  <p>Everyone gets the same puzzles each day, and they reset at midnight UTC. Results use real ranked win rates. <a href="how-it-works.html">See how a draft is scored</a>.</p>
 
   <footer class="site">
     <p class="links"><a href="about.html">About</a><a href="how-it-works.html">How it works</a><a href="archive/">Answer archive</a><a href="privacy.html">Privacy policy</a><a href="mailto:contact@lanelock.net">contact@lanelock.net</a></p>
@@ -302,7 +302,8 @@ tick(); setInterval(tick, 30000);
 if (STATS_API) fetch(`${STATS_API.replace(/\/$/,"")}/stats?date=${today}`).then(r => r.ok ? r.json() : null).then(t => {
   const n = x => (Number.isFinite(x) && x >= 0) ? Math.floor(x) : null;
   const wins = n(t && t.wins), losses = n(t && t.losses);
-  if (wins === null || losses === null || !(wins + losses)) return;
+  // a count of a handful of players makes the site look empty, so it only appears from 25 players a day
+  if (wins === null || losses === null || wins + losses < 25) return;
   const total = wins + losses, el = document.getElementById("comm");
   el.innerHTML = `<b>${total.toLocaleString("en-US")}</b> ${total === 1 ? "player has" : "players have"} played today's draft.`;
   el.hidden = false;
